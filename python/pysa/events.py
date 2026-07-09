@@ -1,0 +1,79 @@
+"""Event decorators - the heart of a PyAndreas script.
+
+    import pysa
+    from pysa import KEY
+
+    @pysa.on_tick                 # every frame
+    def frame(): ...
+
+    @pysa.on_tick(ms=1000)        # every second of game time
+    def second(): ...
+
+    @pysa.on_draw                 # 2D drawing stage (use pysa.hud.draw here)
+    def overlay(): ...
+
+    @pysa.on_key(KEY.F2)          # key edge (also: trigger='down'/'released')
+    def pressed_f2(): ...
+
+    @pysa.on_cheat("PYTHON")      # typed cheat word
+    def typed_python(): ...
+
+    @pysa.on_vehicle_created      # game spawned a vehicle (receives Vehicle)
+    def new_car(vehicle): ...
+
+    @pysa.on_game_start           # new game / save loaded / scripts reloaded
+    def session(): ...
+"""
+from __future__ import annotations
+
+from . import _runtime
+
+
+def _simple(event: str):
+    def decorator(fn):
+        return _runtime.register(event, fn)
+    decorator.__name__ = f"on_{event}"
+    return decorator
+
+
+def on_tick(fn=None, *, ms: int = None):
+    """Run every frame, or every `ms` milliseconds of game time."""
+    if fn is not None:
+        return _runtime.register("tick", fn)
+
+    def decorator(f):
+        if ms is None:
+            return _runtime.register("tick", f)
+        return _runtime.register("tick", f, ms=int(ms))
+    return decorator
+
+
+def on_key(vk: int, trigger: str = "pressed"):
+    """Run on a key event. trigger: 'pressed' (edge), 'released', or 'down' (held)."""
+    if trigger not in ("pressed", "released", "down"):
+        raise ValueError("trigger must be 'pressed', 'released' or 'down'")
+
+    def decorator(fn):
+        return _runtime.register("key", fn, vk=int(vk), trigger=trigger)
+    return decorator
+
+
+def on_cheat(word: str):
+    """Run when the player types `word` (like a cheat code)."""
+    if not word or not word.isalnum():
+        raise ValueError("cheat word must be alphanumeric")
+
+    def decorator(fn):
+        return _runtime.register("cheat", fn, word=word)
+    return decorator
+
+
+on_draw = _simple("draw")
+on_game_start = _simple("game_start")
+on_shutdown = _simple("shutdown")
+on_vehicle_created = _simple("vehicle_created")
+on_vehicle_destroyed = _simple("vehicle_destroyed")
+on_ped_created = _simple("ped_created")
+on_ped_destroyed = _simple("ped_destroyed")
+on_object_created = _simple("object_created")
+on_object_destroyed = _simple("object_destroyed")
