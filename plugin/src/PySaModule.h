@@ -39,6 +39,13 @@ extern std::vector<DrawItem> g_drawQueue;
 void Log(const char *fmt, ...);
 void SetBaseDir(const std::string &dir);
 const std::string &BaseDir();    // <game>\PyAndreas
-void FlushDrawQueue();           // call from drawingEvent, after dispatching "draw"
+void FlushDrawQueue();           // text; call from drawingEvent after dispatching "draw"
+void FlushRenderQueue();         // rects/sprites; call before FlushDrawQueue
+void ShutdownHooks();            // remove all function hooks (call before Py_Finalize)
+
+// Method tables contributed by the render and hook translation units,
+// concatenated into the _pysa module at init.
+extern PyMethodDef pysa_render_methods[];
+extern PyMethodDef pysa_hook_methods[];
 
 }  // namespace pysa

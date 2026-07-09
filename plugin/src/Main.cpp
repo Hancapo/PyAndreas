@@ -23,6 +23,7 @@ enum class State { NotStarted, Running, Failed };
 State g_state = State::NotStarted;
 PyObject *g_dispatch = nullptr;     // pysa._runtime.dispatch
 bool g_pendingGameStart = false;
+PyThreadState *g_savedState = nullptr;  // set when the GIL is released between frames
 
 std::string GameDir() {
     char path[MAX_PATH];
@@ -148,27 +149,35 @@ void InitPython() {
 
     g_state = State::Running;
     pysa::Log("PyAndreas ready (%s)", Py_GetVersion());
+
+    // Release the GIL between frames so background Python threads (threading,
+    // asyncio) can run. Every dispatch re-acquires it via PyGILState_Ensure.
+    g_savedState = PyEval_SaveThread();
 }
 
 void Dispatch(const char *event) {
     if (g_state != State::Running || !g_dispatch)
         return;
+    PyGILState_STATE gil = PyGILState_Ensure();
     PyObject *r = PyObject_CallFunction(g_dispatch, "(s)", event);
     if (!r)
         PyErr_Print();
     else
         Py_DECREF(r);
+    PyGILState_Release(gil);
 }
 
 void DispatchPtr(const char *event, void *ptr) {
     if (g_state != State::Running || !g_dispatch)
         return;
+    PyGILState_STATE gil = PyGILState_Ensure();
     PyObject *r = PyObject_CallFunction(g_dispatch, "(sk)", event,
                                         reinterpret_cast<unsigned long>(ptr));
     if (!r)
         PyErr_Print();
     else
         Py_DECREF(r);
+    PyGILState_Release(gil);
 }
 
 class PyAndreas {
@@ -189,7 +198,8 @@ public:
 
         Events::drawingEvent += [] {
             Dispatch("draw");
-            pysa::FlushDrawQueue();
+            pysa::FlushRenderQueue();   // rects/sprites first
+            pysa::FlushDrawQueue();     // text on top
         };
 
         Events::initScriptsEvent += [] {
@@ -209,6 +219,12 @@ public:
         Events::shutdownRwEvent += [] {
             if (g_state == State::Running) {
                 Dispatch("shutdown");
+                // Re-acquire the GIL we released after init, then tear down.
+                if (g_savedState) {
+                    PyEval_RestoreThread(g_savedState);
+                    g_savedState = nullptr;
+                }
+                pysa::ShutdownHooks();
                 Py_XDECREF(g_dispatch);
                 g_dispatch = nullptr;
                 Py_FinalizeEx();

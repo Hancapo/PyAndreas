@@ -776,14 +776,29 @@ static PyMethodDef s_methods[] = {
     {nullptr, nullptr, 0, nullptr},
 };
 
+// Assembled at init from the core + render + hook tables.
+static std::vector<PyMethodDef> s_allMethods;
+
 static PyModuleDef s_moduleDef = {
     PyModuleDef_HEAD_INIT, "_pysa",
     "Low-level bridge into GTA San Andreas (PyAndreas plugin).",
-    -1, s_methods, nullptr, nullptr, nullptr, nullptr,
+    -1, nullptr, nullptr, nullptr, nullptr, nullptr,
 };
+
+static void AppendMethods(const PyMethodDef *table) {
+    for (const PyMethodDef *m = table; m->ml_name; ++m)
+        s_allMethods.push_back(*m);
+}
 
 }  // namespace pysa
 
 extern "C" PyObject *PyInit__pysa(void) {
-    return PyModule_Create(&pysa::s_moduleDef);
+    using namespace pysa;
+    s_allMethods.clear();
+    AppendMethods(s_methods);
+    AppendMethods(pysa_render_methods);
+    AppendMethods(pysa_hook_methods);
+    s_allMethods.push_back({nullptr, nullptr, 0, nullptr});  // sentinel
+    s_moduleDef.m_methods = s_allMethods.data();
+    return PyModule_Create(&s_moduleDef);
 }
