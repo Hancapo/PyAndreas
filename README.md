@@ -142,7 +142,7 @@ To run scripts inside GTA SA, the game needs the built ASI plugin and a
 `PyAndreas` folder in the game root:
 
 ```text
-<game>\scripts\PyAndreas.SA.asi
+<game>\scripts\PyAndreas.asi
 <game>\PyAndreas\python\      32-bit embeddable Python runtime
 <game>\PyAndreas\lib\pysa\    the pysa package
 <game>\PyAndreas\scripts\     your .py scripts

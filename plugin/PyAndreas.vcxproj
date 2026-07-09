@@ -31,7 +31,7 @@
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <OutDir>$(ProjectDir)bin\GTA-SA\Release\</OutDir>
     <IntDir>$(ProjectDir)obj\GTA-SA\Release\</IntDir>
-    <TargetName>PyAndreas.SA</TargetName>
+    <TargetName>PyAndreas</TargetName>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release GTA-SA|Win32'">
@@ -61,7 +61,7 @@
       <AdditionalDependencies>plugin.lib;python3.lib;delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib;$(PYTHON_X86_DIR)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DelayLoadDLLs>python3.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
-      <ImportLibrary>bin\GTA-SA\Release\PyAndreas.SA.lib</ImportLibrary>
+      <ImportLibrary>bin\GTA-SA\Release\PyAndreas.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>
