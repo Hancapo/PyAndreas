@@ -59,6 +59,8 @@ _handlers: dict = {}
 _interval_ticks: list = []
 # key watchers: [Handler(extra={'vk', 'trigger', 'was_down'})]
 _key_watchers: list = []
+# button watchers: [Handler(extra={'button', 'pad', 'trigger', 'was_down'})]
+_button_watchers: list = []
 # cheat-word watchers: [Handler(extra={'word_reversed'})]
 _cheat_watchers: list = []
 
@@ -134,6 +136,9 @@ def register(event: str, fn, **extra):
     elif event == "key":
         h.extra["was_down"] = False
         _key_watchers.append(h)
+    elif event == "button":
+        h.extra["was_down"] = False
+        _button_watchers.append(h)
     elif event == "cheat":
         h.extra["word_reversed"] = extra["word"].upper()[::-1]
         _cheat_watchers.append(h)
@@ -146,6 +151,7 @@ def _clear_registries() -> None:
     _handlers.clear()
     _interval_ticks.clear()
     _key_watchers.clear()
+    _button_watchers.clear()
     _cheat_watchers.clear()
     for t in _tasks:
         t.cancel()
@@ -269,6 +275,21 @@ def _tick() -> None:
             h.run()
         elif trigger == "down" and down:
             h.run()
+
+    # controller button watchers (same edge logic, via the pad module)
+    if _button_watchers:
+        from . import pad as _pad
+        for h in _button_watchers:
+            down = _pad.pressed(h.extra["button"], h.extra["pad"])
+            trigger = h.extra["trigger"]
+            was = h.extra["was_down"]
+            h.extra["was_down"] = down
+            if trigger == "pressed" and down and not was:
+                h.run()
+            elif trigger == "released" and was and not down:
+                h.run()
+            elif trigger == "down" and down:
+                h.run()
 
     # cheat words (the game stores recently typed chars most-recent-first)
     if _cheat_watchers:

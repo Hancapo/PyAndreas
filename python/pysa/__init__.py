@@ -34,7 +34,7 @@ Press F11 in-game to hot-reload all scripts. Errors go to PyAndreas.log.
 
 from ._runtime import VERSION as __version__
 from ._runtime import Task, reload_scripts, script, start
-from .events import (on_cheat, on_draw, on_game_start, on_key,
+from .events import (on_button, on_cheat, on_draw, on_game_start, on_key,
                      on_object_created, on_object_destroyed, on_ped_created,
                      on_ped_destroyed, on_shutdown, on_tick,
                      on_vehicle_created, on_vehicle_destroyed)
@@ -67,8 +67,9 @@ from .world import Fire
 from .world import objects, peds, vehicles
 from .audio import MissionAudio, RADIO
 from .fx import FxSystem
+from .pad import BUTTON
 from . import (audio, blips, camera, draw, fx, game_events, hooks, hud, markers,
-               memory, pickups, text, timers, world)
+               memory, pad, pickups, text, timers, world)
 
 try:
     import _pysa as _bridge
@@ -89,7 +90,7 @@ base_dir = _bridge.base_dir
 
 __all__ = [
     "__version__", "reload_scripts",
-    "on_tick", "on_draw", "on_key", "on_cheat", "on_game_start", "on_shutdown",
+    "on_tick", "on_draw", "on_key", "on_button", "on_cheat", "on_game_start", "on_shutdown",
     "on_vehicle_created", "on_vehicle_destroyed", "on_ped_created",
     "on_ped_destroyed", "on_object_created", "on_object_destroyed",
     "script", "start", "Task",
@@ -112,7 +113,7 @@ __all__ = [
     "on_weapon_fire", "on_explosion", "on_wanted_level_change",
     "on_projectile_fired", "on_weapon_given",
     "blips", "camera", "draw", "hooks", "hud", "memory", "pickups", "world",
-    "game_events", "markers", "timers", "audio", "fx", "text",
+    "game_events", "markers", "timers", "audio", "fx", "text", "pad", "BUTTON",
     "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire",
     "Stopwatch", "Countdown", "MissionAudio", "RADIO", "FxSystem",
     "log", "game_time", "key_down", "base_dir",

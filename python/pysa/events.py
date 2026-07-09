@@ -58,6 +58,21 @@ def on_key(vk: int, trigger: str = "pressed"):
     return decorator
 
 
+def on_button(button: int, trigger: str = "pressed", pad: int = 0):
+    """Run on a controller button event (see pysa.pad.BUTTON).
+
+    trigger: 'pressed' (edge), 'released', or 'down' (held). pad = which
+    controller (0 = first).
+    """
+    if trigger not in ("pressed", "released", "down"):
+        raise ValueError("trigger must be 'pressed', 'released' or 'down'")
+
+    def decorator(fn):
+        return _runtime.register("button", fn, button=int(button),
+                                 pad=int(pad), trigger=trigger)
+    return decorator
+
+
 def on_cheat(word: str):
     """Run when the player types `word` (like a cheat code)."""
     if not word or not word.isalnum():

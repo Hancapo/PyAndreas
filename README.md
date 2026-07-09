@@ -100,6 +100,7 @@ Each shows off a different part of the API:
 | `example_checkpoint_race.py` | `Checkpoint`/`Marker3D`, `Countdown`, `entity.distance_to`, coroutine |
 | `example_carnage.py` | iterating `pysa.vehicles`, `.near(...)`, `car.explode()`, `car.model_name` |
 | `example_effects.py` | `fx.FxSystem.on(...)`, `fx.corona(...)`, `audio.play_sound(...)` |
+| `example_gamepad.py` | `@on_button(...)`, `pad.pressed(...)` combos, `pad.left_stick()`, `pad.rumble()` |
 | `example_threads.py` | background threads (GIL released between frames) |
 
 ## Install for Editor Autocomplete
@@ -191,6 +192,7 @@ runtime files.
 | Area | Examples |
 | --- | --- |
 | Events | `@pysa.on_tick`, `@pysa.on_tick(ms=500)`, `@pysa.on_draw`, `@pysa.on_key(KEY.F3)`, `@pysa.on_cheat("WORD")` |
+| Gamepad | `@pysa.on_button(BUTTON.CROSS)`, `pad.pressed(BUTTON.L1)`, `pad.left_stick()`, `pad.rumble()` |
 | Coroutines | `@pysa.script`, `pysa.start(generator)`, `yield 500` to wait game milliseconds |
 | Player | `player.ped`, `player.pos`, `player.money`, `player.vitals.heal()`, `player.wanted.level = 0` |
 | Player OOP facades | `player.weapons.give(...)`, `player.controls.enabled`, `player.perks.never_tired`, `player.vehicles.current` |
