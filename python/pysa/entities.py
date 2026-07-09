@@ -2,12 +2,12 @@
 
 Entities wrap SCM handles and expose game state as properties:
 
-    veh = Vehicle.spawn('infernus')          # in front of the player
+    veh = Vehicle.spawn(VEHICLE.INFERNUS)    # in front of the player
     veh.pos = (2488, -1666, 13.5)            # ints fine, coerced to floats
     veh.heading = 180
     print(veh.speed, veh.health, veh.driver)
 
-    ped = Ped.spawn(167, player.pos + (3, 0, 0))
+    ped = Ped.spawn(PED.TRIBOSS, player.pos + (3, 0, 0))
     ped.give_weapon(WEAPON.AK47)
     ped.tasks.attack(player.ped)
 
@@ -22,8 +22,12 @@ except ImportError:
     from . import _mock as _pysa
 
 from .math3 import Vector3
-from .models import PED_TYPE, vehicle_id
+from .enums import (CAR_MISSION, DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS,
+                    FIGHT_STYLE, LIGHT_OVERRIDE, MOVE_STATE, VEHICLE_DOOR,
+                    VEHICLE_WHEEL)
+from .models import PED_TYPE, VEHICLE, vehicle_id
 from .native import cmd
+from .ped_models import PED
 
 
 def load_model(model: int, timeout_frames: int = 200) -> bool:
@@ -36,6 +40,13 @@ def load_model(model: int, timeout_frames: int = 200) -> bool:
         if cmd.HAS_MODEL_LOADED(int(model)):
             return True
     return False
+
+
+def _enum_or_int(enum_type, value: int):
+    try:
+        return enum_type(value)
+    except ValueError:
+        return value
 
 
 def release_model(model: int) -> None:
@@ -177,8 +188,8 @@ class PedTasks:
     def wander(self) -> None:
         cmd.TASK_WANDER_STANDARD(self._ped)
 
-    def go_to(self, pos, mode: int = 4) -> None:
-        """Walk/run to a point. mode: 4=walk, 6=run, 7=sprint (MoveState)."""
+    def go_to(self, pos, mode: MOVE_STATE = MOVE_STATE.WALK) -> None:
+        """Walk/run to a point using a MOVE_STATE."""
         x, y, z = Vector3.of(pos)
         cmd.TASK_GO_STRAIGHT_TO_COORD(self._ped, x, y, z, mode, -1)
 
@@ -203,7 +214,7 @@ class PedTasks:
         cmd.TASK_SMART_FLEE_CHAR(self._ped, target, distance, duration_ms)
 
     def drive_around(self, vehicle: "Vehicle", speed: float = 15.0,
-                     driving_mode: int = 0) -> None:
+                     driving_mode: DRIVING_STYLE = DRIVING_STYLE.STOP_FOR_CARS) -> None:
         cmd.TASK_CAR_DRIVE_WANDER(self._ped, vehicle, speed, driving_mode)
 
     def look_at(self, target: "Ped", duration_ms: int = 4000) -> None:
@@ -297,7 +308,7 @@ class Ped(Entity):
     _handle_of = staticmethod(_pysa.ped_handle)
 
     @classmethod
-    def spawn(cls, model: int, pos, ped_type: int = PED_TYPE.CIVMALE) -> "Ped":
+    def spawn(cls, model: PED, pos, ped_type: PED_TYPE = PED_TYPE.CIVMALE) -> "Ped":
         if not load_model(model):
             raise RuntimeError(f"ped model {model} failed to load")
         x, y, z = Vector3.of(pos)
@@ -451,8 +462,8 @@ class Ped(Entity):
         return cmd.GET_CHAR_HEIGHT_ABOVE_GROUND(self)
 
     @property
-    def model(self) -> int:
-        return cmd.GET_CHAR_MODEL(self)
+    def model(self):
+        return _enum_or_int(PED, cmd.GET_CHAR_MODEL(self))
 
     @property
     def current_weapon(self) -> int:
@@ -523,7 +534,7 @@ class Ped(Entity):
     def set_weapon_skill(self, skill: int) -> None:
         cmd.SET_CHAR_WEAPON_SKILL(self, skill)
 
-    def set_fighting_style(self, style: int, moves: int = 6) -> None:
+    def set_fighting_style(self, style: FIGHT_STYLE, moves: int = 6) -> None:
         cmd.GIVE_MELEE_ATTACK_TO_CHAR(self, style, moves)
 
     def damage(self, amount: int, damage_armour: bool = True) -> None:
@@ -618,13 +629,13 @@ class VehicleDoor:
 
     __slots__ = ("_vehicle", "_index")
 
-    def __init__(self, vehicle: "Vehicle", index: int):
+    def __init__(self, vehicle: "Vehicle", index: VEHICLE_DOOR):
         self._vehicle = vehicle
         self._index = int(index)
 
     @property
-    def index(self) -> int:
-        return self._index
+    def index(self) -> VEHICLE_DOOR:
+        return VEHICLE_DOOR(self._index)
 
     @property
     def angle(self) -> float:
@@ -659,14 +670,14 @@ class VehicleDoor:
 
 
 class VehicleDoors:
-    """Door collection facade: `car.doors[0].open()`, `car.doors.close_all()`."""
+    """Door collection: `car.doors[VEHICLE_DOOR.FRONT_LEFT].open()`."""
 
     __slots__ = ("_vehicle",)
 
     def __init__(self, vehicle: "Vehicle"):
         self._vehicle = vehicle
 
-    def __getitem__(self, index: int) -> VehicleDoor:
+    def __getitem__(self, index: VEHICLE_DOOR) -> VehicleDoor:
         return VehicleDoor(self._vehicle, index)
 
     def close_all(self) -> None:
@@ -680,7 +691,7 @@ class VehicleDoors:
         return self._vehicle.door_lock_status
 
     @lock_status.setter
-    def lock_status(self, status: int) -> None:
+    def lock_status(self, status: DOOR_LOCK) -> None:
         self._vehicle.set_lock_status(status)
 
 
@@ -689,9 +700,13 @@ class VehicleTyre:
 
     __slots__ = ("_vehicle", "_index")
 
-    def __init__(self, vehicle: "Vehicle", index: int):
+    def __init__(self, vehicle: "Vehicle", index: VEHICLE_WHEEL):
         self._vehicle = vehicle
         self._index = int(index)
+
+    @property
+    def index(self) -> VEHICLE_WHEEL:
+        return VEHICLE_WHEEL(self._index)
 
     def burst(self) -> None:
         self._vehicle.burst_tyre(self._index)
@@ -701,14 +716,14 @@ class VehicleTyre:
 
 
 class VehicleTyres:
-    """Tyre collection facade: `car.tyres[2].burst()`."""
+    """Tyre collection: `car.tyres[VEHICLE_WHEEL.FRONT_LEFT].burst()`."""
 
     __slots__ = ("_vehicle",)
 
     def __init__(self, vehicle: "Vehicle"):
         self._vehicle = vehicle
 
-    def __getitem__(self, index: int) -> VehicleTyre:
+    def __getitem__(self, index: VEHICLE_WHEEL) -> VehicleTyre:
         return VehicleTyre(self._vehicle, index)
 
     def can_burst(self, enabled: bool = True) -> None:
@@ -797,14 +812,76 @@ class VehicleAI:
     def cruise_speed(self, speed: float) -> None:
         self._vehicle.cruise_speed(speed)
 
-    def driving_style(self, style: int) -> None:
+    def driving_style(self, style: DRIVING_STYLE) -> None:
         self._vehicle.driving_style(style)
 
-    def mission(self, mission_id: int) -> None:
+    def mission(self, mission_id: CAR_MISSION) -> None:
         self._vehicle.mission(mission_id)
 
     def temp_action(self, action_id: int, duration_ms: int = 1000) -> None:
         self._vehicle.temp_action(action_id, duration_ms)
+
+
+def _handling_field(name: str):
+    def getter(view: "VehicleHandling"):
+        return getattr(view._struct, name)
+    return property(getter)
+
+
+class VehicleHandling:
+    """Read-only view of the vehicle model's shared plugin-sdk handling data.
+
+    GTA shares this record across all vehicles using the same handling entry,
+    so PyAndreas intentionally does not make these properties assignable.
+    Per-vehicle controls such as ``car.traction(...)`` remain separate.
+    """
+
+    __slots__ = ("_vehicle",)
+
+    def __init__(self, vehicle: "Vehicle"):
+        self._vehicle = vehicle
+
+    @property
+    def address(self) -> int:
+        addr = self._vehicle.address
+        if not addr:
+            raise ValueError("vehicle has no live handling data")
+        ptr = self._vehicle.struct.m_pHandlingData
+        if not ptr:
+            raise ValueError("vehicle has no handling record")
+        return ptr
+
+    @property
+    def _struct(self):
+        from .gamestruct import Struct
+        return Struct(self.address, "tHandlingData")
+
+    @property
+    def center_of_mass(self) -> Vector3:
+        view = self._struct
+        return Vector3(view.f32(0x14), view.f32(0x18), view.f32(0x1C))
+
+    mass = _handling_field("m_fMass")
+    turn_mass = _handling_field("m_fTurnMass")
+    drag_multiplier = _handling_field("m_fDragMult")
+    percent_submerged = _handling_field("m_nPercentSubmerged")
+    traction_multiplier = _handling_field("m_fTractionMultiplier")
+    brake_deceleration = _handling_field("m_fBrakeDeceleration")
+    brake_bias = _handling_field("m_fBrakeBias")
+    abs = _handling_field("m_bABS")
+    steering_lock = _handling_field("m_fSteeringLock")
+    traction_loss = _handling_field("m_fTractionLoss")
+    traction_bias = _handling_field("m_fTractionBias")
+    suspension_force = _handling_field("m_fSuspensionForceLevel")
+    suspension_damping = _handling_field("m_fSuspensionDampingLevel")
+    suspension_upper_limit = _handling_field("m_fSuspensionUpperLimit")
+    suspension_lower_limit = _handling_field("m_fSuspensionLowerLimit")
+    collision_damage_multiplier = _handling_field("m_fCollisionDamageMultiplier")
+    seat_offset = _handling_field("m_fSeatOffsetDistance")
+    monetary_value = _handling_field("m_nMonetaryValue")
+
+    def __repr__(self) -> str:
+        return f"VehicleHandling(model={self._vehicle.model_name!r}, mass={self.mass})"
 
 
 class Vehicle(Entity):
@@ -817,7 +894,7 @@ class Vehicle(Entity):
 
     @classmethod
     def spawn(cls, model, pos=None, heading: float = None) -> "Vehicle":
-        """Create a vehicle by id or name ('infernus', 'rhino', ...).
+        """Create a vehicle using VEHICLE constants, an id, or a legacy name.
 
         With no pos, it spawns a few meters ahead of the player.
         """
@@ -863,6 +940,10 @@ class Vehicle(Entity):
     @property
     def ai(self) -> VehicleAI:
         return VehicleAI(self)
+
+    @property
+    def handling(self) -> VehicleHandling:
+        return VehicleHandling(self)
 
     @pos.setter
     def pos(self, value) -> None:
@@ -970,8 +1051,8 @@ class Vehicle(Entity):
         return cmd.GET_MAXIMUM_NUMBER_OF_PASSENGERS(self)
 
     @property
-    def model(self) -> int:
-        return cmd.GET_CAR_MODEL(self)
+    def model(self):
+        return _enum_or_int(VEHICLE, cmd.GET_CAR_MODEL(self))
 
     @property
     def model_name(self) -> str:
@@ -1072,8 +1153,8 @@ class Vehicle(Entity):
         cmd.GIVE_VEHICLE_PAINTJOB(self, paintjob_id)
 
     @property
-    def door_lock_status(self) -> int:
-        return cmd.GET_CAR_DOOR_LOCK_STATUS(self)
+    def door_lock_status(self) -> DOOR_LOCK:
+        return DOOR_LOCK(cmd.GET_CAR_DOOR_LOCK_STATUS(self))
 
     @property
     def dirt_level(self) -> float:
@@ -1098,7 +1179,7 @@ class Vehicle(Entity):
     def lights_on(self, on: bool = True) -> None:
         cmd.SET_CAR_LIGHTS_ON(self, on)
 
-    def force_lights(self, mode: int) -> None:
+    def force_lights(self, mode: LIGHT_OVERRIDE) -> None:
         cmd.FORCE_CAR_LIGHTS(self, mode)
 
     def siren(self, enabled: bool = True) -> None:
@@ -1121,36 +1202,37 @@ class Vehicle(Entity):
         cmd.RESET_VEHICLE_HYDRAULICS(self)
 
     def lock(self, locked: bool = True) -> None:
-        cmd.LOCK_CAR_DOORS(self, 2 if locked else 1)
+        status = DOOR_LOCK.LOCKED if locked else DOOR_LOCK.UNLOCKED
+        cmd.LOCK_CAR_DOORS(self, status)
 
-    def set_lock_status(self, status: int) -> None:
+    def set_lock_status(self, status: DOOR_LOCK) -> None:
         cmd.LOCK_CAR_DOORS(self, status)
 
     def close_doors(self) -> None:
         cmd.CLOSE_ALL_CAR_DOORS(self)
 
-    def open_door(self, door: int) -> None:
+    def open_door(self, door: VEHICLE_DOOR) -> None:
         cmd.OPEN_CAR_DOOR(self, door)
 
-    def open_door_ratio(self, door: int, ratio: float) -> None:
+    def open_door_ratio(self, door: VEHICLE_DOOR, ratio: float) -> None:
         cmd.OPEN_CAR_DOOR_A_BIT(self, door, ratio)
 
-    def door_angle_ratio(self, door: int) -> float:
+    def door_angle_ratio(self, door: VEHICLE_DOOR) -> float:
         return cmd.GET_DOOR_ANGLE_RATIO(self, door)
 
-    def door_damaged(self, door: int) -> bool:
+    def door_damaged(self, door: VEHICLE_DOOR) -> bool:
         return cmd.IS_CAR_DOOR_DAMAGED(self, door)
 
-    def door_fully_open(self, door: int) -> bool:
+    def door_fully_open(self, door: VEHICLE_DOOR) -> bool:
         return cmd.IS_CAR_DOOR_FULLY_OPEN(self, door)
 
-    def damage_door(self, door: int) -> None:
+    def damage_door(self, door: VEHICLE_DOOR) -> None:
         cmd.DAMAGE_CAR_DOOR(self, door)
 
-    def fix_door(self, door: int) -> None:
+    def fix_door(self, door: VEHICLE_DOOR) -> None:
         cmd.FIX_CAR_DOOR(self, door)
 
-    def pop_door(self, door: int, visible: bool = True) -> None:
+    def pop_door(self, door: VEHICLE_DOOR, visible: bool = True) -> None:
         cmd.POP_CAR_DOOR(self, door, visible)
 
     def pop_boot(self) -> None:
@@ -1165,10 +1247,10 @@ class Vehicle(Entity):
     def pop_panel(self, panel: int, drop: bool = True) -> None:
         cmd.POP_CAR_PANEL(self, panel, drop)
 
-    def burst_tyre(self, tyre: int) -> None:
+    def burst_tyre(self, tyre: VEHICLE_WHEEL) -> None:
         cmd.BURST_CAR_TYRE(self, tyre)
 
-    def fix_tyre(self, tyre: int) -> None:
+    def fix_tyre(self, tyre: VEHICLE_WHEEL) -> None:
         cmd.FIX_CAR_TYRE(self, tyre)
 
     def tyres_can_burst(self, enabled: bool = True) -> None:
@@ -1279,13 +1361,13 @@ class Vehicle(Entity):
     def cruise_speed(self, speed: float) -> None:
         cmd.SET_CAR_CRUISE_SPEED(self, speed)
 
-    def driving_style(self, style: int) -> None:
+    def driving_style(self, style: DRIVING_STYLE) -> None:
         cmd.SET_CAR_DRIVING_STYLE(self, style)
 
-    def mission(self, mission_id: int) -> None:
+    def mission(self, mission_id: CAR_MISSION) -> None:
         cmd.SET_CAR_MISSION(self, mission_id)
 
-    def status(self, status: int) -> None:
+    def status(self, status: ENTITY_STATUS) -> None:
         cmd.SET_CAR_STATUS(self, status)
 
     def temp_action(self, action_id: int, duration_ms: int = 1000) -> None:

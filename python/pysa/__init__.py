@@ -4,11 +4,11 @@ Drop .py files into <game>\\PyAndreas\\scripts and they run inside the game.
 Quick tour:
 
     import pysa
-    from pysa import player, world, hud, cmd, KEY, Vehicle
+    from pysa import player, world, hud, cmd, KEY, VEHICLE, Vehicle
 
     @pysa.on_key(KEY.F2)
     def tank():
-        Vehicle.spawn('rhino')
+        Vehicle.spawn(VEHICLE.RHINO)
 
     @pysa.on_cheat("MOON")
     def moon():
@@ -34,18 +34,25 @@ Press F11 in-game to hot-reload all scripts. Errors go to PyAndreas.log.
 
 from ._runtime import VERSION as __version__
 from ._runtime import Task, reload_scripts, script, start
-from .events import (on_button, on_cheat, on_draw, on_game_start, on_key,
-                     on_object_created, on_object_destroyed, on_ped_created,
-                     on_ped_destroyed, on_shutdown, on_tick,
-                     on_vehicle_created, on_vehicle_destroyed)
+from .events import (on_button, on_cheat, on_device_lost, on_device_reset,
+                     on_draw, on_game_reinit, on_game_restart, on_game_start,
+                     on_key, on_object_created, on_object_destroyed,
+                     on_ped_created, on_ped_destroyed, on_ped_model_changed,
+                     on_pools_init, on_pools_shutdown, on_render_init,
+                     on_shutdown, on_tick, on_vehicle_created,
+                     on_vehicle_destroyed, on_vehicle_model_changed)
 from .entities import (Entity, GameObject, ObjectAnimation, Ped, PedTasks,
                        PedWeapons, Vehicle, VehicleAI, VehicleDamage,
-                       VehicleDoor, VehicleDoors, VehicleMods, VehicleTyre,
+                       VehicleDoor, VehicleDoors, VehicleHandling, VehicleMods, VehicleTyre,
                        VehicleTyres, all_objects, all_peds, all_vehicles,
                        load_model, release_model)
 from .keys import KEY
+from .enums import (CAMERA_MODE, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
+                    ENTITY_STATUS, FIGHT_STYLE, LIGHT_OVERRIDE, MOVE_STATE,
+                    VEHICLE_DOOR, VEHICLE_WHEEL)
 from .math3 import Vector3
-from .models import PED_TYPE, VEHICLES, WEAPON, vehicle_id
+from .models import PED_TYPE, VEHICLE, VEHICLES, WEAPON, vehicle_id
+from .ped_models import PED
 from .native import (NOT, End, Out, call, call_ex, call_func, cmd, doc,
                      find_commands, signature)
 from .opcodes import OPCODES
@@ -91,16 +98,22 @@ base_dir = _bridge.base_dir
 __all__ = [
     "__version__", "reload_scripts",
     "on_tick", "on_draw", "on_key", "on_button", "on_cheat", "on_game_start", "on_shutdown",
+    "on_game_restart", "on_game_reinit", "on_render_init", "on_device_lost",
+    "on_device_reset", "on_pools_init", "on_pools_shutdown",
     "on_vehicle_created", "on_vehicle_destroyed", "on_ped_created",
     "on_ped_destroyed", "on_object_created", "on_object_destroyed",
+    "on_vehicle_model_changed", "on_ped_model_changed",
     "script", "start", "Task",
     "Entity", "Ped", "Vehicle", "GameObject",
     "PedTasks", "PedWeapons", "VehicleDoor", "VehicleDoors", "VehicleTyre",
-    "VehicleTyres", "VehicleDamage", "VehicleMods", "VehicleAI",
+    "VehicleTyres", "VehicleDamage", "VehicleMods", "VehicleAI", "VehicleHandling",
     "ObjectAnimation",
     "all_peds", "all_vehicles", "all_objects", "load_model", "release_model",
     "peds", "vehicles", "objects",
-    "KEY", "Vector3", "PED_TYPE", "VEHICLES", "WEAPON", "vehicle_id",
+    "KEY", "Vector3", "PED", "PED_TYPE", "VEHICLE", "VEHICLES", "WEAPON", "vehicle_id",
+    "MOVE_STATE", "CAMERA_MODE", "DRIVING_STYLE", "CAR_MISSION",
+    "DOOR_LOCK", "VEHICLE_DOOR", "VEHICLE_WHEEL", "LIGHT_OVERRIDE",
+    "ENTITY_STATUS", "FIGHT_STYLE",
     "call", "call_ex", "call_func", "cmd", "Out", "End", "NOT", "OPCODES",
     "doc", "find_commands", "signature",
     "player", "PLAYER_STATE", "PlayerStats", "PlayerGroup", "PlayerWeapons",

@@ -17,10 +17,12 @@ constants; Xbox aliases (A/B/X/Y) are provided too.
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
 from .native import cmd
 
 
-class BUTTON:
+class BUTTON(IntEnum):
     """Controller button ids (eButtonID)."""
     LEFT_STICK_X = 0
     LEFT_STICK_Y = 1
@@ -54,12 +56,12 @@ class BUTTON:
 DEADZONE = 0.15
 
 
-def pressed(button: int, pad: int = 0) -> bool:
+def pressed(button: BUTTON, pad: int = 0) -> bool:
     """True while `button` is held on controller `pad` (0 = first pad)."""
     return cmd.IS_BUTTON_PRESSED(pad, int(button))
 
 
-def state(button: int, pad: int = 0) -> int:
+def state(button: BUTTON, pad: int = 0) -> int:
     """Raw state of a button/axis (buttons ~0..255, sticks ~-128..128)."""
     return cmd.GET_PAD_STATE(pad, int(button))
 

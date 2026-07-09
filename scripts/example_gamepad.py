@@ -5,13 +5,13 @@
 - While using a controller, the left-stick vector is shown on screen.
 """
 import pysa
-from pysa import hud, pad, player, Vehicle
+from pysa import VEHICLE, Vehicle, hud, pad, player
 from pysa.pad import BUTTON
 
 
 @pysa.on_button(BUTTON.DPAD_UP)
 def spawn_bike():
-    Vehicle.spawn("nrg500")
+    Vehicle.spawn(VEHICLE.NRG500)
     pad.rumble(300, 220)
     hud.help_text("NRG-500")
 

@@ -1,4 +1,7 @@
 """Model and weapon id databases for GTA San Andreas."""
+from enum import IntEnum
+
+from .vehicle_models import VEHICLE
 
 # Vehicle model ids 400..611, in game order.
 _VEHICLE_NAMES = [
@@ -36,7 +39,7 @@ _VEHICLE_NAMES = [
     "boxburg", "farmtr1", "utiltr1",
 ]
 
-#: Vehicle name (lowercase) -> model id.
+#: Legacy vehicle name (lowercase) -> model id mapping.
 VEHICLES = {name: 400 + i for i, name in enumerate(_VEHICLE_NAMES)}
 
 #: Model id -> vehicle name.
@@ -44,16 +47,16 @@ VEHICLE_NAMES = {v: k for k, v in VEHICLES.items()}
 
 
 def vehicle_id(name_or_id) -> int:
-    """Resolve a vehicle model: accepts an id (400-611) or a name like 'infernus'."""
+    """Resolve a VEHICLE member, model id, or legacy string name."""
     if isinstance(name_or_id, int):
-        return name_or_id
+        return int(name_or_id)
     key = str(name_or_id).lower()
     if key not in VEHICLES:
         raise ValueError(f"unknown vehicle {name_or_id!r}")
     return VEHICLES[key]
 
 
-class WEAPON:
+class WEAPON(IntEnum):
     """Weapon ids for GIVE_WEAPON_TO_CHAR and friends."""
 
     FIST = 0
@@ -96,7 +99,7 @@ class WEAPON:
     PARACHUTE = 46
 
 
-class PED_TYPE:
+class PED_TYPE(IntEnum):
     """Ped types for CREATE_CHAR."""
 
     CIVMALE = 4

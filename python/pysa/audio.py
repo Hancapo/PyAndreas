@@ -16,11 +16,13 @@ Mission audio ids index the game's audio banks.
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
 from .math3 import Vector3
 from .native import cmd
 
 
-class RADIO:
+class RADIO(IntEnum):
     """Radio station ids (from plugin-sdk eRadioID)."""
     PLAYBACK_FM = 1
     K_ROSE = 2
@@ -43,7 +45,7 @@ def play_sound(pos, sound_id: int) -> None:
     cmd.ADD_ONE_OFF_SOUND(x, y, z, int(sound_id))
 
 
-def set_radio(channel: int) -> None:
+def set_radio(channel: RADIO) -> None:
     """Set the radio station (see RADIO)."""
     cmd.SET_RADIO_CHANNEL(int(channel))
 

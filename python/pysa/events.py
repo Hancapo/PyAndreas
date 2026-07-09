@@ -23,6 +23,9 @@
 
     @pysa.on_game_start           # new game / save loaded / scripts reloaded
     def session(): ...
+
+    @pysa.on_vehicle_model_changed
+    def reskinned(vehicle, model): ...
 """
 from __future__ import annotations
 
@@ -85,10 +88,19 @@ def on_cheat(word: str):
 
 on_draw = _simple("draw")
 on_game_start = _simple("game_start")
+on_game_restart = _simple("game_restart")
+on_game_reinit = _simple("game_reinit")
 on_shutdown = _simple("shutdown")
+on_render_init = _simple("render_init")
+on_device_lost = _simple("device_lost")
+on_device_reset = _simple("device_reset")
+on_pools_init = _simple("pools_init")
+on_pools_shutdown = _simple("pools_shutdown")
 on_vehicle_created = _simple("vehicle_created")
 on_vehicle_destroyed = _simple("vehicle_destroyed")
+on_vehicle_model_changed = _simple("vehicle_model_changed")
 on_ped_created = _simple("ped_created")
 on_ped_destroyed = _simple("ped_destroyed")
+on_ped_model_changed = _simple("ped_model_changed")
 on_object_created = _simple("object_created")
 on_object_destroyed = _simple("object_destroyed")

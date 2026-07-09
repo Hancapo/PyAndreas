@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+from .enums import CAMERA_MODE
 from .math3 import Vector3
 from .native import cmd
 
@@ -23,8 +24,8 @@ def fix_at(pos, look_at=None) -> None:
         cmd.POINT_CAMERA_AT_POINT(lx, ly, lz, 2)
 
 
-def point_at(entity, mode: int = 15) -> None:
-    """Aim the camera at a ped or vehicle (mode 15 = fixed, 4 = follow)."""
+def point_at(entity, mode: CAMERA_MODE = CAMERA_MODE.FIXED) -> None:
+    """Aim the camera at a ped or vehicle using a CAMERA_MODE."""
     from .entities import Ped, Vehicle
 
     if isinstance(entity, Ped):

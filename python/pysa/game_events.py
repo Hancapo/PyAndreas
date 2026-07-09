@@ -212,6 +212,24 @@ def _clear() -> None:
     _handlers.clear()
 
 
+def _checkpoint():
+    """Internal import transaction marker used by the script loader."""
+    return ({name: len(items) for name, items in _handlers.items()},
+            set(_hook_ids))
+
+
+def _rollback(checkpoint) -> None:
+    """Remove handlers and owned hooks added during a failed import."""
+    handler_lengths, hook_names = checkpoint
+    for name in list(_handlers):
+        keep = handler_lengths.get(name, 0)
+        del _handlers[name][keep:]
+        if not _handlers[name]:
+            _handlers.pop(name, None)
+    for name in set(_hook_ids) - hook_names:
+        hooks.remove(_hook_ids.pop(name))
+
+
 def _make_decorator(event_name: str):
     def decorator(fn):
         return _register(event_name, fn)

@@ -3,9 +3,9 @@
 // events into the pure-Python 'pysa' package.
 //
 // Expected game-folder layout:
-//   <game>\scripts\PyAndreas.SA.asi        (this plugin)
+//   <game>\scripts\PyAndreas.asi           (this plugin)
 //   <game>\PyAndreas\python\               (32-bit embeddable Python: python3.dll, python3xx.dll, python3xx.zip)
-//   <game>\PyAndreas\lib\pysa\             (the pysa package)
+//   <game>\PyAndreas\lib\pysa.pyz           (the pysa package archive)
 //   <game>\PyAndreas\scripts\*.py          (user scripts)
 //   <game>\PyAndreas\PyAndreas.log         (created at runtime)
 
@@ -117,15 +117,18 @@ void InitPython() {
         return;
     }
 
-    // sys.path: our package dir + user scripts dir; route stdout/stderr into the log.
-    char boot[1024];
+    // sys.path: package archive (or loose source fallback) + user scripts;
+    // route stdout/stderr into the log.
+    char boot[2048];
     snprintf(boot, sizeof(boot),
-             "import sys\n"
-             "sys.path.insert(0, r'%s\\lib')\n"
+             "import os, sys\n"
+             "_pysa_archive = r'%s\\lib\\pysa.pyz'\n"
              "sys.path.insert(0, r'%s\\scripts')\n"
+             "sys.path.insert(0, _pysa_archive if os.path.isfile(_pysa_archive) "
+             "else r'%s\\lib')\n"
              "sys.stdout = sys.stderr = open(r'%s\\PyAndreas.log', 'a', buffering=1, "
              "encoding='utf-8', errors='replace')\n",
-             base.c_str(), base.c_str(), base.c_str());
+             base.c_str(), base.c_str(), base.c_str(), base.c_str());
     if (!RunString(boot)) {
         Fail("bootstrap path setup failed");
         return;
@@ -134,7 +137,7 @@ void InitPython() {
     PyObject *runtime = PyImport_ImportModule("pysa._runtime");
     if (!runtime) {
         PyErr_Print();
-        Fail("could not import pysa._runtime (is PyAndreas\\lib\\pysa in place?)");
+        Fail("could not import pysa._runtime (is PyAndreas\\lib\\pysa.pyz in place?)");
         return;
     }
     g_dispatch = PyObject_GetAttrString(runtime, "dispatch");
@@ -180,6 +183,22 @@ void DispatchPtr(const char *event, void *ptr) {
     PyGILState_Release(gil);
 }
 
+void DispatchPtrInt(const char *event, void *ptr, int value) {
+    if (g_state != State::Running || !g_dispatch)
+        return;
+    PyGILState_STATE gil = PyGILState_Ensure();
+    PyObject *arg = Py_BuildValue("(ki)",
+                                  reinterpret_cast<unsigned long>(ptr), value);
+    PyObject *r = arg ? PyObject_CallFunction(g_dispatch, "(sO)", event, arg)
+                      : nullptr;
+    Py_XDECREF(arg);
+    if (!r)
+        PyErr_Print();
+    else
+        Py_DECREF(r);
+    PyGILState_Release(gil);
+}
+
 class PyAndreas {
 public:
     PyAndreas() {
@@ -209,12 +228,26 @@ public:
                 Dispatch("game_start");
         };
 
+        Events::restartGameEvent += [] { Dispatch("game_restart"); };
+        Events::reInitGameEvent += [] { Dispatch("game_reinit"); };
+        Events::initRwEvent += [] { Dispatch("render_init"); };
+        Events::initPoolsEvent += [] { Dispatch("pools_init"); };
+        Events::shutdownPoolsEvent += [] { Dispatch("pools_shutdown"); };
+        Events::d3dLostEvent += [] { Dispatch("device_lost"); };
+        Events::d3dResetEvent += [] { Dispatch("device_reset"); };
+
         Events::vehicleCtorEvent += [](CVehicle *vehicle) { DispatchPtr("vehicle_created", vehicle); };
         Events::vehicleDtorEvent += [](CVehicle *vehicle) { DispatchPtr("vehicle_destroyed", vehicle); };
         Events::pedCtorEvent += [](CPed *ped) { DispatchPtr("ped_created", ped); };
         Events::pedDtorEvent += [](CPed *ped) { DispatchPtr("ped_destroyed", ped); };
         Events::objectCtorEvent += [](CObject *object) { DispatchPtr("object_created", object); };
         Events::objectDtorEvent += [](CObject *object) { DispatchPtr("object_destroyed", object); };
+        Events::vehicleSetModelEvent += [](CVehicle *vehicle, int model) {
+            DispatchPtrInt("vehicle_model_changed", vehicle, model);
+        };
+        Events::pedSetModelEvent += [](CPed *ped, int model) {
+            DispatchPtrInt("ped_model_changed", ped, model);
+        };
 
         Events::shutdownRwEvent += [] {
             if (g_state == State::Running) {

@@ -9,6 +9,8 @@
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
 try:
     import _pysa
 except ImportError:
@@ -24,7 +26,7 @@ GRAVITY_ADDR = 0x863984
 DEFAULT_GRAVITY = 0.008
 
 
-class WEATHER:
+class WEATHER(IntEnum):
     SUNNY_LA = 0
     SUNNY_SF = 1
     SUNNY_VEGAS = 2
@@ -47,11 +49,11 @@ def set_time(hours: int, minutes: int = 0) -> None:
     cmd.SET_TIME_OF_DAY(hours, minutes)
 
 
-def force_weather(weather_id: int) -> None:
+def force_weather(weather_id: WEATHER) -> None:
     cmd.FORCE_WEATHER_NOW(weather_id)
 
 
-def force_weather_later(weather_id: int) -> None:
+def force_weather_later(weather_id: WEATHER) -> None:
     cmd.FORCE_WEATHER(weather_id)
 
 
@@ -135,7 +137,7 @@ def info_zone_name(pos) -> str:
     return cmd.GET_NAME_OF_INFO_ZONE(x, y, z)
 
 
-class EXPLOSION:
+class EXPLOSION(IntEnum):
     GRENADE = 0
     MOLOTOV = 1
     ROCKET = 2
@@ -147,24 +149,24 @@ class EXPLOSION:
     TINY = 10
 
 
-def explosion(pos, explosion_type: int = EXPLOSION.GRENADE) -> None:
+def explosion(pos, explosion_type: EXPLOSION = EXPLOSION.GRENADE) -> None:
     """Boom at pos."""
     x, y, z = Vector3.of(pos)
     cmd.ADD_EXPLOSION(x, y, z, explosion_type)
 
 
-def explosion_no_sound(pos, explosion_type: int = EXPLOSION.GRENADE) -> None:
+def explosion_no_sound(pos, explosion_type: EXPLOSION = EXPLOSION.GRENADE) -> None:
     x, y, z = Vector3.of(pos)
     cmd.ADD_EXPLOSION_NO_SOUND(x, y, z, explosion_type)
 
 
-def explosion_shake(pos, explosion_type: int = EXPLOSION.GRENADE,
+def explosion_shake(pos, explosion_type: EXPLOSION = EXPLOSION.GRENADE,
                     shake: float = 1.0) -> None:
     x, y, z = Vector3.of(pos)
     cmd.ADD_EXPLOSION_VARIABLE_SHAKE(x, y, z, explosion_type, shake)
 
 
-def explosion_in_area(explosion_type: int, left_bottom, right_top) -> bool:
+def explosion_in_area(explosion_type: EXPLOSION, left_bottom, right_top) -> bool:
     x1, y1, z1 = Vector3.of(left_bottom)
     x2, y2, z2 = Vector3.of(right_top)
     return cmd.IS_EXPLOSION_IN_AREA(explosion_type, x1, y1, z1, x2, y2, z2)

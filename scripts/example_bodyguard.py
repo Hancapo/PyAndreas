@@ -5,9 +5,9 @@ around and attacks whoever hurts you. Shows off: @pysa.script coroutines,
 Ped.spawn, ped.tasks.*, blips, and markerless cmd calls.
 """
 import pysa
-from pysa import KEY, WEAPON, Ped, blips, hud, player
+from pysa import KEY, MOVE_STATE, PED, WEAPON, Ped, blips, hud, player
 
-BODYGUARD_MODEL = 163  # suited man
+BODYGUARD_MODEL = PED.BMYBOUN  # suited man
 
 
 @pysa.on_key(KEY.F6)
@@ -25,7 +25,7 @@ def bodyguard_routine():
     blip.color = blips.COLOR.GREEN
     hud.help_text("Bodyguard hired")
 
-    guard.tasks.go_to(player.pos, mode=6)
+    guard.tasks.go_to(player.pos, mode=MOVE_STATE.RUN)
     yield 1500
     guard.tasks.hands_up(800)
     yield 1000
@@ -44,7 +44,7 @@ def bodyguard_routine():
 
         # stay close when idling
         if guard.pos.distance_to(player.pos) > 12:
-            guard.tasks.go_to(player.pos, mode=6)
+            guard.tasks.go_to(player.pos, mode=MOVE_STATE.RUN)
         yield 500
 
     blip.remove()

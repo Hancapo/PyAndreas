@@ -10,6 +10,7 @@ pysa.events.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 import traceback
 
@@ -65,6 +66,7 @@ _button_watchers: list = []
 _cheat_watchers: list = []
 
 _scripts: list = []       # [(module_name, file_path)]
+_script_modules: set = set()  # every module loaded from the scripts folder
 _scripts_dir: str = ""
 _reload_was_down = False
 
@@ -154,7 +156,11 @@ def _clear_registries() -> None:
     _button_watchers.clear()
     _cheat_watchers.clear()
     for t in _tasks:
-        t.cancel()
+        try:
+            t.cancel()
+        except Exception:
+            _pysa.log(f"[pysa] error while cancelling task '{t.name}':\n"
+                      f"{traceback.format_exc()}")
     _tasks.clear()
     _task_funcs.clear()
     try:
@@ -185,18 +191,101 @@ def _dispatch_hook(hid: int, ctxaddr: int) -> None:
 # Script loading / hot reload
 # ---------------------------------------------------------------------------
 
+def _is_script_module(module) -> bool:
+    """Return whether a module's source lives below the active scripts folder."""
+    filename = getattr(module, "__file__", None)
+    if not filename or not _scripts_dir:
+        return False
+    try:
+        folder = os.path.normcase(os.path.realpath(_scripts_dir))
+        source = os.path.normcase(os.path.realpath(filename))
+        return os.path.commonpath((folder, source)) == folder
+    except (OSError, ValueError):
+        return False
+
+
+def _local_module_names() -> set:
+    return {name for name, module in tuple(sys.modules.items())
+            if module is not None and _is_script_module(module)}
+
+
+def _registry_checkpoint():
+    """Capture append-only registration state before importing one script."""
+    from . import game_events, hooks
+
+    return {
+        "handlers": {name: len(items) for name, items in _handlers.items()},
+        "interval_ticks": len(_interval_ticks),
+        "key_watchers": len(_key_watchers),
+        "button_watchers": len(_button_watchers),
+        "cheat_watchers": len(_cheat_watchers),
+        "task_funcs": len(_task_funcs),
+        "tasks": len(_tasks),
+        "hooks": hooks._checkpoint(),
+        "game_events": game_events._checkpoint(),
+    }
+
+
+def _rollback_registries(checkpoint) -> None:
+    """Remove decorators/hooks/tasks created by a failed script import."""
+    from . import game_events, hooks
+
+    for name in list(_handlers):
+        keep = checkpoint["handlers"].get(name, 0)
+        del _handlers[name][keep:]
+        if not _handlers[name]:
+            _handlers.pop(name, None)
+
+    del _interval_ticks[checkpoint["interval_ticks"]:]
+    del _key_watchers[checkpoint["key_watchers"]:]
+    del _button_watchers[checkpoint["button_watchers"]:]
+    del _cheat_watchers[checkpoint["cheat_watchers"]:]
+    del _task_funcs[checkpoint["task_funcs"]:]
+
+    for task in _tasks[checkpoint["tasks"]:]:
+        try:
+            task.cancel()
+        except Exception:
+            _pysa.log(f"[pysa] error while rolling back task '{task.name}':\n"
+                      f"{traceback.format_exc()}")
+    del _tasks[checkpoint["tasks"]:]
+
+    # Game events own hooks, so let them release theirs before removing any
+    # remaining low-level hooks installed directly by the script.
+    game_events._rollback(checkpoint["game_events"])
+    hooks._rollback(checkpoint["hooks"])
+
+
+def _unload_script_modules() -> None:
+    """Forget scripts and their local helper modules so F11 reimports both."""
+    importlib.invalidate_caches()
+    # A shutdown handler may import a local helper for the first time.
+    _script_modules.update(_local_module_names())
+    for name in sorted(_script_modules, key=lambda value: value.count("."),
+                       reverse=True):
+        sys.modules.pop(name, None)
+    _script_modules.clear()
+
 def _load_script(path) -> bool:
     name = "pysa_script_" + path.stem
+    modules_before = set(sys.modules)
+    checkpoint = _registry_checkpoint()
     try:
         spec = importlib.util.spec_from_file_location(name, path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
         spec.loader.exec_module(module)
         _scripts.append((name, str(path)))
+        _script_modules.update(_local_module_names())
         _pysa.log(f"[pysa] loaded {path.name}")
         return True
     except Exception:
-        sys.modules.pop(name, None)
+        _rollback_registries(checkpoint)
+        # Also discard helper modules first imported by the failed script.
+        for module_name in set(sys.modules) - modules_before:
+            module = sys.modules.get(module_name)
+            if module_name == name or (module is not None and _is_script_module(module)):
+                sys.modules.pop(module_name, None)
         _pysa.log(f"[pysa] FAILED to load {path.name}:\n{traceback.format_exc()}")
         try:
             _pysa.help_message(f"~r~{path.name} failed to load~w~ (see log)", True, False)
@@ -231,8 +320,7 @@ def reload_scripts() -> None:
     _pysa.log("[pysa] reloading scripts...")
     dispatch_simple("shutdown")
     _clear_registries()
-    for name, _ in _scripts:
-        sys.modules.pop(name, None)
+    _unload_script_modules()
     _scripts.clear()
     count = bootstrap(_scripts_dir)
     dispatch("game_start")
@@ -348,6 +436,22 @@ def dispatch(event: str, arg=None) -> None:
         elif event == "game_start":
             _restart_script_tasks()
             dispatch_simple("game_start")
+        elif event in ("vehicle_model_changed", "ped_model_changed"):
+            ptr, model = arg
+            if _handlers.get(event):
+                entity = _wrap_entity(event, ptr)
+                if event.startswith("vehicle"):
+                    from .models import VEHICLE
+                    enum_type = VEHICLE
+                else:
+                    from .ped_models import PED
+                    enum_type = PED
+                try:
+                    model = enum_type(model)
+                except ValueError:
+                    model = int(model)  # custom model outside the stock enum
+                for h in _handlers[event]:
+                    h.run(entity, model)
         elif arg is not None and event in ("vehicle_created", "vehicle_destroyed",
                                            "ped_created", "ped_destroyed",
                                            "object_created", "object_destroyed"):

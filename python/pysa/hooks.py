@@ -251,6 +251,17 @@ def remove_all() -> None:
     _HOOKS.clear()
 
 
+def _checkpoint() -> set:
+    """Internal import transaction marker used by the script loader."""
+    return set(_HOOKS)
+
+
+def _rollback(checkpoint: set) -> None:
+    """Remove hooks installed after an import transaction began."""
+    for hid in set(_HOOKS) - checkpoint:
+        remove(hid)
+
+
 def on_call(target, args: int = 0, convention: str = "cdecl"):
     """Decorator: run the function whenever the game calls `target`.
 

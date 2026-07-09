@@ -8,6 +8,20 @@ _memory = {}
 _log_lines = []
 
 
+def _reset():
+    """Reset all offline state. Intended for tests and interactive tooling."""
+    _memory.clear()
+    _log_lines.clear()
+    for values in _pool.values():
+        values.clear()
+    _ptr_to_handle.clear()
+    _handle_to_ptr.clear()
+    _next_handle[0] = 1
+    _hooks.clear()
+    _hook_ctx.clear()
+    _next_hook[0] = 0
+
+
 def call(opcode, spec, *args):
     outs = tuple(0.0 if k == "F" else ("" if k == "S" else 0)
                  for k in spec if k in "IFS")

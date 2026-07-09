@@ -4,23 +4,23 @@ Type "RHINO", "INFERNUS", "HYDRA", ... and it appears in front of you.
 Press F2 for a quick Infernus.
 """
 import pysa
-from pysa import KEY, VEHICLES, Vehicle, hud
+from pysa import KEY, VEHICLE, Vehicle, hud
 
 
-def _spawn(name):
+def _spawn(model: VEHICLE):
     try:
-        veh = Vehicle.spawn(name)
+        veh = Vehicle.spawn(model)
         veh.colours = (1, 0)
-        hud.help_text(f"{name.upper()} spawned")
+        hud.help_text(f"{model.name} spawned")
     except Exception as e:
-        hud.help_text(f"~r~Could not spawn {name}: {e}")
+        hud.help_text(f"~r~Could not spawn {model.name}: {e}")
 
 
 # One cheat word per vehicle name.
-for _name in VEHICLES:
-    pysa.on_cheat(_name)(lambda n=_name: _spawn(n))
+for _model in VEHICLE:
+    pysa.on_cheat(_model.name)(lambda model=_model: _spawn(model))
 
 
 @pysa.on_key(KEY.F2)
 def quick_infernus():
-    _spawn("infernus")
+    _spawn(VEHICLE.INFERNUS)

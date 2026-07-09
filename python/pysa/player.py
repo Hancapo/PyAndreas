@@ -10,6 +10,8 @@
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
 try:
     import _pysa
 except ImportError:
@@ -25,7 +27,7 @@ _PLAYER_INFO_BASE = 0xB7CD98
 _PLAYER_INFO_SIZE = 0x190
 
 
-class PLAYER_STATE:
+class PLAYER_STATE(IntEnum):
     """CPlayerInfo::m_nPlayerState values."""
 
     PLAYING = 0

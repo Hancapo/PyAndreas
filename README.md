@@ -30,22 +30,21 @@ SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 
 ```python
 import pysa
-from pysa import KEY, WEAPON, Vehicle, cmd, hud, player, world
+from pysa import KEY, VEHICLE, WEAPON, Vehicle, hud, player, world
 
 
 @pysa.on_key(KEY.F2)
 def spawn_infernus():
-    car = Vehicle.spawn("infernus")
+    car = Vehicle.spawn(VEHICLE.INFERNUS)
     player.ped.warp_into(car)
-    hud.help_text("Infernus spawned")
+    hud.help_text("Your Infernus is ready")
 
 
 @pysa.on_key(KEY.F3)
 def loadout():
     player.weapons.give(WEAPON.M4, 500)
     player.weapons.give(WEAPON.DESERT_EAGLE, 100)
-    player.perks.never_tired = True
-    player.wanted.level = 0
+    player.vitals.heal()
 
 
 @pysa.on_cheat("MOON")
@@ -62,11 +61,11 @@ def overlay():
 def intro():
     yield 3000
     hud.big_text("PyAndreas ready")
-
-
-# Raw SCM command access is still available.
-x, y, z = cmd.GET_CHAR_COORDINATES(player.ped)
 ```
+
+The common path uses typed constants and plain Python values. Raw SCM commands, memory,
+structs, and hooks are available as advanced escape hatches when a high-level
+operation does not exist yet.
 
 ## Repository Contents
 
@@ -88,6 +87,7 @@ Each shows off a different part of the API:
 
 | Script | Demonstrates |
 | --- | --- |
+| `example_quickstart.py` | beginner API: vehicle/weapon enums, healing, teleporting |
 | `example_spawner.py` | cheat-word triggers, `Vehicle.spawn` |
 | `example_teleport.py` | hotkeys, `Vector3`, `world.ground_z` |
 | `example_godmode.py` | toggles, `cmd.*` proofs, `@pysa.on_tick(ms=...)` |
@@ -145,7 +145,7 @@ To run scripts inside GTA SA, the game needs the built ASI plugin and a
 ```text
 <game>\scripts\PyAndreas.asi
 <game>\PyAndreas\python\      32-bit embeddable Python runtime
-<game>\PyAndreas\lib\pysa\    the pysa package
+<game>\PyAndreas\lib\pysa.pyz  the complete pysa package in one archive
 <game>\PyAndreas\scripts\     your .py scripts
 ```
 
@@ -156,7 +156,9 @@ The game is a 32-bit process, so the embedded Python runtime must also be
 Scripts are loaded from `<game>\PyAndreas\scripts`. Press **F11** in-game to
 reload all scripts without restarting the game. Errors are written to
 `<game>\PyAndreas\PyAndreas.log`, and a failing handler is disabled instead of
-bringing down the whole script runtime.
+bringing down the whole script runtime. Reload also refreshes helper modules
+inside the scripts folder. If a script fails while importing, its partially
+registered events, tasks, and hooks are rolled back.
 
 ## Build From Source
 
@@ -187,17 +189,41 @@ The ready-to-copy game package is expected to be produced locally under `dist/`.
 That folder is ignored by git because it contains generated binaries and bundled
 runtime files.
 
+Package the Python library into the game layout as one source archive:
+
+```powershell
+python tools\package_pysa.py
+```
+
+This creates `dist\PyAndreas\lib\pysa.pyz` and removes the obsolete generated
+`dist\PyAndreas\lib\pysa` folder. Python imports directly from the archive;
+user scripts remain normal editable `.py` files.
+
+## Development Checks
+
+The Python API and offline runtime have a standard-library test suite:
+
+```powershell
+python -m compileall -q python scripts tools tests
+python -m unittest discover -s tests -v
+```
+
+The same checks run on Python 3.8 and 3.13 in GitHub Actions.
+
 ## Python API Overview
 
 | Area | Examples |
 | --- | --- |
 | Events | `@pysa.on_tick`, `@pysa.on_tick(ms=500)`, `@pysa.on_draw`, `@pysa.on_key(KEY.F3)`, `@pysa.on_cheat("WORD")` |
+| Plugin lifecycle | `@pysa.on_game_restart`, `@pysa.on_vehicle_model_changed`, `@pysa.on_device_reset`, pool/render lifecycle hooks |
 | Gamepad | `@pysa.on_button(BUTTON.CROSS)`, `pad.pressed(BUTTON.L1)`, `pad.left_stick()`, `pad.rumble()` |
+| Typed constants | `PED.BMYBOUN`, `VEHICLE.INFERNUS`, `WEAPON.M4`, `MOVE_STATE.RUN`, `CAMERA_MODE.FIXED` |
 | Coroutines | `@pysa.script`, `pysa.start(generator)`, `yield 500` to wait game milliseconds |
 | Player | `player.ped`, `player.pos`, `player.money`, `player.vitals.heal()`, `player.wanted.level = 0` |
-| Player OOP facades | `player.weapons.give(...)`, `player.controls.enabled`, `player.perks.never_tired`, `player.vehicles.current` |
-| Peds | `Ped.spawn(...)`, `ped.health`, `ped.armour`, `ped.tasks.attack(...)`, `ped.weapons.give(...)` |
-| Vehicles | `Vehicle.spawn("infernus")`, `car.health`, `car.speed`, `car.doors[0].open()`, `car.give_nitro()` |
+| Player OOP facades | `player.weapons.give(WEAPON.M4)`, `player.controls.enabled`, `player.perks.never_tired`, `player.vehicles.current` |
+| Peds | `Ped.spawn(PED.BMYBOUN, pos)`, `ped.health`, `ped.tasks.go_to(pos, MOVE_STATE.RUN)`, `ped.weapons.give(...)` |
+| Vehicles | `Vehicle.spawn(VEHICLE.INFERNUS)`, `car.speed`, `car.doors[VEHICLE_DOOR.FRONT_LEFT]`, `car.ai.driving_style(DRIVING_STYLE.AVOID_CARS)` |
+| Handling data | `car.handling.mass`, `.traction_multiplier`, `.center_of_mass`, `.suspension_force` (read-only shared model data) |
 | World | `world.set_time(...)`, `world.force_weather(...)`, `world.ground_z(...)`, `world.explosion(...)` |
 | HUD | `hud.help_text(...)`, `hud.big_text(...)`, `hud.draw(...)` |
 | Camera | `camera.fix_at(...)`, `camera.point_at(...)`, `camera.restore()`, `camera.shake()` |
@@ -281,6 +307,22 @@ def logo():
     draw.sprite("mylogo", 10, 10, 128, 128)
 ```
 
+## Plugin Lifecycle Events
+
+Selected low-frequency plugin-sdk events are exposed without adding per-entity
+render overhead. Model-change handlers receive the wrapped entity and a typed
+model enum (or an integer for a custom model):
+
+```python
+@pysa.on_vehicle_model_changed
+def changed(vehicle, model):
+    print(vehicle, model)  # model is normally a VEHICLE member
+```
+
+Available lifecycle decorators are `on_game_restart`, `on_game_reinit`,
+`on_render_init`, `on_device_lost`, `on_device_reset`, `on_pools_init`,
+`on_pools_shutdown`, `on_vehicle_model_changed`, and `on_ped_model_changed`.
+
 ## Game Events
 
 The friendliest way to react to things the game *does*. These read like the
@@ -363,6 +405,18 @@ Regenerate the named-function catalog from plugin-sdk:
 
 ```powershell
 python tools\gen_functions.py C:\path\to\plugin-sdk
+```
+
+Regenerate the ped-model enum from plugin-sdk:
+
+```powershell
+python tools\gen_ped_models.py C:\path\to\plugin-sdk
+```
+
+Regenerate the vehicle-model enum from plugin-sdk:
+
+```powershell
+python tools\gen_vehicle_models.py C:\path\to\plugin-sdk
 ```
 
 Regenerate editor stubs:
