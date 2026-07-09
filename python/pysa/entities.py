@@ -88,6 +88,17 @@ class Entity:
     def exists(self) -> bool:
         return self._handle != -1 and self.address != 0
 
+    _struct_class = None  # subclasses set the C++ class name
+
+    @property
+    def struct(self):
+        """Typed view over the raw game object (see pysa.gamestruct)."""
+        from .gamestruct import Struct
+        addr = self.address
+        if not addr:
+            raise ValueError(f"{type(self).__name__} {self._handle} has no live address")
+        return Struct(addr, self._struct_class or "CEntity")
+
     def dont_remove(self) -> None:
         """Keep the entity out of mission cleanup where the game supports it."""
         if isinstance(self, Ped):
@@ -103,6 +114,50 @@ class Entity:
             cmd.MARK_CAR_AS_NO_LONGER_NEEDED(self)
         elif isinstance(self, GameObject):
             cmd.MARK_OBJECT_AS_NO_LONGER_NEEDED(self)
+
+    # -- spatial helpers (work on any positioned entity) -------------------
+
+    def distance_to(self, target) -> float:
+        """Distance to a position, or to another entity."""
+        other = target.pos if isinstance(target, Entity) else target
+        return self.pos.distance_to(other)
+
+    def is_near(self, target, radius: float) -> bool:
+        """True if within `radius` game units of a position or entity."""
+        return self.distance_to(target) <= radius
+
+    def direction_to(self, target) -> Vector3:
+        """Unit vector from this entity toward a position or entity."""
+        other = target.pos if isinstance(target, Entity) else Vector3.of(target)
+        return (other - self.pos).normalized()
+
+    def heading_to(self, target) -> float:
+        """Compass heading (degrees) that would face this entity at `target`."""
+        import math
+        other = target.pos if isinstance(target, Entity) else Vector3.of(target)
+        d = other - self.pos
+        return math.degrees(math.atan2(-d.x, d.y)) % 360.0
+
+    def face(self, target) -> None:
+        """Turn to face a position or entity (sets heading)."""
+        self.heading = self.heading_to(target)
+
+    # -- blips --------------------------------------------------------------
+
+    def add_blip(self, color: int = None, scale: int = None):
+        """Attach a radar blip that tracks this entity; returns a blips.Blip."""
+        from . import blips
+        if isinstance(self, Ped):
+            blip = blips.add_for_char(self)
+        elif isinstance(self, Vehicle):
+            blip = blips.add_for_car(self)
+        else:
+            blip = blips.add_for_object(self)
+        if color is not None:
+            blip.color = color
+        if scale is not None:
+            blip.scale = scale
+        return blip
 
 
 class PedTasks:
@@ -237,6 +292,7 @@ class Ped(Entity):
     """A character. The player's own ped is `pysa.player.ped`."""
 
     __slots__ = ()
+    _struct_class = "CPed"
     _ptr_of = staticmethod(_pysa.ped_ptr)
     _handle_of = staticmethod(_pysa.ped_handle)
 
@@ -755,6 +811,7 @@ class Vehicle(Entity):
     """A car, bike, boat, plane or helicopter."""
 
     __slots__ = ()
+    _struct_class = "CVehicle"
     _ptr_of = staticmethod(_pysa.vehicle_ptr)
     _handle_of = staticmethod(_pysa.vehicle_handle)
 
@@ -917,8 +974,39 @@ class Vehicle(Entity):
         return cmd.GET_CAR_MODEL(self)
 
     @property
+    def model_name(self) -> str:
+        """The internal model name, e.g. 'infernus' (None if not a standard car)."""
+        from .models import VEHICLE_NAMES
+        return VEHICLE_NAMES.get(self.model)
+
+    @property
     def vehicle_class(self) -> int:
         return cmd.GET_VEHICLE_CLASS(self)
+
+    @property
+    def passengers(self) -> list:
+        """All passenger peds currently in this vehicle (excludes the driver)."""
+        out = []
+        for seat in range(max(0, self.max_passengers)):
+            ped = self.passenger(seat)
+            if ped is not None and ped.exists:
+                out.append(ped)
+        return out
+
+    @property
+    def occupants(self) -> list:
+        """Everyone in the vehicle: driver first (if any), then passengers."""
+        out = []
+        driver = self.driver
+        if driver is not None and driver.exists:
+            out.append(driver)
+        out.extend(self.passengers)
+        return out
+
+    @property
+    def empty(self) -> bool:
+        """True if nobody is inside."""
+        return not self.occupants
 
     @property
     def mass(self) -> float:
@@ -1356,6 +1444,7 @@ class GameObject(Entity):
     """A world object (crates, props, ...)."""
 
     __slots__ = ()
+    _struct_class = "CObject"
     _ptr_of = staticmethod(_pysa.object_ptr)
     _handle_of = staticmethod(_pysa.object_handle)
 

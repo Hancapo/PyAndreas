@@ -54,7 +54,21 @@ from .player import (PLAYER_STATE, PlayerCamera, PlayerClothes, PlayerControls,
                      PlayerRecords, PlayerStats, PlayerTargeting,
                      PlayerVehicles, PlayerVitals, PlayerWanted,
                      PlayerWeapons, player)
-from . import blips, camera, hud, memory, pickups, world
+from .gamestruct import Struct, struct_of
+from .hooks import Call, Hook, find_functions, function_doc, hook, on_call
+from .game_events import (GameEvent, on_explosion, on_projectile_fired,
+                          on_tyre_burst, on_vehicle_damage, on_vehicle_explode,
+                          on_wanted_level_change, on_weapon_fire, on_weapon_given)
+from .offsets import OFFSETS
+from .markers import CHECKPOINT, Checkpoint, Marker3D, Sphere
+from .timers import Countdown, Stopwatch
+from .world import Fire
+# Live, iterable views over the entity pools (also at pysa.world.*).
+from .world import objects, peds, vehicles
+from .audio import MissionAudio, RADIO
+from .fx import FxSystem
+from . import (audio, blips, camera, draw, fx, game_events, hooks, hud, markers,
+               memory, pickups, text, timers, world)
 
 try:
     import _pysa as _bridge
@@ -70,6 +84,9 @@ game_time = _bridge.game_time
 #: Poll a key directly: key_down(KEY.SPACE) -> bool.
 key_down = _bridge.key_down
 
+#: The <game>\PyAndreas folder (put assets like textures/ under here).
+base_dir = _bridge.base_dir
+
 __all__ = [
     "__version__", "reload_scripts",
     "on_tick", "on_draw", "on_key", "on_cheat", "on_game_start", "on_shutdown",
@@ -81,6 +98,7 @@ __all__ = [
     "VehicleTyres", "VehicleDamage", "VehicleMods", "VehicleAI",
     "ObjectAnimation",
     "all_peds", "all_vehicles", "all_objects", "load_model", "release_model",
+    "peds", "vehicles", "objects",
     "KEY", "Vector3", "PED_TYPE", "VEHICLES", "WEAPON", "vehicle_id",
     "call", "call_ex", "call_func", "cmd", "Out", "End", "NOT", "OPCODES",
     "doc", "find_commands", "signature",
@@ -88,6 +106,14 @@ __all__ = [
     "PlayerWanted", "PlayerControls", "PlayerPerks", "PlayerClothes",
     "PlayerVitals", "PlayerVehicles", "PlayerTargeting", "PlayerRecords",
     "PlayerCamera", "PlayerCoop", "PlayerMissions",
-    "blips", "camera", "hud", "memory", "pickups", "world",
-    "log", "game_time", "key_down",
+    "Struct", "struct_of", "OFFSETS",
+    "Hook", "Call", "on_call", "hook", "find_functions", "function_doc",
+    "GameEvent", "on_vehicle_damage", "on_vehicle_explode", "on_tyre_burst",
+    "on_weapon_fire", "on_explosion", "on_wanted_level_change",
+    "on_projectile_fired", "on_weapon_given",
+    "blips", "camera", "draw", "hooks", "hud", "memory", "pickups", "world",
+    "game_events", "markers", "timers", "audio", "fx", "text",
+    "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire",
+    "Stopwatch", "Countdown", "MissionAudio", "RADIO", "FxSystem",
+    "log", "game_time", "key_down", "base_dir",
 ]

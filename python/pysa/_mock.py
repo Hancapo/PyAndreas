@@ -70,44 +70,64 @@ def write_f32(addr, value, unprotect=False):
     mem_write(addr, struct.pack("<f", float(value)))
 
 
+# Simulated pools + a consistent pointer<->handle mapping, so pool iteration
+# (all_peds/all_vehicles/all_objects) can be exercised offline. Tests populate
+# _pool[...] with fake pointers.
+_pool = {"ped": [], "vehicle": [], "object": []}
+_ptr_to_handle = {}
+_handle_to_ptr = {}
+_next_handle = [1]
+
+
+def _handle_for(ptr):
+    if not ptr:
+        return -1
+    if ptr not in _ptr_to_handle:
+        h = _next_handle[0]
+        _next_handle[0] += 1
+        _ptr_to_handle[ptr] = h
+        _handle_to_ptr[h] = ptr
+    return _ptr_to_handle[ptr]
+
+
 def player_ped():
-    return 0
+    return _pool["ped"][0] if _pool["ped"] else 0
 
 
 def ped_handle(ptr):
-    return -1
+    return _handle_for(ptr)
 
 
 def vehicle_handle(ptr):
-    return -1
+    return _handle_for(ptr)
 
 
 def object_handle(ptr):
-    return -1
+    return _handle_for(ptr)
 
 
 def ped_ptr(handle):
-    return 0
+    return _handle_to_ptr.get(handle, 0)
 
 
 def vehicle_ptr(handle):
-    return 0
+    return _handle_to_ptr.get(handle, 0)
 
 
 def object_ptr(handle):
-    return 0
+    return _handle_to_ptr.get(handle, 0)
 
 
 def peds():
-    return []
+    return list(_pool["ped"])
 
 
 def vehicles():
-    return []
+    return list(_pool["vehicle"])
 
 
 def objects():
-    return []
+    return list(_pool["object"])
 
 
 def help_message(text, quick=True, permanent=False):
@@ -158,3 +178,67 @@ def log(msg):
 
 def base_dir():
     return "."
+
+
+# --- rendering -------------------------------------------------------------
+
+def draw_rect(x1, y1, x2, y2, rgba):
+    pass
+
+
+def draw_sprite(name, x1, y1, x2, y2, rgba):
+    pass
+
+
+def load_texture(path, name=None):
+    return False
+
+
+def load_textures(folder):
+    return False
+
+
+# --- hooks -----------------------------------------------------------------
+
+_hooks = {}
+_hook_ctx = {}      # fake ctx state keyed by ctx id, for offline tests
+_next_hook = [0]
+
+
+def hook_install(addr, argc=0, conv=0):
+    hid = _next_hook[0]
+    _next_hook[0] += 1
+    _hooks[hid] = (addr, argc, conv)
+    return hid
+
+
+def hook_remove(hid):
+    _hooks.pop(hid, None)
+
+
+def hook_arg(ctx, i):
+    return _hook_ctx.get((ctx, "arg", i), 0)
+
+
+def hook_set_arg(ctx, i, value):
+    _hook_ctx[(ctx, "arg", i)] = int(value) & 0xFFFFFFFF
+
+
+def hook_argf(ctx, i):
+    return float(_hook_ctx.get((ctx, "argf", i), 0.0))
+
+
+def hook_set_argf(ctx, i, value):
+    _hook_ctx[(ctx, "argf", i)] = float(value)
+
+
+def hook_reg(ctx, name):
+    return _hook_ctx.get((ctx, "reg", name), 0)
+
+
+def hook_set_reg(ctx, name, value):
+    _hook_ctx[(ctx, "reg", name)] = int(value) & 0xFFFFFFFF
+
+
+def hook_block(ctx, retval, argc, conv):
+    _hook_ctx[(ctx, "blocked")] = int(retval) & 0xFFFFFFFF

@@ -356,11 +356,169 @@ def set_tag_status(left_bottom, right_top, percent: int) -> None:
     cmd.SET_TAG_STATUS_IN_AREA(x1, y1, x2, y2, percent)
 
 
+class Fire:
+    """A script-started fire you can hold onto and query."""
+
+    __slots__ = ("_handle",)
+
+    def __init__(self, pos=None, propagation: bool = True, size: int = 1,
+                 handle: int = None):
+        if handle is not None:
+            self._handle = handle
+        else:
+            x, y, z = Vector3.of(pos)
+            self._handle = cmd.START_SCRIPT_FIRE(x, y, z, propagation, size)
+
+    @property
+    def handle(self) -> int:
+        return self._handle
+
+    @property
+    def exists(self) -> bool:
+        return cmd.DOES_SCRIPT_FIRE_EXIST(self._handle)
+
+    @property
+    def extinguished(self) -> bool:
+        return cmd.IS_SCRIPT_FIRE_EXTINGUISHED(self._handle)
+
+    @property
+    def pos(self) -> Vector3:
+        return Vector3(*cmd.GET_SCRIPT_FIRE_COORDS(self._handle))
+
+    def remove(self) -> None:
+        cmd.REMOVE_SCRIPT_FIRE(self._handle)
+
+    def __repr__(self) -> str:
+        return f"Fire(handle={self._handle})"
+
+
+def light_fire(pos, propagation: bool = True, size: int = 1) -> Fire:
+    """Start a fire and get a Fire object back (OOP form of start_fire)."""
+    return Fire(pos, propagation, size)
+
+
+# ---------------------------------------------------------------------------
+# Spatial queries over the live entity pools
+# ---------------------------------------------------------------------------
+
+def _as_pos(target) -> Vector3:
+    return target.pos if hasattr(target, "pos") else Vector3.of(target)
+
+
+def _near(items, origin, radius, exclude):
+    o = _as_pos(origin)
+    out = [(e.pos.distance_to(o), e) for e in items if e != exclude]
+    return [e for d, e in sorted(out, key=lambda t: t[0]) if d <= radius]
+
+
+def _nearest(items, origin, max_dist, exclude):
+    o = _as_pos(origin)
+    best, best_d = None, None
+    for e in items:
+        if e == exclude:
+            continue
+        d = e.pos.distance_to(o)
+        if best_d is None or d < best_d:
+            best, best_d = e, d
+    if best is None or (max_dist is not None and best_d > max_dist):
+        return None
+    return best
+
+
+def peds_near(origin, radius: float, exclude=None) -> list:
+    """Peds within `radius` of a position/entity, nearest first."""
+    return _near(all_peds(), origin, radius, exclude)
+
+
+def vehicles_near(origin, radius: float, exclude=None) -> list:
+    return _near(all_vehicles(), origin, radius, exclude)
+
+
+def objects_near(origin, radius: float, exclude=None) -> list:
+    return _near(all_objects(), origin, radius, exclude)
+
+
+def nearest_ped(origin, max_dist: float = None, exclude=None):
+    """The closest ped to a position/entity, or None."""
+    return _nearest(all_peds(), origin, max_dist, exclude)
+
+
+def nearest_vehicle(origin, max_dist: float = None, exclude=None):
+    return _nearest(all_vehicles(), origin, max_dist, exclude)
+
+
+def nearest_object(origin, max_dist: float = None, exclude=None):
+    return _nearest(all_objects(), origin, max_dist, exclude)
+
+
+class EntityCollection:
+    """A live, iterable view over a game entity pool.
+
+    Iterate it directly (it re-reads the pool each time):
+
+        for car in world.vehicles:          # no parentheses needed
+            car.explode()
+
+        len(world.peds)                      # how many peds exist
+        world.vehicles[0]                    # first vehicle
+        world.vehicles(...)                  # still callable -> a plain list
+        world.vehicles.near(player.pos, 30)  # nearest-first within radius
+        world.peds.nearest(player.pos, exclude=player.ped)
+        world.vehicles.where(lambda v: v.health < 300)
+    """
+
+    __slots__ = ("_fetch", "_name")
+
+    def __init__(self, fetch, name: str):
+        self._fetch = fetch
+        self._name = name
+
+    def __iter__(self):
+        return iter(self._fetch())
+
+    def __len__(self) -> int:
+        return len(self._fetch())
+
+    def __getitem__(self, index):
+        return self._fetch()[index]
+
+    def __call__(self) -> list:
+        """Back-compat: world.vehicles() returns a plain list snapshot."""
+        return self._fetch()
+
+    def __repr__(self) -> str:
+        return f"<{self._name}: {len(self)} live>"
+
+    def near(self, origin, radius: float, exclude=None) -> list:
+        """Members within `radius` of a position/entity, nearest first."""
+        return _near(self._fetch(), origin, radius, exclude)
+
+    def nearest(self, origin, max_dist: float = None, exclude=None):
+        """The closest member to a position/entity, or None."""
+        return _nearest(self._fetch(), origin, max_dist, exclude)
+
+    def where(self, predicate) -> list:
+        """Members matching a predicate: world.vehicles.where(lambda v: ...)."""
+        return [e for e in self._fetch() if predicate(e)]
+
+    def of_model(self, model) -> list:
+        """Members of a given model id (vehicles also accept a name, e.g. 'rhino')."""
+        if isinstance(model, str):
+            from .models import vehicle_id
+            model = vehicle_id(model)
+        model = int(model)
+        return [e for e in self._fetch() if getattr(e, "model", None) == model]
+
+    def count(self) -> int:
+        return len(self._fetch())
+
+
 # Spawning shortcuts (see entities.py for the full API)
 spawn_vehicle = Vehicle.spawn
 spawn_ped = Ped.spawn
 spawn_object = GameObject.spawn
 
-peds = all_peds
-vehicles = all_vehicles
-objects = all_objects
+#: Live, iterable views over the entity pools (iterate without parentheses).
+peds = EntityCollection(all_peds, "peds")
+vehicles = EntityCollection(all_vehicles, "vehicles")
+objects = EntityCollection(all_objects, "objects")

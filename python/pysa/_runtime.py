@@ -151,6 +151,28 @@ def _clear_registries() -> None:
         t.cancel()
     _tasks.clear()
     _task_funcs.clear()
+    try:
+        from . import game_events
+        game_events._clear()
+    except Exception:
+        pass
+    try:
+        from . import hooks
+        hooks.remove_all()
+    except Exception:
+        pass
+
+
+def _dispatch_hook(hid: int, ctxaddr: int) -> None:
+    """Entry point the C++ hook trampoline calls (must never raise into C++)."""
+    try:
+        from . import hooks
+        hooks._dispatch(hid, ctxaddr)
+    except Exception:
+        try:
+            _pysa.log(f"[pysa] _dispatch_hook error:\n{traceback.format_exc()}")
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------------------
