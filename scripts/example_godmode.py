@@ -1,6 +1,6 @@
 """God mode + never-wanted, toggled by typing GODPY in-game."""
 import pysa
-from pysa import cmd, hud, player
+from pysa import hud, player
 
 god = False
 
@@ -9,9 +9,8 @@ god = False
 def toggle():
     global god
     god = not god
-    ped = player.ped
-    # bullet, fire, explosion, collision, melee proofs
-    cmd.SET_CHAR_PROOFS(ped, *([1] * 5 if god else [0] * 5))
+    # proof against bullets, fire, explosions, collisions and melee
+    player.ped.make_proof(god, god, god, god, god)
     player.set_max_wanted_level(0 if god else 6)
     if god:
         player.heal()

@@ -82,6 +82,26 @@ tools/            Opcode/signature/stub generation and editor install helpers
 pyproject.toml    Editable Python package metadata
 ```
 
+### Example Scripts
+
+Each shows off a different part of the API:
+
+| Script | Demonstrates |
+| --- | --- |
+| `example_spawner.py` | cheat-word triggers, `Vehicle.spawn` |
+| `example_teleport.py` | hotkeys, `Vector3`, `world.ground_z` |
+| `example_godmode.py` | toggles, `cmd.*` proofs, `@pysa.on_tick(ms=...)` |
+| `example_speedometer.py` | per-frame `hud.draw` |
+| `example_bodyguard.py` | `@pysa.script` coroutines, `ped.tasks.*`, blips |
+| `example_hud_panel.py` | `draw.rect`/`draw.bar` health/armour panel |
+| `example_textures.py` | `draw.load_textures` + `draw.sprite` (with fallback) |
+| `example_hook_damage.py` | game events: `on_vehicle_damage`, `on_explosion` |
+| `example_infinite_ammo.py` | game event: `on_weapon_given`, rewriting a field |
+| `example_checkpoint_race.py` | `Checkpoint`/`Marker3D`, `Countdown`, `entity.distance_to`, coroutine |
+| `example_carnage.py` | iterating `pysa.vehicles`, `.near(...)`, `car.explode()`, `car.model_name` |
+| `example_effects.py` | `fx.FxSystem.on(...)`, `fx.corona(...)`, `audio.play_sound(...)` |
+| `example_threads.py` | background threads (GIL released between frames) |
+
 ## Install for Editor Autocomplete
 
 This is the easiest way to get `import pysa` working in VS Code, PyCharm, or any
@@ -179,9 +199,23 @@ runtime files.
 | World | `world.set_time(...)`, `world.force_weather(...)`, `world.ground_z(...)`, `world.explosion(...)` |
 | HUD | `hud.help_text(...)`, `hud.big_text(...)`, `hud.draw(...)` |
 | Camera | `camera.fix_at(...)`, `camera.point_at(...)`, `camera.restore()`, `camera.shake()` |
-| Blips/pickups | `blips.add_for_char(...)`, `blips.add_for_coord(...)`, `pickups.weapon(...)`, `pickups.money(...)` |
+| Blips/pickups | `blips.add_for_char(...)`, `ped.add_blip(color=...)`, `pickups.weapon(...)`, `pickups.money(...)` |
+| Markers | `Checkpoint(pos)`, `Marker3D(pos)`, `Sphere(pos, r)` with `pos in sphere` |
+| Entity pools | `for car in world.vehicles:` (also `pysa.vehicles`/`peds`/`objects`); `len(...)`, indexing |
+| Pool queries | `world.vehicles.near(pos, r)`, `.nearest(pos, exclude=...)`, `.where(...)`, `.of_model("rhino")` |
+| Vehicle data | `car.model`, `car.model_name` ('infernus'), `car.occupants`, `car.passengers`, `car.driver`, `car.empty` |
+| Spatial | `entity.distance_to(x)`, `entity.is_near(x, r)`, `world.nearest_ped(pos)`, `world.peds_near(pos, r)` |
+| Timers | `Stopwatch().seconds`, `Countdown(5000).finished`, `.fraction`, `.remaining` |
+| Audio | `audio.play_sound(pos, id)`, `audio.set_radio(RADIO.K_DST)`, `MissionAudio(0).load(...).play()` |
+| Particle FX | `FxSystem("fire", pos).play()`, `FxSystem.on(ped, "smoke30")`, `fx.corona(pos, size, color)` |
+| GXT text | `text.load_table(...)`, `text.show("KEY", x, y, number=..., color=..., align=...)` |
 | SCM commands | `cmd.CREATE_CAR(...)`, `cmd.GET_PLAYER_CHAR(...)`, `pysa.find_commands("blip")` |
 | Memory/raw funcs | `memory.read_float(...)`, `memory.patch(...)`, `call_func(...)` |
+| Struct fields | `ped.struct.m_fHealth`, `car.struct.m_fGasPedal = 1.0`, `struct_of(x, "CPed")` |
+| Drawing | `draw.rect(...)`, `draw.bar(...)`, `draw.sprite(...)`, `draw.load_textures(...)` |
+| Game events | `@pysa.on_vehicle_damage`, `@pysa.on_explosion`, ...; `e.vehicle`, `e.amount *= 0.5`, `e.cancel()` |
+| Function hooks | `@pysa.on_call("CVehicle::InflictDamage")`, `call.this`, `call.intensity`, `call.skip()`, `find_functions(...)` |
+| Threads | `threading`/`asyncio` run between frames (GIL is released each frame) |
 
 ## SCM Command Rules
 
@@ -201,6 +235,108 @@ Commands missing from the generated signature database can still be called with
 the lower-level `call()` API and explicit `Out.INT`, `Out.FLOAT`, or `Out.STR`
 markers.
 
+## Struct Field Access
+
+Every entity exposes `.struct`, a typed view over its raw C++ object built
+from plugin-sdk's `VALIDATE_OFFSET` macros (4128 fields across 379 classes,
+in `pysa/offsets.py`). Inheritance is flattened, so a Ped's struct also sees
+`CPhysical`/`CEntity`/`CPlaceable` fields.
+
+```python
+ped = player.ped
+print(ped.struct.m_fHealth)     # float, read straight from memory
+ped.struct.m_fArmour = 100.0    # typed write
+car.struct.m_fGasPedal = 1.0
+addr = ped.struct @ "m_fHealth" # absolute address of a field
+```
+
+For fields the generator could not type (unions, arrays, bitfields), use the
+explicit readers `s.f32(off)`, `s.i32(off)`, `s.u8(off)`, `s.ptr(off)`,
+`s.bytes(off, n)`.
+
+## Drawing
+
+`pysa.draw` queues 2D primitives that render each frame (call from an
+`@pysa.on_draw` handler). Colors are `(r, g, b)`, `(r, g, b, a)`, or packed
+`0xRRGGBBAA`; coordinates are pixels (`hud.screen_size()` gives the resolution).
+
+```python
+@pysa.on_draw
+def overlay():
+    draw.rect(20, 20, 200, 60, (0, 0, 0, 150))    # translucent panel
+    draw.bar(24, 40, 192, 8, 0.7, fg=(80, 220, 80))
+```
+
+Textures are PNGs loaded once (after the game is up), then drawn by name:
+
+```python
+@pysa.on_game_start
+def art():
+    draw.load_textures(pysa.memory.base_dir() + r"\textures")
+
+@pysa.on_draw
+def logo():
+    draw.sprite("mylogo", 10, 10, 128, 128)
+```
+
+## Game Events
+
+The friendliest way to react to things the game *does*. These read like the
+lifecycle events (`on_vehicle_created` etc.), with domain-named fields:
+
+```python
+@pysa.on_vehicle_damage
+def tougher_cars(e):
+    if e.vehicle == player.vehicle:
+        e.amount *= 0.5        # take half damage (assign to rewrite)
+        # e.cancel()          # or ignore the hit entirely
+
+@pysa.on_explosion
+def shield(e):
+    if e.position.distance_to(player.pos) < 5:
+        e.cancel()
+```
+
+Each handler gets an event `e` with the subject (`e.vehicle`, a `Vehicle`),
+named typed fields (`e.attacker` auto-wrapped to Ped/Vehicle/GameObject,
+`e.amount` a float, `e.position` a `Vector3`), assignment to rewrite a value
+before it happens, `e.cancel()` to stop it, and `e.raw` for the low-level hook.
+
+Available events: `on_vehicle_damage`, `on_vehicle_explode`, `on_tyre_burst`,
+`on_weapon_fire`, `on_weapon_given`, `on_explosion`, `on_wanted_level_change`,
+`on_projectile_fired` (see `pysa/game_events.py`).
+
+## Function Hooks (advanced)
+
+Game events are curated wrappers over the hook layer. To hook a function that
+isn't a named event, target it by its catalog name and get named arguments:
+
+```python
+@pysa.on_call("CVehicle::InflictDamage")
+def cushion(call):
+    call.this                             # the Vehicle (owner of the method)
+    call.intensity = call.intensity * 0.5 # named, typed argument
+    # call.skip()                         # bypass the original
+
+pysa.find_functions("damage")             # discover targets (2149 functions)
+print(pysa.function_doc("CVehicle::InflictDamage"))
+```
+
+For a function not in the catalog, hook a raw address (low-level `Hook` with
+positional stack args and registers):
+
+```python
+@pysa.on_call(0x6D7C90, args=6, convention="thiscall")
+def raw(h):
+    h.arg(0); h.set_argf(2, 0.0); h.reg("eax")
+```
+
+Built on safetyhook's mid-hook (conventions read from plugin-sdk's own casts,
+so they're accurate). A hook that raises is removed automatically and logged.
+Hooks run inside the game's own call on the game thread, so keep them fast;
+addresses target the 1.0 US exe, and `skip()`/`cancel()` bypass the original
+entirely - powerful, but don't cancel a function the game relies on.
+
 ## Regenerating Generated Data
 
 Regenerate opcode names from plugin-sdk:
@@ -215,6 +351,18 @@ Regenerate signatures from Sanny Builder Library `sa.json`:
 python tools\gen_signatures.py C:\path\to\sa.json
 ```
 
+Regenerate the struct offset database from plugin-sdk:
+
+```powershell
+python tools\gen_offsets.py C:\path\to\plugin-sdk
+```
+
+Regenerate the named-function catalog from plugin-sdk:
+
+```powershell
+python tools\gen_functions.py C:\path\to\plugin-sdk
+```
+
 Regenerate editor stubs:
 
 ```powershell
@@ -223,11 +371,15 @@ python tools\gen_native_stub.py
 
 ## Notes and Limits
 
-- PyAndreas targets `PLUGIN_SGV_10US`.
+- PyAndreas targets `PLUGIN_SGV_10US` (1.0 US exe). Raw addresses used by
+  `hooks.on_call`, `call_func`, `memory.*` and struct offsets assume that exe.
 - Script callbacks run on the game thread. Do not use blocking calls such as
-  `time.sleep()` from handlers.
-- Threads can exist, but game state should only be touched from the main game
-  thread.
+  `time.sleep()` from handlers; use `@pysa.on_tick(ms=...)` or `@pysa.script`.
+- The GIL is released between frames, so `threading`/`asyncio` background work
+  runs. Only touch game state (commands, memory, entities) from the main game
+  thread - i.e. from handlers/coroutines, not from your own threads.
+- Function hooks run inside the hooked call on the game thread. Keep them fast;
+  hooking a hot function with heavy Python costs FPS. `h.block()` is experimental.
 - `memory.write_*` to code pages requires `unprotect=True`, or use
   `memory.patch(...)`.
 - The cheat-string watcher uses the game's own cheat buffer, so avoid cheat

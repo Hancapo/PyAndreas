@@ -35,3 +35,6 @@ PyAndreas.log
 # OS/editor noise
 .DS_Store
 Thumbs.db
+
+# Editor personal config
+.vscode/
