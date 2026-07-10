@@ -3,6 +3,9 @@ from enum import IntEnum
 
 from .vehicle_models import VEHICLE
 
+__all__ = ["VEHICLE", "VEHICLES", "VEHICLE_NAMES", "vehicle_id", "WEAPON",
+           "PED_TYPE"]
+
 # Vehicle model ids 400..611, in game order.
 _VEHICLE_NAMES = [
     "landstal", "bravura", "buffalo", "linerun", "peren", "sentinel", "dumper",

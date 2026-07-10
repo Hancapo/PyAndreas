@@ -1,6 +1,8 @@
 """Friendly read-only views over plugin-sdk model information records."""
 from __future__ import annotations
 
+from typing import Optional, Tuple, Union, overload
+
 try:
     import _pysa
 except ImportError:
@@ -54,7 +56,7 @@ class ModelInfo:
         return self._base.m_fDrawDistance
 
     @property
-    def collision_bounds(self):
+    def collision_bounds(self) -> Optional[Tuple[Vector3, Vector3]]:
         collision = memory.read_u32(self.address + 0x14)
         if not collision:
             return None
@@ -67,7 +69,7 @@ class ModelInfo:
         return minimum, maximum
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> Optional[Vector3]:
         bounds = self.collision_bounds
         return None if bounds is None else bounds[1] - bounds[0]
 
@@ -80,7 +82,7 @@ class VehicleModelInfo(ModelInfo):
 
     __slots__ = ("_vehicle",)
 
-    def __init__(self, model):
+    def __init__(self, model: Union[VEHICLE, int, str]):
         super().__init__(vehicle_id(model))
         self._vehicle = Struct(self.address, "CVehicleModelInfo")
 
@@ -90,11 +92,11 @@ class VehicleModelInfo(ModelInfo):
         return raw.split(b"\0", 1)[0].decode("ascii", "replace")
 
     @property
-    def vehicle_type(self):
+    def vehicle_type(self) -> Union[VEHICLE_TYPE, int]:
         return _enum_or_int(VEHICLE_TYPE, memory.read_int(self.address + 0x3C))
 
     @property
-    def vehicle_class(self):
+    def vehicle_class(self) -> Union[VEHICLE_CLASS, int]:
         return _enum_or_int(VEHICLE_CLASS, self._vehicle.m_nVehicleClass)
 
     @property
@@ -123,7 +125,7 @@ class PedModelInfo(ModelInfo):
 
     __slots__ = ("_ped",)
 
-    def __init__(self, model):
+    def __init__(self, model: Union[PED, int]):
         super().__init__(int(model))
         self._ped = Struct(self.address, "CPedModelInfo")
 
@@ -144,8 +146,26 @@ class PedModelInfo(ModelInfo):
         return self._ped.m_nRace
 
 
-def model_info(model) -> ModelInfo:
+@overload
+def model_info(model: VEHICLE) -> VehicleModelInfo: ...
+
+
+@overload
+def model_info(model: PED) -> PedModelInfo: ...
+
+
+@overload
+def model_info(model: str) -> VehicleModelInfo: ...
+
+
+@overload
+def model_info(model: int) -> ModelInfo: ...
+
+
+def model_info(model: Union[VEHICLE, PED, int, str]) -> ModelInfo:
     """Return the specialized model-information view for a model id/enum."""
+    if isinstance(model, str):
+        return VehicleModelInfo(model)
     model_id = int(model)
     if isinstance(model, VEHICLE) or 400 <= model_id <= 611:
         return VehicleModelInfo(model)

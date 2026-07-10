@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 from pysa import _mock, _runtime, game_events, hooks
-from pysa.entities import Ped, Vehicle
+from pysa.entities import GameObject, Ped, Vehicle
 from pysa.models import VEHICLE
 from pysa.ped_models import PED
 
@@ -209,6 +209,43 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(received[1][0].address, 0x567800)
         self.assertIs(received[1][1], PED.MALE01)
         self.assertEqual(received[1][1], 7)
+
+    def test_created_events_wait_until_every_entity_type_is_ready(self):
+        cases = (
+            ("vehicle_created", 0x123400, Vehicle, VEHICLE.INFERNUS),
+            ("ped_created", 0x223400, Ped, PED.MALE01),
+            ("object_created", 0x323400, GameObject, 1337),
+        )
+        received = {event: [] for event, *_ in cases}
+        for event, ptr, _wrapper, _model in cases:
+            _runtime.register(event, received[event].append)
+            # plugin-sdk's constructor event arrives with m_nModelIndex -1.
+            _mock.write_u16(ptr + 0x22, 0xFFFF)
+            _runtime.dispatch(event, ptr)
+
+        _runtime.dispatch("tick")
+        self.assertTrue(all(not items for items in received.values()))
+
+        for event, ptr, _wrapper, model in cases:
+            _mock.write_u16(ptr + 0x22, model)
+        _runtime.dispatch("tick")
+
+        for event, ptr, wrapper, model in cases:
+            self.assertEqual(len(received[event]), 1)
+            entity = received[event][0]
+            self.assertIsInstance(entity, wrapper)
+            self.assertEqual(entity.address, ptr)
+            self.assertEqual(_mock.read_u16(entity.address + 0x22), model)
+
+    def test_lifecycle_events_never_publish_invalid_wrappers(self):
+        received = []
+        _runtime.register("vehicle_render", received.append)
+        for invalid_ref in (-1, 0xC81):
+            with mock.patch.object(
+                    Vehicle, "_handle_of",
+                    staticmethod(lambda _ptr, ref=invalid_ref: ref)):
+                _runtime.dispatch("vehicle_render", 0x123400)
+        self.assertFalse(received)
 
 
 if __name__ == "__main__":

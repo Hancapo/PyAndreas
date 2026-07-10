@@ -7,6 +7,20 @@ The changelog is release-oriented and uses a small fixed set of categories:
 
 ## [Unreleased]
 
+### Added
+- Public `Position`, `PedModel`, `VehicleModel`, and `WeaponId` aliases for annotating ordinary scripts with the same friendly value forms accepted by PyAndreas.
+- A strict editor-facing Pyright contract that prevents callback declarations and common chained API types from silently regressing.
+
+### Changed
+- Live world collections now retain their concrete member type through iteration, indexing, filtering, proximity searches, and nearest-entity queries.
+- Script sessions, player vehicle relationships, vehicle occupants, model information, controller sticks, and menu callbacks now expose precise return and parameter types for editor completion.
+- Generated SCM command stubs now recognize pickup, blip, checkpoint, fire, sphere, marker, particle, controller, weather, radio, checkpoint-style, corona, flare, and driving-style domains instead of presenting them as generic integers.
+- Ped and player weapon facades now expose `WEAPON` enum values while continuing to accept raw integer ids.
+
+### Fixed
+- Vehicle, ped, and object creation callbacks now wait until GTA has assigned a valid pool handle and model, and other lifecycle callbacks reject unusable wrappers, so entity properties no longer report constructor-time sentinel values such as `-1`.
+- Freed GTA pool references are now rejected by entity wrappers, command packing, and the native pointer bridge instead of being passed to game functions as stale objects.
+
 ## [0.2.0] - 2026-07-09
 
 ### Added

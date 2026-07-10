@@ -16,6 +16,9 @@ command expects a car/char/object handle.
 """
 from __future__ import annotations
 
+from enum import IntEnum
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
+
 try:
     import _pysa
 except ImportError:
@@ -25,9 +28,19 @@ from .math3 import Vector3
 from .enums import (CAR_MISSION, DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS,
                     FIGHT_STYLE, LIGHT_OVERRIDE, MOVE_STATE, VEHICLE_DOOR,
                     VEHICLE_WHEEL)
-from .models import PED_TYPE, VEHICLE, vehicle_id
+from .models import PED_TYPE, VEHICLE, WEAPON, vehicle_id
 from .native import cmd
 from .ped_models import PED
+from .type_aliases import PedModel, Position, VehicleModel, WeaponId
+
+if TYPE_CHECKING:
+    from .blips import Blip
+    from .gamestruct import Struct
+    from .model_info import ModelInfo, PedModelInfo, VehicleModelInfo
+
+
+TEntity = TypeVar("TEntity", bound="Entity")
+TEnum = TypeVar("TEnum", bound=IntEnum)
 
 
 def load_model(model: int, timeout_frames: int = 200) -> bool:
@@ -42,7 +55,7 @@ def load_model(model: int, timeout_frames: int = 200) -> bool:
     return False
 
 
-def _enum_or_int(enum_type, value: int):
+def _enum_or_int(enum_type: type[TEnum], value: int) -> Union[TEnum, int]:
     try:
         return enum_type(value)
     except ValueError:
@@ -65,7 +78,7 @@ class Entity:
 
     __slots__ = ("_handle",)
 
-    def __init__(self, handle):
+    def __init__(self, handle: Union[int, "Entity"]):
         self._handle = int(getattr(handle, "_handle", handle))
 
     @property
@@ -86,23 +99,28 @@ class Entity:
     _handle_of = staticmethod(lambda p: -1)
 
     @classmethod
-    def from_ptr(cls, ptr: int):
+    def from_ptr(cls: type[TEntity], ptr: int) -> TEntity:
         """Wrap a raw game object pointer (e.g. from a created/destroyed event)."""
         return cls(cls._handle_of(ptr))
 
     @property
     def address(self) -> int:
         """Address of the underlying game object (0 if it no longer exists)."""
+        # SCM pool refs use bit 7 of the low byte as the free-slot flag.
+        # CPools::Get*Ref can produce such a ref from a stale raw pointer, and
+        # CPools::Get* will otherwise map it back to freed object storage.
+        if self._handle < 0 or self._handle & 0x80:
+            return 0
         return self._ptr_of(self._handle)
 
     @property
     def exists(self) -> bool:
-        return self._handle != -1 and self.address != 0
+        return self.address != 0
 
     _struct_class = None  # subclasses set the C++ class name
 
     @property
-    def struct(self):
+    def struct(self) -> "Struct":
         """Typed view over the raw game object (see pysa.gamestruct)."""
         from .gamestruct import Struct
         addr = self.address
@@ -155,7 +173,8 @@ class Entity:
 
     # -- blips --------------------------------------------------------------
 
-    def add_blip(self, color: int = None, scale: int = None):
+    def add_blip(self, color: Optional[int] = None,
+                 scale: Optional[int] = None) -> "Blip":
         """Attach a radar blip that tracks this entity; returns a blips.Blip."""
         from . import blips
         if isinstance(self, Ped):
@@ -193,7 +212,7 @@ class StaticEntity:
         return self._address != 0
 
     @property
-    def struct(self):
+    def struct(self) -> "Struct":
         from .gamestruct import Struct
         if not self._address:
             raise ValueError(f"{type(self).__name__} has no live address")
@@ -205,7 +224,7 @@ class StaticEntity:
         return value - 0x10000 if value >= 0x8000 else value
 
     @property
-    def model_info(self):
+    def model_info(self) -> "ModelInfo":
         from .model_info import model_info
         return model_info(self.model)
 
@@ -362,32 +381,33 @@ class PedWeapons:
         self._ped = ped
 
     @property
-    def current(self) -> int:
+    def current(self) -> WeaponId:
         return self._ped.current_weapon
 
     @current.setter
-    def current(self, weapon: int) -> None:
+    def current(self, weapon: WeaponId) -> None:
         self._ped.current_weapon = weapon
 
-    def give(self, weapon: int, ammo: int = 500, equip: bool = True) -> None:
+    def give(self, weapon: WeaponId, ammo: int = 500,
+             equip: bool = True) -> None:
         self._ped.give_weapon(weapon, ammo, equip)
 
-    def remove(self, weapon: int) -> None:
+    def remove(self, weapon: WeaponId) -> None:
         self._ped.remove_weapon(weapon)
 
     def clear(self) -> None:
         self._ped.remove_weapons()
 
-    def has(self, weapon: int) -> bool:
+    def has(self, weapon: WeaponId) -> bool:
         return self._ped.has_weapon(weapon)
 
-    def ammo(self, weapon: int) -> int:
+    def ammo(self, weapon: WeaponId) -> int:
         return self._ped.ammo(weapon)
 
-    def set_ammo(self, weapon: int, ammo: int) -> None:
+    def set_ammo(self, weapon: WeaponId, ammo: int) -> None:
         self._ped.set_ammo(weapon, ammo)
 
-    def add_ammo(self, weapon: int, ammo: int) -> None:
+    def add_ammo(self, weapon: WeaponId, ammo: int) -> None:
         self._ped.add_ammo(weapon, ammo)
 
     def slot(self, slot: int) -> tuple[int, int, int]:
@@ -467,7 +487,8 @@ class Ped(Entity):
     _handle_of = staticmethod(_pysa.ped_handle)
 
     @classmethod
-    def spawn(cls, model: PED, pos, ped_type: PED_TYPE = PED_TYPE.CIVMALE) -> "Ped":
+    def spawn(cls, model: PedModel, pos: Position,
+              ped_type: PED_TYPE = PED_TYPE.CIVMALE) -> "Ped":
         if not load_model(model):
             raise RuntimeError(f"ped model {model} failed to load")
         x, y, z = Vector3.of(pos)
@@ -600,13 +621,13 @@ class Ped(Entity):
         return cmd.IS_CHAR_GETTING_IN_TO_A_CAR(self)
 
     @property
-    def attached_vehicle(self):
+    def attached_vehicle(self) -> Optional["Vehicle"]:
         if not cmd.IS_CHAR_ATTACHED_TO_ANY_CAR(self):
             return None
         return cmd.STORE_CAR_CHAR_IS_ATTACHED_TO_NO_SAVE(self)
 
     @property
-    def vehicle(self):
+    def vehicle(self) -> Optional["Vehicle"]:
         """The vehicle this ped is in, or None."""
         if not self.in_any_vehicle:
             return None
@@ -630,23 +651,24 @@ class Ped(Entity):
         return cmd.GET_CHAR_HEIGHT_ABOVE_GROUND(self)
 
     @property
-    def model(self):
+    def model(self) -> Union[PED, int]:
         return _enum_or_int(PED, cmd.GET_CHAR_MODEL(self))
 
     @property
-    def model_info(self):
+    def model_info(self) -> "PedModelInfo":
         from .model_info import model_info
         return model_info(self.model)
 
     @property
-    def current_weapon(self) -> int:
-        return cmd.GET_CURRENT_CHAR_WEAPON(self)
+    def current_weapon(self) -> WeaponId:
+        return _enum_or_int(WEAPON, cmd.GET_CURRENT_CHAR_WEAPON(self))
 
     @current_weapon.setter
-    def current_weapon(self, weapon: int) -> None:
+    def current_weapon(self, weapon: WeaponId) -> None:
         cmd.SET_CURRENT_CHAR_WEAPON(self, weapon)
 
-    def give_weapon(self, weapon: int, ammo: int = 500, equip: bool = True) -> None:
+    def give_weapon(self, weapon: WeaponId, ammo: int = 500,
+                    equip: bool = True) -> None:
         model = cmd.GET_WEAPONTYPE_MODEL(weapon)
         if model > 0:
             load_model(model)
@@ -659,19 +681,19 @@ class Ped(Entity):
     def remove_weapons(self) -> None:
         cmd.REMOVE_ALL_CHAR_WEAPONS(self)
 
-    def remove_weapon(self, weapon: int) -> None:
+    def remove_weapon(self, weapon: WeaponId) -> None:
         cmd.REMOVE_WEAPON_FROM_CHAR(self, weapon)
 
-    def has_weapon(self, weapon: int) -> bool:
+    def has_weapon(self, weapon: WeaponId) -> bool:
         return cmd.HAS_CHAR_GOT_WEAPON(self, weapon)
 
-    def ammo(self, weapon: int) -> int:
+    def ammo(self, weapon: WeaponId) -> int:
         return cmd.GET_AMMO_IN_CHAR_WEAPON(self, weapon)
 
-    def set_ammo(self, weapon: int, ammo: int) -> None:
+    def set_ammo(self, weapon: WeaponId, ammo: int) -> None:
         cmd.SET_CHAR_AMMO(self, weapon, ammo)
 
-    def add_ammo(self, weapon: int, ammo: int) -> None:
+    def add_ammo(self, weapon: WeaponId, ammo: int) -> None:
         cmd.ADD_AMMO_TO_CHAR(self, weapon, ammo)
 
     def weapon_in_slot(self, slot: int) -> tuple[int, int, int]:
@@ -1066,7 +1088,8 @@ class Vehicle(Entity):
     _handle_of = staticmethod(_pysa.vehicle_handle)
 
     @classmethod
-    def spawn(cls, model, pos=None, heading: float = None) -> "Vehicle":
+    def spawn(cls, model: VehicleModel, pos: Optional[Position] = None,
+              heading: Optional[float] = None) -> "Vehicle":
         """Create a vehicle using VEHICLE constants, an id, or a legacy name.
 
         With no pos, it spawns a few meters ahead of the player.
@@ -1205,11 +1228,11 @@ class Vehicle(Entity):
         return cmd.IS_CAR_STREET_RACER(self)
 
     @property
-    def driver(self):
+    def driver(self) -> Optional[Ped]:
         """The driving ped, or None if empty."""
         return cmd.GET_DRIVER_OF_CAR(self)
 
-    def passenger(self, seat: int = 0):
+    def passenger(self, seat: int = 0) -> Optional[Ped]:
         return cmd.GET_CHAR_IN_CAR_PASSENGER_SEAT(self, seat)
 
     def passenger_seat_free(self, seat: int = 0) -> bool:
@@ -1224,16 +1247,16 @@ class Vehicle(Entity):
         return cmd.GET_MAXIMUM_NUMBER_OF_PASSENGERS(self)
 
     @property
-    def model(self):
+    def model(self) -> Union[VEHICLE, int]:
         return _enum_or_int(VEHICLE, cmd.GET_CAR_MODEL(self))
 
     @property
-    def model_info(self):
+    def model_info(self) -> "VehicleModelInfo":
         from .model_info import model_info
         return model_info(self.model)
 
     @property
-    def model_name(self) -> str:
+    def model_name(self) -> Optional[str]:
         """The internal model name, e.g. 'infernus' (None if not a standard car)."""
         from .models import VEHICLE_NAMES
         return VEHICLE_NAMES.get(self.model)
@@ -1243,7 +1266,7 @@ class Vehicle(Entity):
         return cmd.GET_VEHICLE_CLASS(self)
 
     @property
-    def passengers(self) -> list:
+    def passengers(self) -> list[Ped]:
         """All passenger peds currently in this vehicle (excludes the driver)."""
         out = []
         for seat in range(max(0, self.max_passengers)):
@@ -1253,7 +1276,7 @@ class Vehicle(Entity):
         return out
 
     @property
-    def occupants(self) -> list:
+    def occupants(self) -> list[Ped]:
         """Everyone in the vehicle: driver first (if any), then passengers."""
         out = []
         driver = self.driver
@@ -1737,7 +1760,7 @@ class GameObject(Entity):
         return Vector3(*cmd.GET_OBJECT_COORDINATES(self))
 
     @property
-    def model_info(self):
+    def model_info(self) -> "ModelInfo":
         from .model_info import model_info
         return model_info(self.model)
 
@@ -2006,7 +2029,9 @@ class GameObject(Entity):
         cmd.DELETE_OBJECT(self)
 
 
-def entity_from_ptr(ptr: int):
+def entity_from_ptr(ptr: int) -> Optional[Union[Ped, Vehicle, GameObject,
+                                                Building, Dummy,
+                                                StaticEntity]]:
     """Wrap any live CEntity pointer in its friendly Python entity class."""
     ptr = int(ptr)
     if not ptr:
@@ -2025,26 +2050,26 @@ def entity_from_ptr(ptr: int):
     return StaticEntity(ptr)
 
 
-def all_peds():
+def all_peds() -> list[Ped]:
     """Every ped currently in the world (includes the player)."""
     return [Ped.from_ptr(p) for p in _pysa.peds()]
 
 
-def all_vehicles():
+def all_vehicles() -> list[Vehicle]:
     """Every vehicle currently in the world."""
     return [Vehicle.from_ptr(p) for p in _pysa.vehicles()]
 
 
-def all_objects():
+def all_objects() -> list[GameObject]:
     """Every dynamic object currently in the world."""
     return [GameObject.from_ptr(p) for p in _pysa.objects()]
 
 
-def all_buildings():
+def all_buildings() -> list[Building]:
     """Every currently streamed map building (read-only wrappers)."""
     return [Building(p) for p in _pysa.buildings()]
 
 
-def all_dummies():
+def all_dummies() -> list[Dummy]:
     """Every currently streamed lightweight map entity (read-only wrappers)."""
     return [Dummy(p) for p in _pysa.dummies()]

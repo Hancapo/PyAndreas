@@ -6,6 +6,14 @@ from pysa import native
 
 
 class NativeCommandTests(unittest.TestCase):
+    def test_deleted_entity_is_rejected_before_entering_gta(self):
+        # Low-byte bit 7 is CPool's free-slot flag. GTA may still map this
+        # reference to stale pool memory, so it must never reach an opcode.
+        vehicle = Vehicle(0xC81)
+        self.assertFalse(vehicle.exists)
+        with self.assertRaisesRegex(ReferenceError, "deleted entity"):
+            native.cmd.SET_CAR_COORDINATES(vehicle, 1.0, 2.0, 3.0)
+
     def test_typed_command_packs_inputs_and_wraps_entity_output(self):
         with mock.patch.object(native._pysa, "call",
                                return_value=(True, (17,))) as bridge:

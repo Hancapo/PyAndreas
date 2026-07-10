@@ -1,0 +1,7 @@
+{
+  "include": ["tests/typecheck"],
+  "extraPaths": ["python"],
+  "pythonVersion": "3.8",
+  "typeCheckingMode": "strict",
+  "reportMissingModuleSource": false
+}

@@ -39,6 +39,9 @@ _FRIENDLY_PARAM_TYPES = {
     "bool": "bool", "Char": "Ped", "Car": "Vehicle", "Heli": "Vehicle",
     "Plane": "Vehicle", "Boat": "Vehicle", "Train": "Vehicle",
     "Trailer": "Vehicle", "Object": "GameObject", "WeaponType": "WEAPON",
+    "Pickup": "Pickup", "Blip": "Blip", "Checkpoint": "Checkpoint",
+    "ScriptFire": "Fire", "Sphere": "Sphere", "User3DMarker": "Marker3D",
+    "Particle": "FxSystem",
     "model_vehicle": "VEHICLE", "model_char": "PED", "PedType": "PED_TYPE",
     "MoveState": "MOVE_STATE", "CarDoor": "VEHICLE_DOOR",
     "CarMission": "CAR_MISSION", "CameraMode": "CAMERA_MODE",
@@ -49,6 +52,10 @@ _FRIENDLY_PARAM_TYPES = {
     "ExplosionType": "world.EXPLOSION",
     "PickupType": "PICKUP_TYPE",
     "MissionAudioSlot": "MISSION_AUDIO_SLOT",
+    "Button": "BUTTON", "WeatherType": "WEATHER",
+    "RadioChannel": "RADIO", "CheckpointType": "CHECKPOINT",
+    "CoronaType": "CORONA", "FlareType": "FLARE",
+    "DrivingMode": "DRIVING_STYLE",
 }
 
 
@@ -138,6 +145,9 @@ def _as_int(value, name: str, cmd_name: str) -> int:
         return int(value)
     handle = getattr(value, "_handle", None)
     if handle is not None:
+        if getattr(value, "exists", True) is False:
+            raise ReferenceError(
+                f"{cmd_name}: parameter '{name}' refers to a deleted entity")
         return int(handle)
     raise TypeError(f"{cmd_name}: parameter '{name}' expects an int/handle, "
                     f"got {type(value).__name__}")
@@ -162,6 +172,9 @@ def _pack_auto(value):
         return "s", value
     handle = getattr(value, "_handle", None)
     if handle is not None:
+        if getattr(value, "exists", True) is False:
+            raise ReferenceError(
+                f"cannot pass deleted {type(value).__name__} to a script command")
         return "i", int(handle)
     raise TypeError(f"cannot pass {type(value).__name__} to a script command")
 

@@ -7,8 +7,21 @@ script cancellation, and F11 hot reload.
 from __future__ import annotations
 
 import traceback
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
 
 from . import camera
+from .enums import CAMERA_MODE, MISSION_AUDIO_SLOT
+from .models import PED_TYPE
+from .type_aliases import PedModel, Position, VehicleModel
+
+if TYPE_CHECKING:
+    from .audio import MissionAudio
+    from .entities import GameObject, Ped, Vehicle
+    from .markers import Checkpoint, Marker3D, Sphere
+
+
+TResource = TypeVar("TResource")
+TCallback = TypeVar("TCallback", bound=Callable[..., Any])
 
 
 _active_sessions = set()
@@ -25,11 +38,12 @@ class SessionCamera:
     def _claim(self) -> None:
         self._session._camera_used = True
 
-    def fix_at(self, pos, look_at=None) -> None:
+    def fix_at(self, pos: Position, look_at: Optional[Position] = None) -> None:
         self._claim()
         camera.fix_at(pos, look_at)
 
-    def point_at(self, entity, mode=None) -> None:
+    def point_at(self, entity: Any,
+                 mode: Optional[CAMERA_MODE] = None) -> None:
         self._claim()
         if mode is None:
             camera.point_at(entity)
@@ -79,14 +93,16 @@ class ScriptSession:
         self.close()
         return False
 
-    def defer(self, callback, *args, **kwargs):
+    def defer(self, callback: TCallback, *args: Any,
+              **kwargs: Any) -> TCallback:
         """Run ``callback`` during cleanup; callbacks run last-added first."""
         if self._closed:
             raise RuntimeError("cannot add cleanup to a closed ScriptSession")
         self._cleanups.append((callback, args, kwargs))
         return callback
 
-    def track(self, resource, cleanup=None):
+    def track(self, resource: TResource,
+              cleanup: Optional[Callable[[], Any]] = None) -> TResource:
         """Adopt a resource and infer its normal cleanup method."""
         if cleanup is None:
             from .entities import Entity
@@ -104,33 +120,37 @@ class ScriptSession:
         self.defer(cleanup)
         return resource
 
-    def spawn_ped(self, model, pos, ped_type=None):
+    def spawn_ped(self, model: PedModel, pos: Position,
+                  ped_type: Optional[PED_TYPE] = None) -> "Ped":
         from .entities import Ped
         if ped_type is None:
             return self.track(Ped.spawn(model, pos))
         return self.track(Ped.spawn(model, pos, ped_type))
 
-    def spawn_vehicle(self, model, pos=None, heading=None):
+    def spawn_vehicle(self, model: VehicleModel,
+                      pos: Optional[Position] = None,
+                      heading: Optional[float] = None) -> "Vehicle":
         from .entities import Vehicle
         return self.track(Vehicle.spawn(model, pos, heading))
 
-    def spawn_object(self, model: int, pos):
+    def spawn_object(self, model: int, pos: Position) -> "GameObject":
         from .entities import GameObject
         return self.track(GameObject.spawn(model, pos))
 
-    def checkpoint(self, pos, **kwargs):
+    def checkpoint(self, pos: Position, **kwargs: Any) -> "Checkpoint":
         from .markers import Checkpoint
         return self.track(Checkpoint(pos, **kwargs))
 
-    def marker(self, pos, **kwargs):
+    def marker(self, pos: Position, **kwargs: Any) -> "Marker3D":
         from .markers import Marker3D
         return self.track(Marker3D(pos, **kwargs))
 
-    def sphere(self, center, radius: float = 10.0):
+    def sphere(self, center: Position, radius: float = 10.0) -> "Sphere":
         from .markers import Sphere
         return self.track(Sphere(center, radius))
 
-    def mission_audio(self, slot=None):
+    def mission_audio(self, slot: Optional[MISSION_AUDIO_SLOT] = None
+                      ) -> "MissionAudio":
         from .audio import MissionAudio
         audio = MissionAudio() if slot is None else MissionAudio(slot)
         return self.track(audio)

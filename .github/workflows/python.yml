@@ -20,3 +20,5 @@ jobs:
       - run: python -m pip install -e .
       - run: python -m compileall -q python examples tools tests
       - run: python -m unittest discover -s tests -v
+      - if: matrix.python-version == '3.13'
+        run: npx.cmd --yes pyright@1.1.411

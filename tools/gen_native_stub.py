@@ -26,14 +26,21 @@ from __future__ import annotations
 
 from typing import Any
 
+from .audio import RADIO
+from .blips import Blip
 from .entities import GameObject, Ped, Vehicle
 from .enums import (BLIP_SPRITE, CAMERA_MODE, CAR_MISSION, DOOR_LOCK,
-                    ENTITY_STATUS, FIGHT_STYLE, GANG, MOVE_STATE, PED_BONE,
+                    DRIVING_STYLE, ENTITY_STATUS, FIGHT_STYLE, GANG,
+                    MOVE_STATE, PED_BONE,
                     MISSION_AUDIO_SLOT, PICKUP_TYPE, VEHICLE_DOOR,
                     VEHICLE_WHEEL)
+from .fx import CORONA, FLARE, FxSystem
+from .markers import CHECKPOINT, Checkpoint, Marker3D, Sphere
 from .models import PED_TYPE, VEHICLE, WEAPON
+from .pad import BUTTON
 from .ped_models import PED
-from .world import EXPLOSION
+from .pickups import Pickup
+from .world import EXPLOSION, Fire, WEATHER
 
 
 class _OutMarker: ...
@@ -92,6 +99,13 @@ TYPED_INPUTS = {
     "Train": "Vehicle | int",
     "Trailer": "Vehicle | int",
     "Object": "GameObject | int",
+    "Pickup": "Pickup | int",
+    "Blip": "Blip | int",
+    "Checkpoint": "Checkpoint | int",
+    "ScriptFire": "Fire | int",
+    "Sphere": "Sphere | int",
+    "User3DMarker": "Marker3D | int",
+    "Particle": "FxSystem | int",
     "WeaponType": "WEAPON | int",
     "model_vehicle": "VEHICLE | int",
     "model_char": "PED | int",
@@ -111,6 +125,13 @@ TYPED_INPUTS = {
     "ExplosionType": "EXPLOSION | int",
     "PickupType": "PICKUP_TYPE | int",
     "MissionAudioSlot": "MISSION_AUDIO_SLOT | int",
+    "Button": "BUTTON | int",
+    "WeatherType": "WEATHER | int",
+    "RadioChannel": "RADIO | int",
+    "CheckpointType": "CHECKPOINT | int",
+    "CoronaType": "CORONA | int",
+    "FlareType": "FLARE | int",
+    "DrivingMode": "DRIVING_STYLE | int",
 }
 
 

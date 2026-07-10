@@ -22,7 +22,7 @@ try:
 except ImportError:
     from . import _mock as _pysa
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 RELOAD_KEY = 0x7A  # F11 - set to None (from a script) to disable hot reload
 
 
@@ -67,6 +67,10 @@ _key_watchers: list = []
 _button_watchers: list = []
 # cheat-word watchers: [Handler(extra={'word_reversed'})]
 _cheat_watchers: list = []
+# Constructor hooks run before GTA assigns the final model. Created callbacks
+# are released on a later tick once both the pool handle and model are usable.
+_pending_entity_creations: dict = {}  # {(event, pointer): retry_count}
+_CREATION_RETRY_FRAMES = 5
 
 _scripts: list = []       # [(module_name, file_path)]
 _script_modules: set = set()  # every module loaded from the scripts folder
@@ -226,6 +230,7 @@ def _clear_registries() -> None:
     _key_watchers.clear()
     _button_watchers.clear()
     _cheat_watchers.clear()
+    _pending_entity_creations.clear()
     for t in _tasks:
         try:
             t.cancel()
@@ -438,6 +443,8 @@ def _tick() -> None:
             return
         _reload_was_down = down
 
+    _flush_entity_creations()
+
     # key watchers
     for h in _key_watchers:
         down = _pysa.key_down(h.extra["vk"])
@@ -508,6 +515,39 @@ def _wrap_entity(event: str, ptr: int):
     return GameObject.from_ptr(ptr)
 
 
+def _ready_entity(event: str, ptr: int):
+    """Return a pool-backed entity with an initialized model, or ``None``."""
+    try:
+        entity = _wrap_entity(event, ptr)
+        if entity.handle == -1 or entity.address != ptr:
+            return None
+        if _pysa.read_u16(ptr + 0x22) == 0xFFFF:
+            return None
+        return entity
+    except (TypeError, ValueError):
+        return None
+
+
+def _queue_entity_creation(event: str, ptr: int) -> None:
+    _pending_entity_creations.setdefault((event, int(ptr)), 0)
+
+
+def _flush_entity_creations() -> None:
+    """Deliver constructor events only after the entity is script-ready."""
+    pending = tuple(_pending_entity_creations.items())
+    _pending_entity_creations.clear()
+    for (event, ptr), retries in pending:
+        if not _handlers.get(event):
+            continue
+        entity = _ready_entity(event, ptr)
+        if entity is None:
+            if retries + 1 < _CREATION_RETRY_FRAMES:
+                _pending_entity_creations[(event, ptr)] = retries + 1
+            continue
+        for handler in tuple(_handlers[event]):
+            handler.run(entity)
+
+
 def _restart_script_tasks() -> None:
     for t in _tasks:
         t.cancel()
@@ -533,7 +573,9 @@ def dispatch(event: str, arg=None) -> None:
         elif event in ("vehicle_model_changed", "ped_model_changed"):
             ptr, model = arg
             if _handlers.get(event):
-                entity = _wrap_entity(event, ptr)
+                entity = _ready_entity(event, ptr)
+                if entity is None:
+                    return
                 if event.startswith("vehicle"):
                     from .models import VEHICLE
                     enum_type = VEHICLE
@@ -546,12 +588,17 @@ def dispatch(event: str, arg=None) -> None:
                     model = int(model)  # custom model outside the stock enum
                 for h in _handlers[event]:
                     h.run(entity, model)
-        elif arg is not None and event in ("vehicle_created", "vehicle_destroyed",
-                                           "ped_created", "ped_destroyed",
-                                           "object_created", "object_destroyed",
-                                           "vehicle_render", "ped_render", "object_render"):
+        elif arg is not None and event in ("vehicle_created", "ped_created",
+                                           "object_created"):
             if _handlers.get(event):
-                entity = _wrap_entity(event, arg)
+                _queue_entity_creation(event, arg)
+        elif arg is not None and event in ("vehicle_destroyed", "ped_destroyed",
+                                           "object_destroyed", "vehicle_render",
+                                           "ped_render", "object_render"):
+            if _handlers.get(event):
+                entity = _ready_entity(event, arg)
+                if entity is None:
+                    return
                 for h in _handlers[event]:
                     h.run(entity)
                 _sync_native_event(event)

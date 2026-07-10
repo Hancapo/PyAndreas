@@ -10,6 +10,8 @@ removed automatically with the script that created them during hot reload.
 """
 from __future__ import annotations
 
+from typing import Any, Callable, Iterable, Optional, TypeVar, Union
+
 try:
     import _pysa
 except ImportError:
@@ -20,12 +22,17 @@ from .keys import KEY
 from .pad import BUTTON
 
 
+TChoice = TypeVar("TChoice")
+Enabled = Union[bool, Callable[[], bool]]
+
+
 class MenuItem:
     """A selectable menu row."""
 
     __slots__ = ("label", "callback", "enabled", "value")
 
-    def __init__(self, label: str, callback, enabled=True, value=None):
+    def __init__(self, label: str, callback: Callable[[], Any],
+                 enabled: Enabled = True, value: Any = None):
         self.label = str(label)
         self.callback = callback
         self.enabled = enabled
@@ -50,7 +57,8 @@ class Menu:
                  "toggle_button", "x", "y", "width", "row_height",
                  "_input_state")
 
-    def __init__(self, title: str, *, toggle_key=None, toggle_button=None,
+    def __init__(self, title: str, *, toggle_key: Optional[int] = None,
+                 toggle_button: Optional[BUTTON] = None,
                  x: float = 32.0, y: float = 72.0, width: float = 280.0,
                  row_height: float = 28.0, auto: bool = True):
         self.title = str(title)
@@ -69,12 +77,14 @@ class Menu:
             _runtime.register("tick", self.update)
             _runtime.register("draw", self.draw)
 
-    def action(self, label: str, callback, *, enabled=True) -> MenuItem:
+    def action(self, label: str, callback: Callable[[], Any], *,
+               enabled: Enabled = True) -> MenuItem:
         item = MenuItem(label, callback, enabled)
         self.items.append(item)
         return item
 
-    def toggle_item(self, label: str, getter, setter, *, enabled=True,
+    def toggle_item(self, label: str, getter: Callable[[], bool],
+                    setter: Callable[[bool], Any], *, enabled: Enabled = True,
                     on_text: str = "ON", off_text: str = "OFF") -> MenuItem:
         def activate():
             setter(not bool(getter()))
@@ -86,8 +96,10 @@ class Menu:
         self.items.append(item)
         return item
 
-    def choice(self, label: str, values, getter, setter, *, enabled=True,
-               formatter=str) -> MenuItem:
+    def choice(self, label: str, values: Iterable[TChoice],
+               getter: Callable[[], TChoice],
+               setter: Callable[[TChoice], Any], *, enabled: Enabled = True,
+               formatter: Callable[[TChoice], object] = str) -> MenuItem:
         choices = tuple(values)
         if not choices:
             raise ValueError("choice needs at least one value")
@@ -180,7 +192,7 @@ class Menu:
         if self.items and not self.items[self.selected].is_enabled():
             self.move(1)
 
-    def _edge(self, key, down: bool) -> bool:
+    def _edge(self, key: object, down: bool) -> bool:
         previous = self._input_state.get(key, False)
         self._input_state[key] = bool(down)
         return bool(down) and not previous

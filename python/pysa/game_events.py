@@ -43,6 +43,7 @@ from .models import WEAPON
 
 if TYPE_CHECKING:
     from .entities import GameObject, Ped, Vehicle
+    from .pickups import Pickup
 
 EventEntity = Union["Ped", "Vehicle", "GameObject", int, None]
 

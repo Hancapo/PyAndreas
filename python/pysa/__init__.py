@@ -32,6 +32,8 @@ are return values, conditions are bools, entities come back wrapped:
 Press F11 in-game to hot-reload all scripts. Errors go to PyAndreas.log.
 """
 
+from typing import Any
+
 from ._runtime import VERSION as __version__
 from ._runtime import (Task, call_soon, reload_scripts, run_on_game_thread,
                        script, start)
@@ -96,6 +98,7 @@ from .fx import FxSystem
 from .pad import BUTTON
 from .pad import ButtonAction, Stick
 from .session import ScriptSession
+from .type_aliases import PedModel, Position, VehicleModel, WeaponId
 from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
                            VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
 from . import (audio, blips, camera, draw, fx, game_events, hooks, hud, markers,
@@ -107,17 +110,24 @@ try:
 except ImportError:
     from . import _mock as _bridge
 
-#: Write a line to PyAndreas.log.
-log = _bridge.log
+def log(message: Any) -> None:
+    """Write one value to PyAndreas.log."""
+    _bridge.log(str(message))
 
-#: Game time in milliseconds (pauses while the game is paused).
-game_time = _bridge.game_time
 
-#: Poll a key directly: key_down(KEY.SPACE) -> bool.
-key_down = _bridge.key_down
+def game_time() -> int:
+    """Game time in milliseconds (pauses while the game is paused)."""
+    return int(_bridge.game_time())
 
-#: The <game>\PyAndreas folder (put assets like textures/ under here).
-base_dir = _bridge.base_dir
+
+def key_down(key: int) -> bool:
+    """Poll a keyboard key directly, for example ``key_down(KEY.SPACE)``."""
+    return bool(_bridge.key_down(int(key)))
+
+
+def base_dir() -> str:
+    """Return the active PyAndreas data folder for assets and script data."""
+    return str(_bridge.base_dir())
 
 __all__ = [
     "__version__", "reload_scripts",
@@ -168,6 +178,7 @@ __all__ = [
     "game_events", "state_events", "markers", "timers", "audio", "fx",
     "text", "pad", "storage", "session", "ui", "BUTTON", "Stick",
     "ButtonAction", "ScriptSession",
+    "Position", "PedModel", "VehicleModel", "WeaponId",
     "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire",
     "Pickup", "all_pickups",
     "Stopwatch", "Countdown", "MissionAudio", "RADIO", "FxSystem",

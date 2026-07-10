@@ -143,6 +143,23 @@ it after changing command signatures:
 python tools\gen_native_stub.py
 ```
 
+Annotate an event payload once and the editor provides full completion for
+everything below it. Python language servers cannot infer a function
+parameter from a decorator alone, so keep the `pysa.Vehicle` annotation:
+
+```python
+@pysa.on_vehicle_render
+def rendering_car(car: pysa.Vehicle) -> None:
+    if car.health < 300:
+        pysa.log(f"Damaged vehicle: {car.model}")
+```
+
+Collections and helpers preserve types through normal chains as well. For
+example, `world.vehicles.nearest(...)` is `Vehicle | None`, while
+`ScriptSession.spawn_vehicle(...)` is a `Vehicle`. Public aliases such as
+`Position`, `VehicleModel`, and `WeaponId` are available for annotations in
+larger scripts.
+
 ## In-Game Install Layout
 
 To run scripts inside GTA SA, the game needs the built ASI plugin and a
@@ -244,9 +261,11 @@ The Python API and offline runtime have a standard-library test suite:
 ```powershell
 python -m compileall -q python examples tools tests
 python -m unittest discover -s tests -v
+npx.cmd --yes pyright@1.1.411
 ```
 
-The same checks run on Python 3.8 and 3.13 in GitHub Actions.
+Compilation and runtime tests run on Python 3.8 and 3.13 in GitHub Actions;
+the editor-facing Pyright contract runs once on Python 3.13.
 
 ## Python API Overview
 

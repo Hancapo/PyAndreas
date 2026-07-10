@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from typing import Optional
 
 try:
     import _pysa
@@ -20,6 +21,7 @@ except ImportError:
 from .entities import Ped, Vehicle
 from .math3 import Vector3
 from .native import call, cmd
+from .type_aliases import WeaponId
 
 
 # plugin-sdk: CWorld::Players = (CPlayerInfo*)0xB7CD98, sizeof(CPlayerInfo)=0x190
@@ -70,7 +72,7 @@ def _write_u32(addr: int, value: int) -> None:
     _pysa.write_u32(addr, int(value) & 0xFFFFFFFF)
 
 
-def _vehicle_from_ptr(ptr: int):
+def _vehicle_from_ptr(ptr: int) -> Optional[Vehicle]:
     return Vehicle.from_ptr(ptr) if ptr else None
 
 
@@ -225,32 +227,33 @@ class PlayerWeapons:
         self._player = player
 
     @property
-    def current(self) -> int:
+    def current(self) -> WeaponId:
         return self._player.current_weapon
 
     @current.setter
-    def current(self, weapon: int) -> None:
+    def current(self, weapon: WeaponId) -> None:
         self._player.current_weapon = weapon
 
-    def give(self, weapon: int, ammo: int = 500, equip: bool = True) -> None:
+    def give(self, weapon: WeaponId, ammo: int = 500,
+             equip: bool = True) -> None:
         self._player.give_weapon(weapon, ammo, equip)
 
-    def remove(self, weapon: int) -> None:
+    def remove(self, weapon: WeaponId) -> None:
         self._player.remove_weapon(weapon)
 
     def clear(self) -> None:
         self._player.remove_weapons()
 
-    def has(self, weapon: int) -> bool:
+    def has(self, weapon: WeaponId) -> bool:
         return self._player.has_weapon(weapon)
 
-    def ammo(self, weapon: int) -> int:
+    def ammo(self, weapon: WeaponId) -> int:
         return self._player.ammo(weapon)
 
-    def set_ammo(self, weapon: int, ammo: int) -> None:
+    def set_ammo(self, weapon: WeaponId, ammo: int) -> None:
         self._player.set_ammo(weapon, ammo)
 
-    def add_ammo(self, weapon: int, ammo: int) -> None:
+    def add_ammo(self, weapon: WeaponId, ammo: int) -> None:
         self._player.add_ammo(weapon, ammo)
 
     def ensure_drive_by(self, ammo: int = 9999) -> None:
@@ -545,19 +548,19 @@ class PlayerVehicles:
         self._player = player
 
     @property
-    def current(self):
+    def current(self) -> Optional[Vehicle]:
         return self._player.vehicle
 
     @property
-    def remote(self):
+    def remote(self) -> Optional[Vehicle]:
         return self._player.remote_vehicle
 
     @property
-    def special_collision(self):
+    def special_collision(self) -> Optional[Vehicle]:
         return self._player.special_collision_vehicle
 
     @property
-    def last_target(self):
+    def last_target(self) -> Optional[Vehicle]:
         return self._player.last_target_vehicle
 
     @property
@@ -928,21 +931,21 @@ class _Player:
         cmd.INCREASE_PLAYER_MAX_ARMOUR(self.index, amount)
 
     @property
-    def vehicle(self):
+    def vehicle(self) -> Optional[Vehicle]:
         """Vehicle the player is driving/riding, or None."""
         return self.ped.vehicle
 
     @property
-    def remote_vehicle(self):
+    def remote_vehicle(self) -> Optional[Vehicle]:
         """RC vehicle controlled by the player, or None."""
         return _vehicle_from_ptr(_pysa.read_u32(self.info_address + 0xB0))
 
     @property
-    def special_collision_vehicle(self):
+    def special_collision_vehicle(self) -> Optional[Vehicle]:
         return _vehicle_from_ptr(_pysa.read_u32(self.info_address + 0xB4))
 
     @property
-    def last_target_vehicle(self):
+    def last_target_vehicle(self) -> Optional[Vehicle]:
         """Last vehicle the player tried to enter, or None."""
         return _vehicle_from_ptr(_pysa.read_u32(self.info_address + 0xD8))
 
@@ -951,29 +954,30 @@ class _Player:
         return self.ped.speed
 
     @property
-    def current_weapon(self) -> int:
+    def current_weapon(self) -> WeaponId:
         return self.ped.current_weapon
 
     @current_weapon.setter
-    def current_weapon(self, weapon: int) -> None:
+    def current_weapon(self, weapon: WeaponId) -> None:
         self.ped.current_weapon = weapon
 
-    def give_weapon(self, weapon: int, ammo: int = 500, equip: bool = True) -> None:
+    def give_weapon(self, weapon: WeaponId, ammo: int = 500,
+                    equip: bool = True) -> None:
         self.ped.give_weapon(weapon, ammo, equip)
 
-    def add_ammo(self, weapon: int, ammo: int) -> None:
+    def add_ammo(self, weapon: WeaponId, ammo: int) -> None:
         cmd.ADD_AMMO_TO_CHAR(self.ped, weapon, ammo)
 
-    def set_ammo(self, weapon: int, ammo: int) -> None:
+    def set_ammo(self, weapon: WeaponId, ammo: int) -> None:
         cmd.SET_CHAR_AMMO(self.ped, weapon, ammo)
 
-    def ammo(self, weapon: int) -> int:
+    def ammo(self, weapon: WeaponId) -> int:
         return cmd.GET_AMMO_IN_CHAR_WEAPON(self.ped, weapon)
 
-    def has_weapon(self, weapon: int) -> bool:
+    def has_weapon(self, weapon: WeaponId) -> bool:
         return cmd.HAS_CHAR_GOT_WEAPON(self.ped, weapon)
 
-    def remove_weapon(self, weapon: int) -> None:
+    def remove_weapon(self, weapon: WeaponId) -> None:
         self.ped.remove_weapon(weapon)
 
     def remove_weapons(self) -> None:

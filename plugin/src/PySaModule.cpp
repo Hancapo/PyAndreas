@@ -29,6 +29,7 @@
 #include "common.h"
 
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <ctime>
 
@@ -550,20 +551,45 @@ static PyObject *py_player_ped(PyObject *, PyObject *) {
     return PyLong_FromUnsignedLong(reinterpret_cast<unsigned long>(FindPlayerPed(-1)));
 }
 
+template <class A, class B>
+static bool PoolContains(CPool<A, B> *pool, A *object) {
+    if (!pool || !pool->m_pObjects || !object || pool->m_nSize <= 0)
+        return false;
+    uintptr_t base = reinterpret_cast<uintptr_t>(pool->m_pObjects);
+    uintptr_t ptr = reinterpret_cast<uintptr_t>(object);
+    uintptr_t bytes = static_cast<uintptr_t>(pool->m_nSize) * sizeof(B);
+    return ptr >= base && ptr < base + bytes && (ptr - base) % sizeof(B) == 0;
+}
+
 static PyObject *py_ped_handle(PyObject *, PyObject *args) {
     unsigned long p;
     if (!PyArg_ParseTuple(args, "k", &p)) return nullptr;
-    return PyLong_FromLong(p ? CPools::GetPedRef(reinterpret_cast<CPed *>(p)) : -1);
+    CPed *ped = reinterpret_cast<CPed *>(p);
+    int ref = PoolContains(CPools::ms_pPedPool, ped)
+        ? CPools::GetPedRef(ped) : -1;
+    if (ref < 0 || (ref & 0x80) || CPools::GetPed(ref) != ped)
+        ref = -1;
+    return PyLong_FromLong(ref);
 }
 static PyObject *py_vehicle_handle(PyObject *, PyObject *args) {
     unsigned long p;
     if (!PyArg_ParseTuple(args, "k", &p)) return nullptr;
-    return PyLong_FromLong(p ? CPools::GetVehicleRef(reinterpret_cast<CVehicle *>(p)) : -1);
+    CVehicle *vehicle = reinterpret_cast<CVehicle *>(p);
+    int ref = PoolContains(CPools::ms_pVehiclePool, vehicle)
+        ? CPools::GetVehicleRef(vehicle) : -1;
+    if (ref < 0 || (ref & 0x80) || CPools::GetVehicle(ref) != vehicle)
+        ref = -1;
+    return PyLong_FromLong(ref);
 }
 static PyObject *py_object_handle(PyObject *, PyObject *args) {
     unsigned long p;
     if (!PyArg_ParseTuple(args, "k", &p)) return nullptr;
-    return PyLong_FromLong(p ? CPools::GetObjectRef(reinterpret_cast<CObject *>(p)) : -1);
+    CObject *object = reinterpret_cast<CObject *>(p);
+    int ref = PoolContains(CPools::ms_pObjectPool, object)
+        ? CPools::GetObjectRef(object) : -1;
+    if (ref < 0 || (ref & 0x80) || CPools::GetObject(ref) != object)
+        ref = -1;
+    return PyLong_FromLong(ref);
 }
 static PyObject *py_ped_ptr(PyObject *, PyObject *args) {
     long h;

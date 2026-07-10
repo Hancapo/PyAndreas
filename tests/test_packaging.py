@@ -32,6 +32,8 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("pysa/native.pyi", names)
         self.assertIn("pysa/events.pyi", names)
         self.assertIn("pysa/game_events.pyi", names)
+        self.assertIn("pysa/type_aliases.py", names)
+        self.assertIn("pysa/py.typed", names)
         self.assertNotIn("pysa/__pycache__", "\n".join(names))
         self.assertEqual(first_hash, second_hash)
 

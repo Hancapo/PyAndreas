@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from enum import IntEnum
 import math
+from typing import Iterator
 
 try:
     import _pysa
@@ -82,19 +83,19 @@ def rumble(ms: int = 300, intensity: int = 200, pad: int = 0) -> None:
     cmd.SHAKE_PAD(pad, int(ms), int(intensity))
 
 
-def _axis(button: int, pad: int) -> float:
+def _axis(button: BUTTON, pad: int) -> float:
     v = state(button, pad) / 128.0
     if -DEADZONE < v < DEADZONE:
         return 0.0
     return max(-1.0, min(1.0, v))
 
 
-def left_stick(pad: int = 0) -> tuple:
+def left_stick(pad: int = 0) -> tuple[float, float]:
     """Left stick as (x, y), each -1.0 .. 1.0 (deadzone applied)."""
     return (_axis(BUTTON.LEFT_STICK_X, pad), _axis(BUTTON.LEFT_STICK_Y, pad))
 
 
-def right_stick(pad: int = 0) -> tuple:
+def right_stick(pad: int = 0) -> tuple[float, float]:
     """Right stick as (x, y), each -1.0 .. 1.0 (deadzone applied)."""
     return (_axis(BUTTON.RIGHT_STICK_X, pad), _axis(BUTTON.RIGHT_STICK_Y, pad))
 
@@ -108,7 +109,7 @@ class Stick:
         self.x = float(x)
         self.y = float(y)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[float]:
         yield self.x
         yield self.y
 

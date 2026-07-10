@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from typing import (Callable, Generic, Iterator, Optional, Protocol, TypeVar,
+                    Union, overload)
 
 try:
     import _pysa
@@ -17,13 +19,26 @@ except ImportError:
     from . import _mock as _pysa
 
 from . import memory
-from .entities import (GameObject, Ped, Vehicle, all_buildings, all_dummies,
+from .entities import (Building, Dummy, GameObject, Ped, Vehicle,
+                       all_buildings, all_dummies,
                        all_objects, all_peds, all_vehicles, entity_from_ptr,
                        load_model, release_model)
 from .enums import EXPLOSION_KIND, SURFACE
 from .math3 import Vector3
 from .native import cmd
-from .pickups import all_pickups
+from .pickups import Pickup, all_pickups
+from .type_aliases import Position
+
+
+TEntity = TypeVar("TEntity")
+
+
+class _Positioned(Protocol):
+    @property
+    def pos(self) -> Vector3: ...
+
+
+SpatialTarget = Union[Position, _Positioned]
 
 GRAVITY_ADDR = 0x863984
 DEFAULT_GRAVITY = 0.008
@@ -71,11 +86,12 @@ class RaycastHit:
                 f"surface={self.surface!r}, entity={self.entity!r})")
 
 
-def raycast(start, end, *, ignore=None, buildings: bool = True,
+def raycast(start: Position, end: Position, *, ignore=None,
+            buildings: bool = True,
             vehicles: bool = True, peds: bool = True,
             objects: bool = True, dummies: bool = True,
             see_through: bool = False, camera_ignore: bool = False,
-            shoot_through: bool = False):
+            shoot_through: bool = False) -> Optional[RaycastHit]:
     """Cast a line through the world and return a :class:`RaycastHit`.
 
     ``ignore`` may be an entity that should not block the ray, commonly the
@@ -101,7 +117,7 @@ def line_of_sight(start, end, **filters) -> bool:
     return raycast(start, end, **filters) is None
 
 
-def get_time() -> tuple:
+def get_time() -> tuple[int, int]:
     """Current in-game clock as (hours, minutes)."""
     return cmd.GET_TIME_OF_DAY()
 
@@ -456,17 +472,20 @@ def light_fire(pos, propagation: bool = True, size: int = 1) -> Fire:
 # Spatial queries over the live entity pools
 # ---------------------------------------------------------------------------
 
-def _as_pos(target) -> Vector3:
+def _as_pos(target: SpatialTarget) -> Vector3:
     return target.pos if hasattr(target, "pos") else Vector3.of(target)
 
 
-def _near(items, origin, radius, exclude):
+def _near(items: list[TEntity], origin: SpatialTarget, radius: float,
+          exclude: Optional[TEntity]) -> list[TEntity]:
     o = _as_pos(origin)
     out = [(e.pos.distance_to(o), e) for e in items if e != exclude]
     return [e for d, e in sorted(out, key=lambda t: t[0]) if d <= radius]
 
 
-def _nearest(items, origin, max_dist, exclude):
+def _nearest(items: list[TEntity], origin: SpatialTarget,
+             max_dist: Optional[float],
+             exclude: Optional[TEntity]) -> Optional[TEntity]:
     o = _as_pos(origin)
     best, best_d = None, None
     for e in items:
@@ -480,33 +499,39 @@ def _nearest(items, origin, max_dist, exclude):
     return best
 
 
-def peds_near(origin, radius: float, exclude=None) -> list:
+def peds_near(origin: SpatialTarget, radius: float,
+              exclude: Optional[Ped] = None) -> list[Ped]:
     """Peds within `radius` of a position/entity, nearest first."""
     return _near(all_peds(), origin, radius, exclude)
 
 
-def vehicles_near(origin, radius: float, exclude=None) -> list:
+def vehicles_near(origin: SpatialTarget, radius: float,
+                  exclude: Optional[Vehicle] = None) -> list[Vehicle]:
     return _near(all_vehicles(), origin, radius, exclude)
 
 
-def objects_near(origin, radius: float, exclude=None) -> list:
+def objects_near(origin: SpatialTarget, radius: float,
+                 exclude: Optional[GameObject] = None) -> list[GameObject]:
     return _near(all_objects(), origin, radius, exclude)
 
 
-def nearest_ped(origin, max_dist: float = None, exclude=None):
+def nearest_ped(origin: SpatialTarget, max_dist: Optional[float] = None,
+                exclude: Optional[Ped] = None) -> Optional[Ped]:
     """The closest ped to a position/entity, or None."""
     return _nearest(all_peds(), origin, max_dist, exclude)
 
 
-def nearest_vehicle(origin, max_dist: float = None, exclude=None):
+def nearest_vehicle(origin: SpatialTarget, max_dist: Optional[float] = None,
+                    exclude: Optional[Vehicle] = None) -> Optional[Vehicle]:
     return _nearest(all_vehicles(), origin, max_dist, exclude)
 
 
-def nearest_object(origin, max_dist: float = None, exclude=None):
+def nearest_object(origin: SpatialTarget, max_dist: Optional[float] = None,
+                   exclude: Optional[GameObject] = None) -> Optional[GameObject]:
     return _nearest(all_objects(), origin, max_dist, exclude)
 
 
-class EntityCollection:
+class EntityCollection(Generic[TEntity]):
     """A live, iterable view over a game entity pool.
 
     Iterate it directly (it re-reads the pool each time):
@@ -524,39 +549,47 @@ class EntityCollection:
 
     __slots__ = ("_fetch", "_name")
 
-    def __init__(self, fetch, name: str):
+    def __init__(self, fetch: Callable[[], list[TEntity]], name: str):
         self._fetch = fetch
         self._name = name
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[TEntity]:
         return iter(self._fetch())
 
     def __len__(self) -> int:
         return len(self._fetch())
 
+    @overload
+    def __getitem__(self, index: int) -> TEntity: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> list[TEntity]: ...
+
     def __getitem__(self, index):
         return self._fetch()[index]
 
-    def __call__(self) -> list:
+    def __call__(self) -> list[TEntity]:
         """Back-compat: world.vehicles() returns a plain list snapshot."""
         return self._fetch()
 
     def __repr__(self) -> str:
         return f"<{self._name}: {len(self)} live>"
 
-    def near(self, origin, radius: float, exclude=None) -> list:
+    def near(self, origin: SpatialTarget, radius: float,
+             exclude: Optional[TEntity] = None) -> list[TEntity]:
         """Members within `radius` of a position/entity, nearest first."""
         return _near(self._fetch(), origin, radius, exclude)
 
-    def nearest(self, origin, max_dist: float = None, exclude=None):
+    def nearest(self, origin: SpatialTarget, max_dist: Optional[float] = None,
+                exclude: Optional[TEntity] = None) -> Optional[TEntity]:
         """The closest member to a position/entity, or None."""
         return _nearest(self._fetch(), origin, max_dist, exclude)
 
-    def where(self, predicate) -> list:
+    def where(self, predicate: Callable[[TEntity], bool]) -> list[TEntity]:
         """Members matching a predicate: world.vehicles.where(lambda v: ...)."""
         return [e for e in self._fetch() if predicate(e)]
 
-    def of_model(self, model) -> list:
+    def of_model(self, model) -> list[TEntity]:
         """Members of a given model id (vehicles also accept a name, e.g. 'rhino')."""
         if isinstance(model, str):
             from .models import vehicle_id
@@ -574,9 +607,9 @@ spawn_ped = Ped.spawn
 spawn_object = GameObject.spawn
 
 #: Live, iterable views over the entity pools (iterate without parentheses).
-peds = EntityCollection(all_peds, "peds")
-vehicles = EntityCollection(all_vehicles, "vehicles")
-objects = EntityCollection(all_objects, "objects")
-buildings = EntityCollection(all_buildings, "buildings")
-dummies = EntityCollection(all_dummies, "dummies")
-pickups = EntityCollection(all_pickups, "pickups")
+peds: EntityCollection[Ped] = EntityCollection(all_peds, "peds")
+vehicles: EntityCollection[Vehicle] = EntityCollection(all_vehicles, "vehicles")
+objects: EntityCollection[GameObject] = EntityCollection(all_objects, "objects")
+buildings: EntityCollection[Building] = EntityCollection(all_buildings, "buildings")
+dummies: EntityCollection[Dummy] = EntityCollection(all_dummies, "dummies")
+pickups: EntityCollection[Pickup] = EntityCollection(all_pickups, "pickups")
