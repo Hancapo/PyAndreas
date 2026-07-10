@@ -79,7 +79,8 @@ committed.
 ```text
 plugin/           C++ ASI plugin source and Visual Studio project
 python/pysa/      Python API package used by scripts and editors
-scripts/          Example in-game scripts
+scripts/          Active user-script folder instructions (no bundled .py files)
+examples/         Opt-in example scripts; copy only the ones you want to run
 tools/            Opcode/signature/stub generation and editor install helpers
 pyproject.toml    Editable Python package metadata
 ```
@@ -152,14 +153,17 @@ To run scripts inside GTA SA, the game needs the built ASI plugin and a
 <game>\PyAndreas\python\      32-bit embeddable Python runtime
 <game>\PyAndreas\lib\pysa.pyz  the complete pysa package in one archive
 <game>\PyAndreas\scripts\     your .py scripts
+<game>\PyAndreas\examples\    bundled examples (not loaded automatically)
 ```
 
 The game is a 32-bit process, so the embedded Python runtime must also be
 32-bit. The ASI delay-loads `python3.dll`, allowing the Python DLLs to live under
 `<game>\PyAndreas\python` instead of beside `gta_sa.exe`.
 
-Scripts are loaded from `<game>\PyAndreas\scripts`. Press **F11** in-game to
-reload all scripts without restarting the game. Errors are written to
+Only `.py` files in `<game>\PyAndreas\scripts` are loaded. Bundled examples
+stay inactive in `<game>\PyAndreas\examples`; copy an example into `scripts`
+only when you decide to use it. Press **F11** in-game to reload all active
+scripts without restarting the game. Errors are written to
 `<game>\PyAndreas\PyAndreas.log`, and a failing handler is disabled instead of
 bringing down the whole script runtime. Reload also refreshes helper modules
 inside the scripts folder. If a script fails while importing, its partially
@@ -222,7 +226,7 @@ already at `dist\PyAndreas\python`; use `-RuntimeDir` to select another one.
 The Python API and offline runtime have a standard-library test suite:
 
 ```powershell
-python -m compileall -q python scripts tools tests
+python -m compileall -q python examples tools tests
 python -m unittest discover -s tests -v
 ```
 

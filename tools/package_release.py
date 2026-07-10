@@ -91,6 +91,17 @@ def _install(stage: Path, game_dir: Path) -> None:
     if loose.is_dir():
         shutil.rmtree(loose)
 
+    # 0.2.0 initially shipped examples in the live scripts folder. During an
+    # upgrade, remove only byte-identical bundled copies; preserve anything a
+    # user edited. Examples remain available in the new opt-in folder.
+    examples = stage / "PyAndreas" / "examples"
+    active_scripts = game_dir / "PyAndreas" / "scripts"
+    if examples.is_dir() and active_scripts.is_dir():
+        for example in examples.glob("*.py"):
+            active = active_scripts / example.name
+            if active.is_file() and active.read_bytes() == example.read_bytes():
+                active.unlink()
+
 
 def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
              game_dir: Path | None = None) -> tuple[Path, Path]:
@@ -107,6 +118,8 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
     package_pysa(root / "PyAndreas" / "lib" / "pysa.pyz")
     shutil.copytree(ROOT / "scripts", root / "PyAndreas" / "scripts",
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    shutil.copytree(ROOT / "examples", root / "PyAndreas" / "examples",
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     shutil.copy2(ROOT / "LICENSE", root / "LICENSE")
     if (ROOT / "CHANGELOG.md").is_file():
         shutil.copy2(ROOT / "CHANGELOG.md", root / "CHANGELOG.md")
@@ -116,7 +129,9 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
         "Requirements: GTA San Andreas PC 1.0 US and an installed ASI loader.\n"
         "Copy the contents of this folder into the GTA San Andreas game root.\n"
         "The ASI belongs in scripts\\; user Python files belong in "
-        "PyAndreas\\scripts\\. Press F11 in game to reload scripts.\n",
+        "PyAndreas\\scripts\\. Bundled examples are inactive in "
+        "PyAndreas\\examples\\; copy only the examples you choose into the "
+        "scripts folder. Press F11 in game to reload scripts.\n",
         encoding="utf-8",
     )
 

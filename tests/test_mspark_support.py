@@ -61,7 +61,7 @@ class MSparkSupportTests(unittest.TestCase):
         smoke.assert_called_once()
 
     def test_mspark_script_imports_and_registers_as_coroutine(self):
-        path = Path(__file__).parents[1] / "scripts" / "mspark.py"
+        path = Path(__file__).parents[1] / "examples" / "mspark.py"
         spec = importlib.util.spec_from_file_location("test_mspark_script", path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
@@ -77,7 +77,7 @@ class MSparkSupportTests(unittest.TestCase):
                       CAMERA_MODE(module.CAMERA_MODE.CAM_ON_A_STRING))
 
     def test_mspark_stick_up_raises_the_beam(self):
-        path = Path(__file__).parents[1] / "scripts" / "mspark.py"
+        path = Path(__file__).parents[1] / "examples" / "mspark.py"
         spec = importlib.util.spec_from_file_location("test_mspark_aim", path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
