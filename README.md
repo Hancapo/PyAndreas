@@ -22,6 +22,8 @@ SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 - Call vanilla SA script commands through `cmd.COMMAND_NAME(...)` with generated
   signatures and editor types for entities, models, weapons, and common enums.
 - Keep script state with the small dictionary-like `pysa.storage` API.
+- Own temporary mission/effect resources with `ScriptSession`, use typed world
+  raycasts, and build keyboard/controller menus without raw game calls.
 - Access raw memory and raw game functions when the high-level API does not
   cover something yet.
 - Install the Python package locally in editable mode for real editor
@@ -103,6 +105,8 @@ Each shows off a different part of the API:
 | `example_effects.py` | `fx.FxSystem.on(...)`, `fx.corona(...)`, `audio.play_sound(...)` |
 | `example_gamepad.py` | `@on_button(...)`, `pad.pressed(...)` combos, `pad.left_stick()`, `pad.rumble()` |
 | `example_threads.py` | background threads (GIL released between frames) |
+| `example_toolkit.py` | automatic cleanup, menus, raycasts, and state events |
+| `mspark.py` | CLEO MSPARK port: controller aiming, checkpoint visuals, coronas, smoke, lights, audio and staged explosions |
 
 ## Install for Editor Autocomplete
 
@@ -231,7 +235,7 @@ The same checks run on Python 3.8 and 3.13 in GitHub Actions.
 | Events | `@pysa.on_tick`, `@pysa.on_tick(ms=500)`, `@pysa.on_draw`, `@pysa.on_key(KEY.F3)`, `@pysa.on_cheat("WORD")` |
 | Plugin lifecycle | `@pysa.on_game_restart`, `@pysa.on_vehicle_model_changed`, `@pysa.on_device_reset`, pool/render lifecycle hooks |
 | Opt-in render events | `@pysa.on_hud_draw`, `@pysa.on_vehicle_render`, `@pysa.on_ped_render` (native-to-Python dispatch is subscription-gated) |
-| Gamepad | `@pysa.on_button(BUTTON.CROSS)`, `pad.pressed(BUTTON.L1)`, `pad.left_stick()`, `pad.rumble()` |
+| Gamepad | `pad.combo(...)`, intuitive `pad.left_stick_direction()`, button events and rumble |
 | Typed constants | `PED.BMYBOUN`, `VEHICLE.INFERNUS`, `WEAPON.M4`, `MOVE_STATE.RUN`, `CAMERA_MODE.FIXED` |
 | Coroutines | `@pysa.script`, `pysa.start(generator)`, `yield 500` to wait game milliseconds |
 | Player | `player.ped`, `player.pos`, `player.money`, `player.vitals.heal()`, `player.wanted.level = 0` |
@@ -240,7 +244,7 @@ The same checks run on Python 3.8 and 3.13 in GitHub Actions.
 | Vehicles | `Vehicle.spawn(VEHICLE.INFERNUS)`, `car.speed`, `car.doors[VEHICLE_DOOR.FRONT_LEFT]`, `car.ai.driving_style(DRIVING_STYLE.AVOID_CARS)` |
 | Handling data | `car.handling.mass`, `.traction_multiplier`, `.center_of_mass`, `.suspension_force` (read-only shared model data) |
 | Model information | `car.model_info.game_name`, `.vehicle_type`, `.door_count`, `.dimensions`, `model_info(VEHICLE.INFERNUS)` |
-| World | `world.set_time(...)`, `world.force_weather(...)`, `world.ground_z(...)`, `world.explosion(...)` |
+| World | time/weather/gravity, typed `world.raycast(...)`, line of sight, ground/water, explosions |
 | HUD | `hud.help_text(...)`, `hud.big_text(...)`, `hud.draw(...)` |
 | Camera | `camera.fix_at(...)`, `camera.point_at(...)`, `camera.restore()`, `camera.shake()` |
 | Blips/pickups | `blips.add_for_char(...)`, `pickups.weapon(..., pickup_type=PICKUP_TYPE.ONCE)`, inspect active items through `world.pickups` |
@@ -259,8 +263,11 @@ The same checks run on Python 3.8 and 3.13 in GitHub Actions.
 | Struct fields | `ped.struct.m_fHealth`, `car.struct.m_fGasPedal = 1.0`, `struct_of(x, "CPed")` |
 | Drawing | `draw.rect(...)`, `draw.bar(...)`, `draw.sprite(...)`, `draw.load_textures(...)` |
 | Game events | `@pysa.on_vehicle_damage`, `@pysa.on_explosion`, ...; `e.vehicle`, `e.amount *= 0.5`, `e.cancel()` |
+| State events | ped damage/death, vehicle enter/exit, weapon and zone transitions; dormant unless subscribed |
+| Resource sessions | `with ScriptSession() as session:` owns spawned entities, markers, audio and camera cleanup |
+| Menus | `ui.Menu(...)`, `.action(...)`, `.toggle_item(...)`, and `.choice(...)` |
 | Function hooks | `@pysa.on_call("CVehicle::InflictDamage")`, `call.this`, `call.intensity`, `call.skip()`, `find_functions(...)` |
-| Threads | `threading`/`asyncio` run between frames (GIL is released each frame) |
+| Threads | workers run between frames; `run_on_game_thread(...)` safely hands game work back |
 
 ## SCM Command Rules
 
@@ -390,13 +397,57 @@ Every event has a specific payload class for autocomplete:
 `VehicleDamageEvent`, `VehicleExplodeEvent`, `TyreBurstEvent`,
 `WeaponFireEvent`, `ExplosionEvent`, `WantedLevelChangeEvent`,
 `WeaponGivenEvent`, and `ProjectileFiredEvent`. Weapon fields return `WEAPON`
-members when known; `ExplosionEvent.kind` returns `EXPLOSION_KIND`. This is
-distinct from `world.EXPLOSION`, whose values select SCM-created explosion
-effects.
+members when known; `ExplosionEvent.kind` returns `EXPLOSION_KIND`.
+`world.EXPLOSION` is an alias of that same verified enum for SCM-created
+explosion effects.
 
 Available events: `on_vehicle_damage`, `on_vehicle_explode`, `on_tyre_burst`,
 `on_weapon_fire`, `on_weapon_given`, `on_explosion`, `on_wanted_level_change`,
-`on_projectile_fired` (see `pysa/game_events.py`).
+`on_projectile_fired`, `on_pickup_collected` (see `pysa/game_events.py`).
+
+## Script Sessions, Raycasts, and Menus
+
+`ScriptSession` gives effect and mission scripts one cleanup boundary. Resources
+created through it are deleted in reverse order, including when a coroutine
+raises, is cancelled, or F11 reloads scripts:
+
+```python
+@pysa.script
+def temporary_scene():
+    with pysa.ScriptSession() as scene:
+        guard = scene.spawn_ped(PED.BMYBOUN, player.pos + (3, 0, 0))
+        marker = scene.marker(guard.pos)
+        scene.camera.point_at(guard)
+        yield 10000
+```
+
+World collision queries return a typed result rather than a raw structure:
+
+```python
+hit = world.raycast(player.pos, player.pos + (0, 100, 0), ignore=player.ped)
+if hit:
+    print(hit.position, hit.normal, hit.surface, hit.entity)
+```
+
+Menus update and draw themselves after construction:
+
+```python
+menu = ui.Menu("Trainer", toggle_key=KEY.F6)
+menu.action("Heal", lambda: player.vitals.heal())
+menu.toggle_item("Never tired", lambda: player.perks.never_tired,
+                 lambda value: setattr(player.perks, "never_tired", value))
+```
+
+State-transition decorators are subscription-gated and carry typed payloads:
+`on_ped_damage`, `on_ped_death`, `on_vehicle_enter`, `on_vehicle_exit`,
+`on_weapon_changed`, `on_zone_enter`, and `on_zone_exit`.
+
+Background work can safely return to the game thread without maintaining a
+manual result queue:
+
+```python
+future = pysa.run_on_game_thread(player.vitals.heal)
+```
 
 ## Function Hooks (advanced)
 
@@ -480,8 +531,8 @@ python tools\gen_native_stub.py
 - Script callbacks run on the game thread. Do not use blocking calls such as
   `time.sleep()` from handlers; use `@pysa.on_tick(ms=...)` or `@pysa.script`.
 - The GIL is released between frames, so `threading`/`asyncio` background work
-  runs. Only touch game state (commands, memory, entities) from the main game
-  thread - i.e. from handlers/coroutines, not from your own threads.
+  runs. Only touch game state directly from handlers/coroutines; workers should
+  use `pysa.run_on_game_thread(...)` to schedule game API calls safely.
 - Function hooks run inside the hooked call on the game thread. Keep them fast;
   hooking a hot function with heavy Python costs FPS. `h.block()` is experimental.
 - `memory.write_*` to code pages requires `unprotect=True`, or use

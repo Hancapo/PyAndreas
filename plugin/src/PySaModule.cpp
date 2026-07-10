@@ -17,6 +17,9 @@
 #include "CRunningScript.h"
 #include "CPools.h"
 #include "CPickups.h"
+#include "CCheckpoints.h"
+#include "CWorld.h"
+#include "CColPoint.h"
 #include "CModelInfo.h"
 #include "CHud.h"
 #include "CMessages.h"
@@ -572,6 +575,14 @@ static PyObject *py_vehicle_ptr(PyObject *, PyObject *args) {
     if (!PyArg_ParseTuple(args, "l", &h)) return nullptr;
     return PyLong_FromUnsignedLong(h == -1 ? 0 : reinterpret_cast<unsigned long>(CPools::GetVehicle(h)));
 }
+
+static PyObject *py_vehicle_engine_broken(PyObject *, PyObject *args) {
+    long h;
+    if (!PyArg_ParseTuple(args, "l", &h))
+        return nullptr;
+    CVehicle *vehicle = h == -1 ? nullptr : CPools::GetVehicle(h);
+    return PyBool_FromLong(vehicle && vehicle->bEngineBroken);
+}
 static PyObject *py_object_ptr(PyObject *, PyObject *args) {
     long h;
     if (!PyArg_ParseTuple(args, "l", &h)) return nullptr;
@@ -650,6 +661,69 @@ static PyObject *py_pickup_info(PyObject *, PyObject *args) {
                          pickup.m_nPickupType, pickup.m_nAmmo,
                          pickup.m_nMoneyPerDay, pickup.m_fRevenueValue,
                          pos.x, pos.y, pos.z, flags);
+}
+
+static CCheckpoint *FindCheckpoint(int handle) {
+    if (!CCheckpoints::m_aCheckPtArray || handle < 0)
+        return nullptr;
+    for (unsigned int i = 0; i < MAX_NUM_CHECKPOINTS; ++i) {
+        CCheckpoint &checkpoint = CCheckpoints::m_aCheckPtArray[i];
+        if (checkpoint.m_bIsUsed && checkpoint.m_nIdentifier == handle)
+            return &checkpoint;
+    }
+    return nullptr;
+}
+
+static PyObject *py_checkpoint_update(PyObject *, PyObject *args) {
+    int handle, red, green, blue, alpha;
+    float x, y, z, dx, dy, dz;
+    if (!PyArg_ParseTuple(args, "iffffffiiii", &handle, &x, &y, &z,
+                          &dx, &dy, &dz, &red, &green, &blue, &alpha))
+        return nullptr;
+    CCheckpoint *checkpoint = FindCheckpoint(handle);
+    if (!checkpoint)
+        return PyBool_FromLong(0);
+    checkpoint->m_vecPosition = CVector(x, y, z);
+    checkpoint->m_vecDirection = CVector(dx, dy, dz);
+    checkpoint->m_colour = CRGBA(
+        static_cast<unsigned char>(red), static_cast<unsigned char>(green),
+        static_cast<unsigned char>(blue), static_cast<unsigned char>(alpha));
+    return PyBool_FromLong(1);
+}
+
+static PyObject *py_world_raycast(PyObject *, PyObject *args) {
+    float sx, sy, sz, ex, ey, ez;
+    unsigned long ignorePtr;
+    int buildings = 1, vehicles = 1, peds = 1, objects = 1, dummies = 1;
+    int seeThrough = 0, cameraIgnore = 0, shootThrough = 0;
+    if (!PyArg_ParseTuple(args, "ffffffk|pppppppp", &sx, &sy, &sz,
+                          &ex, &ey, &ez, &ignorePtr, &buildings, &vehicles,
+                          &peds, &objects, &dummies, &seeThrough,
+                          &cameraIgnore, &shootThrough))
+        return nullptr;
+
+    CColPoint point{};
+    CEntity *entity = nullptr;
+    CEntity *oldIgnore = CWorld::pIgnoreEntity;
+    CWorld::pIgnoreEntity = reinterpret_cast<CEntity *>(ignorePtr);
+    bool hit = CWorld::ProcessLineOfSight(
+        CVector(sx, sy, sz), CVector(ex, ey, ez), point, entity,
+        buildings != 0, vehicles != 0, peds != 0, objects != 0,
+        dummies != 0, seeThrough != 0, cameraIgnore != 0, shootThrough != 0);
+    CWorld::pIgnoreEntity = oldIgnore;
+    if (!hit)
+        return Py_BuildValue("");
+
+    return Py_BuildValue("(ffffffkiiiif)",
+                         point.m_vecPoint.x, point.m_vecPoint.y,
+                         point.m_vecPoint.z, point.m_vecNormal.x,
+                         point.m_vecNormal.y, point.m_vecNormal.z,
+                         reinterpret_cast<unsigned long>(entity),
+                         static_cast<int>(point.m_nSurfaceTypeA),
+                         static_cast<int>(point.m_nPieceTypeA),
+                         static_cast<int>(point.m_nLightingA.day),
+                         static_cast<int>(point.m_nLightingA.night),
+                         point.m_fDepth);
 }
 
 // ---------------------------------------------------------------------------
@@ -821,6 +895,8 @@ static PyMethodDef s_methods[] = {
     {"object_handle", py_object_handle, METH_VARARGS, "object_handle(ptr) -> SCM handle"},
     {"ped_ptr", py_ped_ptr, METH_VARARGS, "ped_ptr(handle) -> address (0 if invalid)"},
     {"vehicle_ptr", py_vehicle_ptr, METH_VARARGS, "vehicle_ptr(handle) -> address (0 if invalid)"},
+    {"vehicle_engine_broken", py_vehicle_engine_broken, METH_VARARGS,
+     "vehicle_engine_broken(handle) -> bool"},
     {"object_ptr", py_object_ptr, METH_VARARGS, "object_ptr(handle) -> address (0 if invalid)"},
     {"model_info_ptr", py_model_info_ptr, METH_VARARGS,
      "model_info_ptr(model) -> CBaseModelInfo* address (0 if unavailable)"},
@@ -833,6 +909,10 @@ static PyMethodDef s_methods[] = {
      "pickup_handles() -> list of active pickup handles"},
     {"pickup_info", py_pickup_info, METH_VARARGS,
      "pickup_info(handle) -> model,type,ammo,money,revenue,x,y,z,flags or None"},
+    {"checkpoint_update", py_checkpoint_update, METH_VARARGS,
+     "checkpoint_update(handle, position, direction, rgba) -> bool (internal)"},
+    {"world_raycast", py_world_raycast, METH_VARARGS,
+     "world_raycast(start, end, ignore, filters...) -> collision tuple or None"},
     {"help_message", py_help_message, METH_VARARGS, "help_message(text, quick=True, permanent=False)"},
     {"message", py_message, METH_VARARGS, "message(text, time_ms=2000, flag=0)"},
     {"big_message", py_big_message, METH_VARARGS, "big_message(text, time_ms=4000, style=0)"},

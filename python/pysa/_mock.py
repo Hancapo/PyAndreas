@@ -9,6 +9,8 @@ _log_lines = []
 _model_info = {}
 _enabled_events = set()
 _pickup_info = {}
+_checkpoint_updates = {}
+_raycast_result = None
 
 
 def _reset():
@@ -26,6 +28,9 @@ def _reset():
     _model_info.clear()
     _enabled_events.clear()
     _pickup_info.clear()
+    _checkpoint_updates.clear()
+    global _raycast_result
+    _raycast_result = None
 
 
 def call(opcode, spec, *args):
@@ -135,6 +140,11 @@ def vehicle_ptr(handle):
     return _handle_to_ptr.get(handle, 0)
 
 
+def vehicle_engine_broken(handle):
+    ptr = vehicle_ptr(handle)
+    return bool(_memory.get((ptr, "engine_broken"), False)) if ptr else False
+
+
 def object_ptr(handle):
     return _handle_to_ptr.get(handle, 0)
 
@@ -176,6 +186,19 @@ def pickup_handles():
 
 def pickup_info(handle):
     return _pickup_info.get(int(handle))
+
+
+def checkpoint_update(handle, x, y, z, dx, dy, dz, red, green, blue, alpha):
+    _checkpoint_updates[int(handle)] = (
+        (float(x), float(y), float(z)),
+        (float(dx), float(dy), float(dz)),
+        (int(red), int(green), int(blue), int(alpha)),
+    )
+    return True
+
+
+def world_raycast(*args):
+    return _raycast_result
 
 
 def help_message(text, quick=True, permanent=False):

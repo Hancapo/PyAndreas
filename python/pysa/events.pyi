@@ -6,6 +6,8 @@ from typing import Any, Callable, TypeVar, overload
 from .entities import GameObject, Ped, Vehicle
 from .models import VEHICLE
 from .ped_models import PED
+from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
+                           VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
 
 
 _NoArgs = TypeVar("_NoArgs", bound=Callable[[], Any])
@@ -18,6 +20,22 @@ _VehicleModelEvent = TypeVar(
 _PedModelEvent = TypeVar(
     "_PedModelEvent", bound=Callable[[Ped, PED | int], Any]
 )
+_PedDamageEvent = TypeVar(
+    "_PedDamageEvent", bound=Callable[[PedDamageEvent], Any]
+)
+_PedDeathEvent = TypeVar(
+    "_PedDeathEvent", bound=Callable[[PedDeathEvent], Any]
+)
+_VehicleEnterEvent = TypeVar(
+    "_VehicleEnterEvent", bound=Callable[[VehicleEnterEvent], Any]
+)
+_VehicleExitEvent = TypeVar(
+    "_VehicleExitEvent", bound=Callable[[VehicleExitEvent], Any]
+)
+_WeaponChangedEvent = TypeVar(
+    "_WeaponChangedEvent", bound=Callable[[WeaponChangedEvent], Any]
+)
+_ZoneEvent = TypeVar("_ZoneEvent", bound=Callable[[ZoneEvent], Any])
 
 
 @overload
@@ -57,3 +75,11 @@ def on_ped_model_changed(fn: _PedModelEvent, /) -> _PedModelEvent: ...
 def on_object_created(fn: _ObjectEvent, /) -> _ObjectEvent: ...
 def on_object_destroyed(fn: _ObjectEvent, /) -> _ObjectEvent: ...
 def on_object_render(fn: _ObjectEvent, /) -> _ObjectEvent: ...
+
+def on_ped_damage(fn: _PedDamageEvent, /) -> _PedDamageEvent: ...
+def on_ped_death(fn: _PedDeathEvent, /) -> _PedDeathEvent: ...
+def on_vehicle_enter(fn: _VehicleEnterEvent, /) -> _VehicleEnterEvent: ...
+def on_vehicle_exit(fn: _VehicleExitEvent, /) -> _VehicleExitEvent: ...
+def on_weapon_changed(fn: _WeaponChangedEvent, /) -> _WeaponChangedEvent: ...
+def on_zone_enter(fn: _ZoneEvent, /) -> _ZoneEvent: ...
+def on_zone_exit(fn: _ZoneEvent, /) -> _ZoneEvent: ...

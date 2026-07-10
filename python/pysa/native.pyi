@@ -9,7 +9,8 @@ from typing import Any
 from .entities import GameObject, Ped, Vehicle
 from .enums import (BLIP_SPRITE, CAMERA_MODE, CAR_MISSION, DOOR_LOCK,
                     ENTITY_STATUS, FIGHT_STYLE, GANG, MOVE_STATE, PED_BONE,
-                    PICKUP_TYPE, VEHICLE_DOOR, VEHICLE_WHEEL)
+                    MISSION_AUDIO_SLOT, PICKUP_TYPE, VEHICLE_DOOR,
+                    VEHICLE_WHEEL)
 from .models import PED_TYPE, VEHICLE, WEAPON
 from .ped_models import PED
 from .world import EXPLOSION
@@ -135,9 +136,9 @@ class _CommandNamespace:
     def ATTACH_CHAR_TO_CAR(self, self_: Ped | int, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, heading: int, headingRange: float, weaponType: WEAPON | int) -> None: ...  # Puts character into a turret on the vehicle, allowing them to shoot
     def ATTACH_CHAR_TO_OBJECT(self, self_: Ped | int, handle: GameObject | int, xOffset: float, yOffset: float, zOffset: float, heading: int, headingRange: float, weaponType: WEAPON | int) -> None: ...  # Attaches the character to the specified object, in turret mode
     def ATTACH_FX_SYSTEM_TO_CHAR_BONE(self, self_: int, handle: Ped | int, pedBone: PED_BONE | int) -> None: ...  # Attaches the specified particle to the specified character
-    def ATTACH_MISSION_AUDIO_TO_CAR(self, slotId: int, handle: Vehicle | int) -> None: ...  # Sets the loaded audio to play at the vehicle's location
-    def ATTACH_MISSION_AUDIO_TO_CHAR(self, slotId: int, handle: Ped | int) -> None: ...  # Sets the loaded audio to play at the char's location
-    def ATTACH_MISSION_AUDIO_TO_OBJECT(self, slotId: int, handle: GameObject | int) -> None: ...  # Sets the loaded audio to play at the object's location
+    def ATTACH_MISSION_AUDIO_TO_CAR(self, slotId: MISSION_AUDIO_SLOT | int, handle: Vehicle | int) -> None: ...  # Sets the loaded audio to play at the vehicle's location
+    def ATTACH_MISSION_AUDIO_TO_CHAR(self, slotId: MISSION_AUDIO_SLOT | int, handle: Ped | int) -> None: ...  # Sets the loaded audio to play at the char's location
+    def ATTACH_MISSION_AUDIO_TO_OBJECT(self, slotId: MISSION_AUDIO_SLOT | int, handle: GameObject | int) -> None: ...  # Sets the loaded audio to play at the object's location
     def ATTACH_OBJECT_TO_CAR(self, self_: GameObject | int, handle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
     def ATTACH_OBJECT_TO_CHAR(self, self_: GameObject | int, handle: Ped | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
     def ATTACH_OBJECT_TO_OBJECT(self, self_: GameObject | int, handle: GameObject | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
@@ -207,7 +208,7 @@ class _CommandNamespace:
     def CLEAR_LOCAL_VAR_BIT_LVAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
     def CLEAR_LOCAL_VAR_BIT_VAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
     def CLEAR_LOOK_AT(self, self_: Ped | int) -> None: ...  # Clears the char's look task, making them stop looking at whatever they were assigned to look at
-    def CLEAR_MISSION_AUDIO(self, slotId: int) -> None: ...  # Unloads the mission audio (03CF), freeing game memory
+    def CLEAR_MISSION_AUDIO(self, slotId: MISSION_AUDIO_SLOT | int) -> None: ...  # Unloads the mission audio (03CF), freeing game memory
     def CLEAR_OBJECT_LAST_WEAPON_DAMAGE(self, self_: GameObject | int) -> None: ...  # Clears the object's last damaging weapon ID
     def CLEAR_ONSCREEN_COUNTER(self, counter: int) -> None: ...  # Removes the onscreen counter (0150 or 03C4)
     def CLEAR_ONSCREEN_TIMER(self, timer: int) -> None: ...  # Removes the onscreen timer
@@ -622,8 +623,8 @@ class _CommandNamespace:
     def HAS_DEATHARREST_BEEN_EXECUTED(self) -> bool: ...  # Returns true if the player is dead (wasted) or arrested (busted)
     def HAS_GAME_JUST_RETURNED_FROM_FRONTEND(self) -> bool: ...  # Returns true if the player just exited the menu on the last frame
     def HAS_LANGUAGE_CHANGED(self) -> bool: ...  # Returns true if the current language set is different from the previous language set
-    def HAS_MISSION_AUDIO_FINISHED(self, slotId: int) -> bool: ...  # Returns true if the audio (03CF) is no longer playing
-    def HAS_MISSION_AUDIO_LOADED(self, slotId: int) -> bool: ...  # Returns true if the mission audio requested with LOAD_MISSION_AUDIO has loaded
+    def HAS_MISSION_AUDIO_FINISHED(self, slotId: MISSION_AUDIO_SLOT | int) -> bool: ...  # Returns true if the audio (03CF) is no longer playing
+    def HAS_MISSION_AUDIO_LOADED(self, slotId: MISSION_AUDIO_SLOT | int) -> bool: ...  # Returns true if the mission audio requested with LOAD_MISSION_AUDIO has loaded
     def HAS_MODEL_LOADED(self, modelId: int) -> bool: ...  # Returns true if the model is available for creation
     def HAS_OBJECT_BEEN_DAMAGED(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is damaged
     def HAS_OBJECT_BEEN_DAMAGED_BY_WEAPON(self, self_: GameObject | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the object has been damaged by the specified weapon or damage type
@@ -913,7 +914,7 @@ class _CommandNamespace:
     def LOAD_CHAR_DECISION_MAKER(self, type: int) -> int: ...  # Creates a decision maker with the specified type and adds it to mission cleanup list. Otherwise shou
     def LOAD_CUTSCENE(self, name: str) -> None: ...  # Loads the data for the specified cutscene
     def LOAD_GROUP_DECISION_MAKER(self, type: int) -> int: ...  # Creates a decision maker for use on groups of actors
-    def LOAD_MISSION_AUDIO(self, slotId: int, audioId: int) -> None: ...  # Loads the file from the audio directory
+    def LOAD_MISSION_AUDIO(self, slotId: MISSION_AUDIO_SLOT | int, audioId: int) -> None: ...  # Loads the file from the audio directory
     def LOAD_MISSION_TEXT(self, tableName: str) -> None: ...  # Makes the game use GXT Entries from the specified GXT Table
     def LOAD_PATH_NODES_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float) -> None: ...  # Adds an area where script created cars will avoid driving in
     def LOAD_PRICES(self, sectionName: str) -> None: ...
@@ -1020,7 +1021,7 @@ class _CommandNamespace:
     def PLAY_AND_KILL_FX_SYSTEM(self, self_: int) -> None: ...  # Starts the particle effect and relinquishes script control over it
     def PLAY_BEAT_TRACK(self) -> None: ...  # Plays the last soundtrack loaded by PRELOAD_BEAT_TRACK
     def PLAY_FX_SYSTEM(self, self_: int) -> None: ...  # Makes the specified particle visible
-    def PLAY_MISSION_AUDIO(self, slotId: int) -> None: ...  # Plays the loaded sound (03CF)
+    def PLAY_MISSION_AUDIO(self, slotId: MISSION_AUDIO_SLOT | int) -> None: ...  # Plays the loaded sound (03CF)
     def PLAY_MISSION_PASSED_TUNE(self, soundId: int) -> None: ...  # Plays an audio file with the specified ID from the Audio directory
     def PLAY_OBJECT_ANIM(self, self_: GameObject | int, animationName: str, animationFile: str, frameDelta: float, lockF: bool, loop: bool) -> None: ...  # Plays an object animation
     def POINT_CAMERA_AT_CAR(self, vehicle: Vehicle | int, mode: CAMERA_MODE | int, switchStyle: int) -> None: ...  # Attaches the camera to the specified vehicle
@@ -1312,7 +1313,7 @@ class _CommandNamespace:
     def SET_MENU_ITEM_WITH_NUMBER(self, self_: int, column: int, row: int, gxt: str, number: int) -> None: ...  # Sets the numbered GXT of the specified panel row
     def SET_MESSAGE_FORMATTING(self, customPosition: bool, margin: int, width: int) -> None: ...  # Overrides the position of the text on screen
     def SET_MINIGAME_IN_PROGRESS(self, state: bool) -> None: ...  # Disables displaying help messages in other scripts
-    def SET_MISSION_AUDIO_POSITION(self, slotId: int, x: float, y: float, z: float) -> None: ...  # Sets the location of the mission audio (03CF) where it can be heard
+    def SET_MISSION_AUDIO_POSITION(self, slotId: MISSION_AUDIO_SLOT | int, x: float, y: float, z: float) -> None: ...  # Sets the location of the mission audio (03CF) where it can be heard
     def SET_MISSION_RESPECT_TOTAL(self, value: int) -> None: ...  # Sets the total value of mission respect points (stat 228)
     def SET_MISSION_TRAIN_COORDINATES(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Puts the train on the rails nearest to the specified coordinates
     def SET_MUSIC_DOES_FADE(self, state: bool) -> None: ...  # Sets whether sounds should fade along with the screen

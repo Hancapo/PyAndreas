@@ -8,6 +8,8 @@ import pysa
 from pysa import VEHICLE, Vehicle, hud, pad, player
 from pysa.pad import BUTTON
 
+heal_action = pad.combo(BUTTON.L1, BUTTON.CROSS)
+
 
 @pysa.on_button(BUTTON.DPAD_UP)
 def spawn_bike():
@@ -18,8 +20,7 @@ def spawn_bike():
 
 @pysa.on_button(BUTTON.CROSS)
 def maybe_heal():
-    # A simple combo: only when L1 is held at the same time.
-    if pad.pressed(BUTTON.L1):
+    if heal_action.down:
         player.heal()
         hud.help_text("Healed")
 
@@ -28,7 +29,7 @@ def maybe_heal():
 def show_stick():
     if not pad.using_joypad() or not player.playing:
         return
-    x, y = pad.left_stick()
-    if x or y:
-        hud.draw(f"stick ({x:+.2f}, {y:+.2f})", 20, 60, size=0.7,
+    stick = pad.left_stick_direction()  # positive Y always means up/forward
+    if stick.active:
+        hud.draw(f"stick ({stick.x:+.2f}, {stick.y:+.2f})", 20, 60, size=0.7,
                  color=(120, 200, 255))

@@ -23,6 +23,13 @@
 - Added the complete `PICKUP_TYPE` enum, corrected the former swapped
   once/respawning constants, and exposed active pickups through
   `world.pickups` with friendly model/type/ammo/position properties.
+- Added the MSPARK CLEO test port and the reusable API it exposed as missing:
+  safe checkpoint visual updates, ped-local offsets, vehicle-to-object
+  attachment, mission-audio cleanup/slot enums, and smoke/light/corona helpers.
+- Added ped animation clips, vehicle/camera conveniences, automatic
+  `ScriptSession` resource ownership, typed world raycasts with complete
+  surface enums, intuitive controller actions, simple menus, safe game-thread
+  scheduling, and subscription-gated gameplay state events.
 - Expanded transactional hot reload, lifecycle/model events, offline tests,
   and source-archive packaging.
 

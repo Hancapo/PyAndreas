@@ -303,12 +303,20 @@ class PedTasks:
                   duration_ms: int = 10000) -> None:
         cmd.TASK_SMART_FLEE_CHAR(self._ped, target, distance, duration_ms)
 
+    def follow(self, target: "Ped") -> None:
+        """Follow another ped on foot."""
+        cmd.TASK_FOLLOW_FOOTSTEPS(self._ped, target)
+
     def drive_around(self, vehicle: "Vehicle", speed: float = 15.0,
                      driving_mode: DRIVING_STYLE = DRIVING_STYLE.STOP_FOR_CARS) -> None:
         cmd.TASK_CAR_DRIVE_WANDER(self._ped, vehicle, speed, driving_mode)
 
     def look_at(self, target: "Ped", duration_ms: int = 4000) -> None:
         cmd.TASK_LOOK_AT_CHAR(self._ped, target, duration_ms)
+
+    def look_at_coord(self, pos, duration_ms: int = 4000) -> None:
+        x, y, z = Vector3.of(pos)
+        cmd.TASK_LOOK_AT_COORD(self._ped, x, y, z, duration_ms)
 
     def hands_up(self, duration_ms: int = 4000) -> None:
         cmd.TASK_HANDS_UP(self._ped, duration_ms)
@@ -319,11 +327,8 @@ class PedTasks:
     def play_anim(self, anim: str, group: str, blend: float = 4.0,
                   loop: bool = False, duration_ms: int = -1) -> None:
         """Play an animation (loads the group if needed), e.g. ('idle_chat', 'ped')."""
-        if not cmd.HAS_ANIMATION_LOADED(group):
-            cmd.REQUEST_ANIMATION(group)
-            cmd.LOAD_ALL_MODELS_NOW()
-        cmd.TASK_PLAY_ANIM(self._ped, anim, group, blend, int(loop), 0, 0, 0,
-                           duration_ms)
+        self._ped.anim.play(anim, group, blend=blend, loop=loop,
+                            duration_ms=duration_ms)
 
     def aim_at(self, target: "Ped", duration_ms: int = 4000) -> None:
         cmd.TASK_AIM_GUN_AT_CHAR(self._ped, target, duration_ms)
@@ -389,6 +394,70 @@ class PedWeapons:
         return self._ped.weapon_in_slot(slot)
 
 
+class PedAnimationClip:
+    """One named animation currently associated with a ped."""
+
+    __slots__ = ("_ped", "name")
+
+    def __init__(self, ped: "Ped", name: str):
+        self._ped = ped
+        self.name = str(name)
+
+    @property
+    def playing(self) -> bool:
+        return cmd.IS_CHAR_PLAYING_ANIM(self._ped, self.name)
+
+    @playing.setter
+    def playing(self, enabled: bool) -> None:
+        cmd.SET_CHAR_ANIM_PLAYING_FLAG(self._ped, self.name, bool(enabled))
+
+    @property
+    def time(self) -> float:
+        """Normalized animation progress, from 0.0 to 1.0."""
+        return cmd.GET_CHAR_ANIM_CURRENT_TIME(self._ped, self.name)
+
+    @time.setter
+    def time(self, value: float) -> None:
+        cmd.SET_CHAR_ANIM_CURRENT_TIME(self._ped, self.name, float(value))
+
+    @property
+    def duration_ms(self) -> float:
+        return cmd.GET_CHAR_ANIM_TOTAL_TIME(self._ped, self.name)
+
+    def set_speed(self, multiplier: float) -> None:
+        cmd.SET_CHAR_ANIM_SPEED(self._ped, self.name, float(multiplier))
+
+    def stop(self) -> None:
+        self.playing = False
+
+
+class PedAnimation:
+    """Animation facade: ``ped.anim.play(...)`` and ``ped.anim[name].time``."""
+
+    __slots__ = ("_ped",)
+
+    def __init__(self, ped: "Ped"):
+        self._ped = ped
+
+    def __getitem__(self, name: str) -> PedAnimationClip:
+        return PedAnimationClip(self._ped, name)
+
+    def play(self, name: str, group: str, blend: float = 4.0,
+             loop: bool = False, lock_x: bool = False,
+             lock_y: bool = False, keep_last_frame: bool = False,
+             duration_ms: int = -1, interruptible: bool = True
+             ) -> PedAnimationClip:
+        """Load an animation group and start one of its animations."""
+        if not cmd.HAS_ANIMATION_LOADED(group):
+            cmd.REQUEST_ANIMATION(group)
+            cmd.LOAD_ALL_MODELS_NOW()
+        command = (cmd.TASK_PLAY_ANIM if interruptible
+                   else cmd.TASK_PLAY_ANIM_NON_INTERRUPTABLE)
+        command(self._ped, name, group, float(blend), bool(loop), bool(lock_x),
+                bool(lock_y), bool(keep_last_frame), int(duration_ms))
+        return self[name]
+
+
 class Ped(Entity):
     """A character. The player's own ped is `pysa.player.ped`."""
 
@@ -411,6 +480,10 @@ class Ped(Entity):
         return PedTasks(self)
 
     @property
+    def anim(self) -> PedAnimation:
+        return PedAnimation(self)
+
+    @property
     def weapons(self) -> PedWeapons:
         return PedWeapons(self)
 
@@ -422,6 +495,11 @@ class Ped(Entity):
     def pos(self, value) -> None:
         x, y, z = Vector3.of(value)
         cmd.SET_CHAR_COORDINATES(self, x, y, z)
+
+    def offset(self, local) -> Vector3:
+        """Convert a ped-local offset into world coordinates."""
+        x, y, z = Vector3.of(local)
+        return Vector3(*cmd.GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS(self, x, y, z))
 
     @property
     def heading(self) -> float:
@@ -1273,6 +1351,13 @@ class Vehicle(Entity):
         x, y, z = Vector3.of(local)
         return Vector3(*cmd.GET_OFFSET_FROM_CAR_IN_WORLD_COORDS(self, x, y, z))
 
+    def attach_to_object(self, obj: "GameObject", offset=(0, 0, 0),
+                         rotation=(0, 0, 0)) -> None:
+        """Attach this vehicle to an object using local offset/rotation."""
+        x, y, z = Vector3.of(offset)
+        rx, ry, rz = Vector3.of(rotation)
+        cmd.ATTACH_CAR_TO_OBJECT(self, obj, x, y, z, rx, ry, rz)
+
     def engine_on(self, on: bool = True) -> None:
         cmd.SET_CAR_ENGINE_ON(self, on)
 
@@ -1286,7 +1371,15 @@ class Vehicle(Entity):
         cmd.SWITCH_CAR_SIREN(self, enabled)
 
     def break_engine(self) -> None:
-        cmd.SET_CAR_ENGINE_BROKEN(self, True)
+        self.engine_broken = True
+
+    @property
+    def engine_broken(self) -> bool:
+        return bool(_pysa.vehicle_engine_broken(self.handle))
+
+    @engine_broken.setter
+    def engine_broken(self, enabled: bool) -> None:
+        cmd.SET_CAR_ENGINE_BROKEN(self, bool(enabled))
 
     def give_nitro(self) -> None:
         cmd.GIVE_NON_PLAYER_CAR_NITRO(self)
@@ -1911,6 +2004,25 @@ class GameObject(Entity):
 
     def delete(self) -> None:
         cmd.DELETE_OBJECT(self)
+
+
+def entity_from_ptr(ptr: int):
+    """Wrap any live CEntity pointer in its friendly Python entity class."""
+    ptr = int(ptr)
+    if not ptr:
+        return None
+    kind = _pysa.read_u8(ptr + 0x36) & 0x7
+    if kind == 1:
+        return Building(ptr)
+    if kind == 2:
+        return Vehicle.from_ptr(ptr)
+    if kind == 3:
+        return Ped.from_ptr(ptr)
+    if kind == 4:
+        return GameObject.from_ptr(ptr)
+    if kind == 5:
+        return Dummy(ptr)
+    return StaticEntity(ptr)
 
 
 def all_peds():

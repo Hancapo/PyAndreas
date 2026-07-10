@@ -18,6 +18,12 @@ constants; Xbox aliases (A/B/X/Y) are provided too.
 from __future__ import annotations
 
 from enum import IntEnum
+import math
+
+try:
+    import _pysa
+except ImportError:
+    from . import _mock as _pysa
 
 from .native import cmd
 
@@ -91,3 +97,96 @@ def left_stick(pad: int = 0) -> tuple:
 def right_stick(pad: int = 0) -> tuple:
     """Right stick as (x, y), each -1.0 .. 1.0 (deadzone applied)."""
     return (_axis(BUTTON.RIGHT_STICK_X, pad), _axis(BUTTON.RIGHT_STICK_Y, pad))
+
+
+class Stick:
+    """An intuitive 2D stick vector where positive Y means up/forward."""
+
+    __slots__ = ("x", "y")
+
+    def __init__(self, x: float = 0.0, y: float = 0.0):
+        self.x = float(x)
+        self.y = float(y)
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    @property
+    def magnitude(self) -> float:
+        return min(1.0, math.sqrt(self.x * self.x + self.y * self.y))
+
+    @property
+    def active(self) -> bool:
+        return self.x != 0.0 or self.y != 0.0
+
+    @property
+    def angle(self) -> float:
+        """Direction in degrees: 0 is right, 90 is up."""
+        return math.degrees(math.atan2(self.y, self.x))
+
+    def __repr__(self) -> str:
+        return f"Stick(x={self.x:.3f}, y={self.y:.3f})"
+
+
+def left_stick_direction(pad: int = 0) -> Stick:
+    """Left stick with conventional coordinates (positive Y is up/forward)."""
+    x, gta_y = left_stick(pad)
+    return Stick(x, -gta_y)
+
+
+def right_stick_direction(pad: int = 0) -> Stick:
+    """Right stick with conventional coordinates (positive Y is up/forward)."""
+    x, gta_y = right_stick(pad)
+    return Stick(x, -gta_y)
+
+
+class ButtonAction:
+    """A named controller action backed by one button or a held combo."""
+
+    __slots__ = ("buttons", "pad", "_down", "_previous", "_sample_time")
+
+    def __init__(self, *buttons: BUTTON, pad: int = 0):
+        if not buttons:
+            raise ValueError("an action needs at least one button")
+        self.buttons = tuple(BUTTON(button) for button in buttons)
+        self.pad = int(pad)
+        self._down = False
+        self._previous = False
+        self._sample_time = None
+
+    def _sample(self) -> None:
+        now = _pysa.game_time()
+        if now == self._sample_time:
+            return
+        self._sample_time = now
+        self._previous = self._down
+        self._down = all(pressed(button, self.pad) for button in self.buttons)
+
+    @property
+    def down(self) -> bool:
+        self._sample()
+        return self._down
+
+    @property
+    def pressed(self) -> bool:
+        self._sample()
+        return self._down and not self._previous
+
+    @property
+    def released(self) -> bool:
+        self._sample()
+        return self._previous and not self._down
+
+    def __bool__(self) -> bool:
+        return self.down
+
+
+def action(button: BUTTON, *, pad: int = 0) -> ButtonAction:
+    """Create a stateful action for one controller button."""
+    return ButtonAction(button, pad=pad)
+
+
+def combo(*buttons: BUTTON, pad: int = 0) -> ButtonAction:
+    """Create a stateful action that is down while every button is held."""
+    return ButtonAction(*buttons, pad=pad)

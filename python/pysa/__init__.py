@@ -33,7 +33,8 @@ Press F11 in-game to hot-reload all scripts. Errors go to PyAndreas.log.
 """
 
 from ._runtime import VERSION as __version__
-from ._runtime import Task, reload_scripts, script, start
+from ._runtime import (Task, call_soon, reload_scripts, run_on_game_thread,
+                       script, start)
 from .events import (on_button, on_cheat, on_device_lost, on_device_reset,
                      on_draw, on_game_reinit, on_game_restart, on_game_start,
                      on_key, on_object_created, on_object_destroyed,
@@ -43,8 +44,11 @@ from .events import (on_button, on_cheat, on_device_lost, on_device_reset,
                      on_pools_init, on_pools_shutdown, on_render_init,
                      on_shutdown, on_tick, on_vehicle_created,
                      on_vehicle_destroyed, on_vehicle_model_changed,
-                     on_vehicle_render)
-from .entities import (Building, Dummy, Entity, GameObject, ObjectAnimation, Ped, PedTasks,
+                     on_vehicle_render, on_ped_damage, on_ped_death,
+                     on_vehicle_enter, on_vehicle_exit, on_weapon_changed,
+                     on_zone_enter, on_zone_exit)
+from .entities import (Building, Dummy, Entity, GameObject, ObjectAnimation, Ped,
+                       PedAnimation, PedAnimationClip, PedTasks,
                        StaticEntity,
                        PedWeapons, Vehicle, VehicleAI, VehicleDamage,
                        VehicleDoor, VehicleDoors, VehicleHandling, VehicleMods, VehicleTyre,
@@ -54,8 +58,8 @@ from .keys import KEY
 from .enums import (ANIMATION_FLAG, BLIP_SPRITE, CAMERA_MODE, CAR_MISSION,
                     DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS, EXPLOSION_KIND,
                     FIGHT_STYLE, GANG, LIGHT_OVERRIDE, MOVE_STATE, PED_BONE,
-                    PICKUP_TYPE, VEHICLE_CLASS, VEHICLE_DOOR, VEHICLE_TYPE,
-                    VEHICLE_WHEEL)
+                    MISSION_AUDIO_SLOT, PICKUP_TYPE, SURFACE, VEHICLE_CLASS,
+                    VEHICLE_DOOR, VEHICLE_TYPE, VEHICLE_WHEEL)
 from .math3 import Vector3
 from .models import PED_TYPE, VEHICLE, VEHICLES, WEAPON, vehicle_id
 from .ped_models import PED
@@ -71,10 +75,12 @@ from .player import (PLAYER_STATE, PlayerCamera, PlayerClothes, PlayerControls,
 from .gamestruct import Struct, struct_of
 from .hooks import Call, Hook, find_functions, function_doc, hook, on_call
 from .game_events import (ExplosionEvent, GameEvent, ProjectileFiredEvent,
+                          PickupCollectedEvent,
                           TyreBurstEvent, VehicleDamageEvent,
                           VehicleExplodeEvent, WantedLevelChangeEvent,
                           WeaponFireEvent, WeaponGivenEvent, on_explosion,
                           on_projectile_fired, on_tyre_burst,
+                          on_pickup_collected,
                           on_vehicle_damage, on_vehicle_explode,
                           on_wanted_level_change, on_weapon_fire,
                           on_weapon_given)
@@ -88,8 +94,13 @@ from .world import buildings, dummies, objects, peds, vehicles
 from .audio import MissionAudio, RADIO
 from .fx import FxSystem
 from .pad import BUTTON
+from .pad import ButtonAction, Stick
+from .session import ScriptSession
+from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
+                           VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
 from . import (audio, blips, camera, draw, fx, game_events, hooks, hud, markers,
                memory, pad, pickups, storage, text, timers, world)
+from . import session, state_events, ui
 
 try:
     import _pysa as _bridge
@@ -118,9 +129,10 @@ __all__ = [
     "on_vehicle_model_changed", "on_ped_model_changed",
     "on_hud_draw", "on_radar_draw", "on_after_fade_draw", "on_menu_draw",
     "on_vehicle_render", "on_ped_render", "on_object_render",
-    "script", "start", "Task",
+    "script", "start", "Task", "run_on_game_thread", "call_soon",
     "Entity", "StaticEntity", "Ped", "Vehicle", "GameObject", "Building", "Dummy",
-    "PedTasks", "PedWeapons", "VehicleDoor", "VehicleDoors", "VehicleTyre",
+    "PedTasks", "PedAnimation", "PedAnimationClip", "PedWeapons",
+    "VehicleDoor", "VehicleDoors", "VehicleTyre",
     "VehicleTyres", "VehicleDamage", "VehicleMods", "VehicleAI", "VehicleHandling",
     "ObjectAnimation",
     "all_peds", "all_vehicles", "all_objects", "all_buildings", "all_dummies",
@@ -132,7 +144,8 @@ __all__ = [
     "DOOR_LOCK", "VEHICLE_DOOR", "VEHICLE_WHEEL", "LIGHT_OVERRIDE",
     "ENTITY_STATUS", "FIGHT_STYLE", "PED_BONE", "GANG", "VEHICLE_CLASS",
     "VEHICLE_TYPE", "ANIMATION_FLAG", "BLIP_SPRITE", "EXPLOSION_KIND",
-    "PICKUP_TYPE",
+    "PICKUP_TYPE", "SURFACE",
+    "MISSION_AUDIO_SLOT",
     "call", "call_ex", "call_func", "cmd", "Out", "End", "NOT", "OPCODES",
     "doc", "find_commands", "signature",
     "player", "PLAYER_STATE", "PlayerStats", "PlayerGroup", "PlayerWeapons",
@@ -143,12 +156,18 @@ __all__ = [
     "Hook", "Call", "on_call", "hook", "find_functions", "function_doc",
     "GameEvent", "VehicleDamageEvent", "VehicleExplodeEvent", "TyreBurstEvent",
     "WeaponFireEvent", "ExplosionEvent", "WantedLevelChangeEvent",
-    "WeaponGivenEvent", "ProjectileFiredEvent",
+    "WeaponGivenEvent", "ProjectileFiredEvent", "PickupCollectedEvent",
     "on_vehicle_damage", "on_vehicle_explode", "on_tyre_burst",
     "on_weapon_fire", "on_explosion", "on_wanted_level_change",
-    "on_projectile_fired", "on_weapon_given",
+    "on_projectile_fired", "on_weapon_given", "on_pickup_collected",
+    "PedDamageEvent", "PedDeathEvent", "VehicleEnterEvent",
+    "VehicleExitEvent", "WeaponChangedEvent", "ZoneEvent",
+    "on_ped_damage", "on_ped_death", "on_vehicle_enter", "on_vehicle_exit",
+    "on_weapon_changed", "on_zone_enter", "on_zone_exit",
     "blips", "camera", "draw", "hooks", "hud", "memory", "pickups", "world",
-    "game_events", "markers", "timers", "audio", "fx", "text", "pad", "storage", "BUTTON",
+    "game_events", "state_events", "markers", "timers", "audio", "fx",
+    "text", "pad", "storage", "session", "ui", "BUTTON", "Stick",
+    "ButtonAction", "ScriptSession",
     "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire",
     "Pickup", "all_pickups",
     "Stopwatch", "Countdown", "MissionAudio", "RADIO", "FxSystem",

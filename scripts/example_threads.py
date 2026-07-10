@@ -4,9 +4,8 @@ Python threads keep running while you play.
 This starts a worker that ticks on its own timer (imagine polling a file, a
 socket, or doing slow computation) and the game just reads the latest result.
 
-RULE: a background thread must NOT touch game state (commands, memory,
-entities, drawing) - those are only safe on the game thread. Do your work in
-the thread, stash the result, and read it from a handler like on_draw below.
+Background threads still must not touch game state directly. Use
+``pysa.run_on_game_thread(...)`` when a worker needs to hand a result back.
 """
 import threading
 
@@ -21,6 +20,7 @@ def _worker():
     while not _stop.wait(1.0):        # wake every second, exit when stopped
         _state["beat"] += 1
         _state["note"] = f"worker alive for {_state['beat']}s"
+        pysa.run_on_game_thread(pysa.log, _state["note"])
 
 
 _thread = threading.Thread(target=_worker, name="pysa-example-worker", daemon=True)

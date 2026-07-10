@@ -12,6 +12,8 @@ class EventTypeTests(unittest.TestCase):
         self.assertIn("Callable[[GameObject], Any]", source)
         self.assertIn("Callable[[Vehicle, VEHICLE | int], Any]", source)
         self.assertIn("def on_vehicle_render(fn: _VehicleEvent", source)
+        self.assertIn("Callable[[PedDamageEvent], Any]", source)
+        self.assertIn("def on_vehicle_enter(fn: _VehicleEnterEvent", source)
 
 
 if __name__ == "__main__":

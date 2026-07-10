@@ -44,6 +44,21 @@ def restore(instantly: bool = True) -> None:
         cmd.RESTORE_CAMERA()
 
 
+def behind_player() -> None:
+    """Put the gameplay camera directly behind the player."""
+    cmd.SET_CAMERA_BEHIND_PLAYER()
+
+
+def position() -> Vector3:
+    """Current active camera position."""
+    return Vector3(*cmd.GET_ACTIVE_CAMERA_COORDINATES())
+
+
+def target() -> Vector3:
+    """World position at which the active camera is pointing."""
+    return Vector3(*cmd.GET_ACTIVE_CAMERA_POINT_AT())
+
+
 def shake(intensity: int = 100) -> None:
     cmd.SHAKE_CAM(intensity)
 

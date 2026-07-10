@@ -6,7 +6,7 @@
     audio.set_radio(audio.RADIO.K_DST)       # switch the car radio
     audio.radio_off()
 
-    clip = audio.MissionAudio(slot=0)
+    clip = audio.MissionAudio(audio.MISSION_AUDIO_SLOT.SLOT1)
     clip.load(2)                             # load bank audio id 2
     if clip.loaded:
         clip.play()
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from enum import IntEnum
 
+from .enums import MISSION_AUDIO_SLOT
 from .math3 import Vector3
 from .native import cmd
 
@@ -64,11 +65,11 @@ def favourite_station() -> None:
 
 
 class MissionAudio:
-    """One of the game's mission-audio slots (0 or 1)."""
+    """One of the game's four mission-audio slots."""
 
     __slots__ = ("_slot",)
 
-    def __init__(self, slot: int = 0):
+    def __init__(self, slot: MISSION_AUDIO_SLOT = MISSION_AUDIO_SLOT.SLOT1):
         self._slot = int(slot)
 
     @property
@@ -84,6 +85,10 @@ class MissionAudio:
 
     def play(self) -> None:
         cmd.PLAY_MISSION_AUDIO(self._slot)
+
+    def clear(self) -> None:
+        """Stop and unload this mission-audio slot."""
+        cmd.CLEAR_MISSION_AUDIO(self._slot)
 
     @property
     def finished(self) -> bool:

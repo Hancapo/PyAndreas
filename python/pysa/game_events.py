@@ -52,17 +52,8 @@ _OWNER_WRAP = {"CPed": "ped", "CPlayerPed": "ped", "CVehicle": "vehicle",
 
 def entity_from_ptr(ptr: int):
     """Wrap a raw CEntity* into a Ped/Vehicle/GameObject by its type byte."""
-    if not ptr:
-        return None
-    from .entities import GameObject, Ped, Vehicle
-    kind = _pysa.read_u8(ptr + 0x36) & 0x7   # CEntity::m_nType (bits 0-2)
-    if kind == 2:
-        return Vehicle.from_ptr(ptr)
-    if kind == 3:
-        return Ped.from_ptr(ptr)
-    if kind == 4:
-        return GameObject.from_ptr(ptr)
-    return ptr   # building / dummy / nothing - no wrapper
+    from .entities import entity_from_ptr as wrap
+    return wrap(ptr)
 
 
 # event name -> (function, subject_or_None, {domain_field: (arg_name, kind)})
@@ -101,6 +92,9 @@ _EVENTS = {
         "weapon": ("weaponType", "weapon"),
         "position": ("posn", "vec"),
         "target": ("victim", "entity"),
+    }),
+    "pickup_collected": ("CPickups::AddToCollectedPickupsArray", None, {
+        "pickup": ("handle", "pickup"),
     }),
 }
 
@@ -143,6 +137,9 @@ class GameEvent:
                 return raw
         if kind == "entity":
             return entity_from_ptr(raw)
+        if kind == "pickup":
+            from .pickups import Pickup
+            return Pickup(raw)
         if kind in ("ped", "vehicle", "object"):
             from .entities import GameObject, Ped, Vehicle
             return {"ped": Ped, "vehicle": Vehicle, "object": GameObject}[kind].from_ptr(raw)
@@ -235,6 +232,12 @@ class ProjectileFiredEvent(GameEvent):
     target: EventEntity
 
 
+class PickupCollectedEvent(GameEvent):
+    """The player collected a pickup."""
+
+    pickup: "Pickup"
+
+
 _EVENT_CLASSES = {
     "vehicle_damage": VehicleDamageEvent,
     "vehicle_explode": VehicleExplodeEvent,
@@ -244,6 +247,7 @@ _EVENT_CLASSES = {
     "wanted_level_change": WantedLevelChangeEvent,
     "weapon_given": WeaponGivenEvent,
     "projectile_fired": ProjectileFiredEvent,
+    "pickup_collected": PickupCollectedEvent,
 }
 
 
@@ -328,6 +332,7 @@ on_explosion = _make_decorator("explosion")
 on_wanted_level_change = _make_decorator("wanted_level_change")
 on_projectile_fired = _make_decorator("projectile_fired")
 on_weapon_given = _make_decorator("weapon_given")
+on_pickup_collected = _make_decorator("pickup_collected")
 
 
 def events() -> list:

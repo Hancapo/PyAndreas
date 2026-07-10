@@ -18,8 +18,9 @@ except ImportError:
 
 from . import memory
 from .entities import (GameObject, Ped, Vehicle, all_buildings, all_dummies,
-                       all_objects, all_peds, all_vehicles, load_model,
-                       release_model)
+                       all_objects, all_peds, all_vehicles, entity_from_ptr,
+                       load_model, release_model)
+from .enums import EXPLOSION_KIND, SURFACE
 from .math3 import Vector3
 from .native import cmd
 from .pickups import all_pickups
@@ -40,6 +41,64 @@ class WEATHER(IntEnum):
     RAINY_COUNTRYSIDE = 16
     SANDSTORM = 19
     UNDERWATER = 20
+
+
+class RaycastHit:
+    """One collision returned by :func:`raycast`."""
+
+    __slots__ = ("position", "normal", "entity", "surface", "piece",
+                 "daylight", "nightlight", "depth")
+
+    def __init__(self, position, normal, entity, surface, piece: int,
+                 daylight: int, nightlight: int, depth: float):
+        self.position = Vector3.of(position)
+        self.normal = Vector3.of(normal)
+        self.entity = entity
+        try:
+            self.surface = SURFACE(surface)
+        except ValueError:
+            self.surface = int(surface)
+        self.piece = int(piece)
+        self.daylight = int(daylight)
+        self.nightlight = int(nightlight)
+        self.depth = float(depth)
+
+    def __bool__(self) -> bool:
+        return True
+
+    def __repr__(self) -> str:
+        return (f"RaycastHit(position={self.position!r}, "
+                f"surface={self.surface!r}, entity={self.entity!r})")
+
+
+def raycast(start, end, *, ignore=None, buildings: bool = True,
+            vehicles: bool = True, peds: bool = True,
+            objects: bool = True, dummies: bool = True,
+            see_through: bool = False, camera_ignore: bool = False,
+            shoot_through: bool = False):
+    """Cast a line through the world and return a :class:`RaycastHit`.
+
+    ``ignore`` may be an entity that should not block the ray, commonly the
+    player or the object firing it. Returns ``None`` when nothing was hit.
+    """
+    sx, sy, sz = Vector3.of(start)
+    ex, ey, ez = Vector3.of(end)
+    ignore_ptr = int(getattr(ignore, "address", ignore or 0))
+    result = _pysa.world_raycast(
+        sx, sy, sz, ex, ey, ez, ignore_ptr, bool(buildings), bool(vehicles),
+        bool(peds), bool(objects), bool(dummies), bool(see_through),
+        bool(camera_ignore), bool(shoot_through))
+    if result is None:
+        return None
+    px, py, pz, nx, ny, nz, entity_ptr, surface, piece, day, night, depth = result
+    return RaycastHit((px, py, pz), (nx, ny, nz),
+                      entity_from_ptr(entity_ptr), surface, piece, day, night,
+                      depth)
+
+
+def line_of_sight(start, end, **filters) -> bool:
+    """True when no enabled world category blocks the line between two points."""
+    return raycast(start, end, **filters) is None
 
 
 def get_time() -> tuple:
@@ -139,16 +198,8 @@ def info_zone_name(pos) -> str:
     return cmd.GET_NAME_OF_INFO_ZONE(x, y, z)
 
 
-class EXPLOSION(IntEnum):
-    GRENADE = 0
-    MOLOTOV = 1
-    ROCKET = 2
-    CAR = 4
-    HELI = 5
-    BOAT = 7
-    TANK = 8
-    SMALL = 9
-    TINY = 10
+# Script-created explosions use the same eExplosionType values as the game.
+EXPLOSION = EXPLOSION_KIND
 
 
 def explosion(pos, explosion_type: EXPLOSION = EXPLOSION.GRENADE) -> None:

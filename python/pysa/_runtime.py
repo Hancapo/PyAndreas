@@ -13,6 +13,9 @@ import importlib.util
 import os
 import sys
 import traceback
+import threading
+from concurrent.futures import Future
+from queue import Empty, Queue
 
 try:
     import _pysa
@@ -74,6 +77,11 @@ _reload_was_down = False
 _task_funcs: list = []    # @script-decorated generator functions (restarted on game_start)
 _tasks: list = []         # live Task instances
 
+# Work posted by background threads and executed at the start of the next
+# game tick. Only this queue may cross from worker threads into game APIs.
+_main_thread_id = threading.get_ident()
+_main_thread_queue = Queue()
+
 _NATIVE_GATED_EVENTS = frozenset({
     "hud_draw", "radar_draw", "after_fade_draw", "menu_draw",
     "vehicle_render", "ped_render", "object_render",
@@ -126,6 +134,48 @@ def start(gen_or_func) -> Task:
     return task
 
 
+def run_on_game_thread(fn, *args, **kwargs) -> Future:
+    """Safely schedule callable ``fn`` on GTA's game thread.
+
+    The returned standard-library Future receives the return value or raised
+    exception. Calls made from the game thread execute immediately.
+    """
+    future = Future()
+    if threading.get_ident() == _main_thread_id:
+        try:
+            future.set_result(fn(*args, **kwargs))
+        except BaseException as exc:
+            future.set_exception(exc)
+    else:
+        _main_thread_queue.put((future, fn, args, kwargs))
+    return future
+
+
+call_soon = run_on_game_thread
+
+
+def _drain_main_thread_queue() -> None:
+    while True:
+        try:
+            future, fn, args, kwargs = _main_thread_queue.get_nowait()
+        except Empty:
+            return
+        if future.set_running_or_notify_cancel():
+            try:
+                future.set_result(fn(*args, **kwargs))
+            except BaseException as exc:
+                future.set_exception(exc)
+
+
+def _cancel_main_thread_queue() -> None:
+    while True:
+        try:
+            future, _, _, _ = _main_thread_queue.get_nowait()
+        except Empty:
+            return
+        future.cancel()
+
+
 def script(fn):
     """Decorator: run `fn` as a coroutine on every game start / reload.
 
@@ -162,6 +212,12 @@ def register(event: str, fn, **extra):
 
 
 def _clear_registries() -> None:
+    try:
+        from . import session
+        session._close_all()
+    except Exception:
+        pass
+    _cancel_main_thread_queue()
     for event in _NATIVE_GATED_EVENTS:
         if _handlers.get(event):
             _pysa.set_event_enabled(event, False)
@@ -181,6 +237,11 @@ def _clear_registries() -> None:
     try:
         from . import game_events
         game_events._clear()
+    except Exception:
+        pass
+    try:
+        from . import state_events
+        state_events._reset()
     except Exception:
         pass
     try:
@@ -366,6 +427,8 @@ def dispatch_simple(event: str) -> None:
 def _tick() -> None:
     global _reload_was_down
 
+    _drain_main_thread_queue()
+
     # hot reload key (edge-triggered)
     if RELOAD_KEY:
         down = _pysa.key_down(RELOAD_KEY)
@@ -412,6 +475,13 @@ def _tick() -> None:
                 h.run()
 
     now = _pysa.game_time()
+
+    # Friendly state transitions are entirely dormant without subscribers.
+    try:
+        from . import state_events
+        state_events._poll()
+    except Exception:
+        _pysa.log(f"[pysa] state event polling failed:\n{traceback.format_exc()}")
 
     # interval ticks (game time: pauses when the game is paused)
     for h in _interval_ticks:

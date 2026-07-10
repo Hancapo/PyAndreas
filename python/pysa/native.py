@@ -48,6 +48,7 @@ _FRIENDLY_PARAM_TYPES = {
     "WheelId": "VEHICLE_WHEEL",
     "ExplosionType": "world.EXPLOSION",
     "PickupType": "PICKUP_TYPE",
+    "MissionAudioSlot": "MISSION_AUDIO_SLOT",
 }
 
 

@@ -21,6 +21,8 @@ Effect names are the game's particle names (e.g. "explosion_large", "fire",
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
 from .math3 import Vector3
 from .native import cmd
 
@@ -37,16 +39,20 @@ class FX:
     CIGARETTE = "cigarette"
 
 
-class CORONA:
+class CORONA(IntEnum):
     NORMAL = 0
-    MOON = 1
-    REFLECTION = 2
-    HEADLIGHT = 3
+    STAR = 1
+    MOON = 2
+    REFLECTION = 3
+    HEADLIGHT = 4
+    NONE = 5
+    RING = 9
 
 
-class FLARE:
+class FLARE(IntEnum):
     NONE = 0
     SUN = 1
+    HEADLIGHTS = 2
 
 
 class FxSystem:
@@ -103,3 +109,31 @@ def corona(pos, size: float = 1.0, color=(255, 255, 255),
     r, g, b = color[0], color[1], color[2]
     cmd.DRAW_CORONA(x, y, z, float(size), int(corona_type), int(flare),
                     int(r), int(g), int(b))
+
+
+def weaponshop_corona(pos, size: float = 1.0, color=(255, 255, 255),
+                      corona_type: int = CORONA.NORMAL,
+                      flare: int = FLARE.NONE) -> None:
+    """Draw the short-range corona variant used by weapon shops."""
+    x, y, z = Vector3.of(pos)
+    r, g, b = color[0], color[1], color[2]
+    cmd.DRAW_WEAPONSHOP_CORONA(x, y, z, float(size), int(corona_type),
+                               int(flare), int(r), int(g), int(b))
+
+
+def light(pos, radius: float = 10.0, color=(255, 255, 255)) -> None:
+    """Draw a colored dynamic light for the current frame."""
+    x, y, z = Vector3.of(pos)
+    r, g, b = color[0], color[1], color[2]
+    cmd.DRAW_LIGHT_WITH_RANGE(x, y, z, int(r), int(g), int(b), float(radius))
+
+
+def smoke_particle(pos, velocity=(0, 0, 0), color=(1.0, 1.0, 1.0),
+                   alpha: float = 1.0, size: float = 0.5,
+                   fade: float = 0.025) -> None:
+    """Create one legacy smoke particle with velocity and opacity."""
+    x, y, z = Vector3.of(pos)
+    vx, vy, vz = Vector3.of(velocity)
+    r, g, b = color[0], color[1], color[2]
+    cmd.ADD_SMOKE_PARTICLE(x, y, z, vx, vy, vz, float(r), float(g),
+                           float(b), float(alpha), float(size), float(fade))

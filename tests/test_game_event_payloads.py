@@ -1,8 +1,10 @@
 import unittest
 
-from pysa import EXPLOSION_KIND, WEAPON, VehicleDamageEvent
+from pysa import (EXPLOSION_KIND, WEAPON, PickupCollectedEvent,
+                  VehicleDamageEvent)
 from pysa import _mock, game_events
 from pysa.entities import Ped, Vehicle
+from pysa.pickups import Pickup
 
 
 class FakeHook:
@@ -74,6 +76,19 @@ class GameEventPayloadTests(unittest.TestCase):
 
         self.assertIs(known.kind, EXPLOSION_KIND.CAR)
         self.assertEqual(custom.kind, 99)
+
+    def test_pickup_collection_wraps_the_pickup_handle(self):
+        received = []
+        game_events._handlers["pickup_collected"] = [received.append]
+        dispatch = game_events._make_dispatch(
+            "pickup_collected", None, {"pickup": (0, "pickup")},
+            "CPickups",
+        )
+        dispatch(FakeHook(ints={0: 77}))
+
+        self.assertIsInstance(received[0], PickupCollectedEvent)
+        self.assertIsInstance(received[0].pickup, Pickup)
+        self.assertEqual(received[0].pickup.handle, 77)
 
 
 if __name__ == "__main__":

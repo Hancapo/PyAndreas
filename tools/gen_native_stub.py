@@ -29,7 +29,8 @@ from typing import Any
 from .entities import GameObject, Ped, Vehicle
 from .enums import (BLIP_SPRITE, CAMERA_MODE, CAR_MISSION, DOOR_LOCK,
                     ENTITY_STATUS, FIGHT_STYLE, GANG, MOVE_STATE, PED_BONE,
-                    PICKUP_TYPE, VEHICLE_DOOR, VEHICLE_WHEEL)
+                    MISSION_AUDIO_SLOT, PICKUP_TYPE, VEHICLE_DOOR,
+                    VEHICLE_WHEEL)
 from .models import PED_TYPE, VEHICLE, WEAPON
 from .ped_models import PED
 from .world import EXPLOSION
@@ -109,6 +110,7 @@ TYPED_INPUTS = {
     "WheelId": "VEHICLE_WHEEL | int",
     "ExplosionType": "EXPLOSION | int",
     "PickupType": "PICKUP_TYPE | int",
+    "MissionAudioSlot": "MISSION_AUDIO_SLOT | int",
 }
 
 

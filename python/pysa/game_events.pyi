@@ -8,6 +8,7 @@ from .enums import EXPLOSION_KIND
 from .hooks import Hook
 from .math3 import Vector3
 from .models import WEAPON
+from .pickups import Pickup
 
 
 EventEntity = Union[Ped, Vehicle, GameObject, int, None]
@@ -73,6 +74,11 @@ class ProjectileFiredEvent(GameEvent):
     target: EventEntity
 
 
+class PickupCollectedEvent(GameEvent):
+    @property
+    def pickup(self) -> Pickup: ...
+
+
 _VehicleDamageHandler = TypeVar(
     "_VehicleDamageHandler", bound=Callable[[VehicleDamageEvent], Any]
 )
@@ -97,6 +103,9 @@ _WeaponGivenHandler = TypeVar(
 _ProjectileHandler = TypeVar(
     "_ProjectileHandler", bound=Callable[[ProjectileFiredEvent], Any]
 )
+_PickupHandler = TypeVar(
+    "_PickupHandler", bound=Callable[[PickupCollectedEvent], Any]
+)
 
 
 def on_vehicle_damage(fn: _VehicleDamageHandler, /) -> _VehicleDamageHandler: ...
@@ -107,6 +116,7 @@ def on_explosion(fn: _ExplosionHandler, /) -> _ExplosionHandler: ...
 def on_wanted_level_change(fn: _WantedHandler, /) -> _WantedHandler: ...
 def on_weapon_given(fn: _WeaponGivenHandler, /) -> _WeaponGivenHandler: ...
 def on_projectile_fired(fn: _ProjectileHandler, /) -> _ProjectileHandler: ...
+def on_pickup_collected(fn: _PickupHandler, /) -> _PickupHandler: ...
 
 def entity_from_ptr(ptr: int) -> EventEntity: ...
 def events() -> list[str]: ...
