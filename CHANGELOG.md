@@ -33,6 +33,7 @@ The changelog is release-oriented and uses a small fixed set of categories:
 - MSPARK now uses the high-level OOP API and automatic resource ownership without direct `cmd.*` calls.
 
 ### Fixed
+- The ASI now resolves its Python runtime, library, scripts, and examples relative to its actual loaded location, allowing the complete release layout to run from a Mod Loader folder.
 - Bundled examples now ship in an inactive `PyAndreas\examples` folder instead of the live `PyAndreas\scripts` folder, so users explicitly choose which scripts to enable.
 - Corrected swapped once-only and respawning pickup constants to match plugin-sdk's `ePickupType` values.
 - Controller aiming now converts GTA's inverted vertical stick axis so pushing up raises the MSPARK beam.

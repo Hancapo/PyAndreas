@@ -169,6 +169,22 @@ bringing down the whole script runtime. Reload also refreshes helper modules
 inside the scripts folder. If a script fails while importing, its partially
 registered events, tasks, and hooks are rolled back.
 
+### Mod Loader
+
+The same release layout can be placed inside one Mod Loader folder without
+copying the Python runtime or scripts into the GTA root:
+
+```text
+<game>\modloader\PyAndreas\scripts\PyAndreas.asi
+<game>\modloader\PyAndreas\PyAndreas\python\
+<game>\modloader\PyAndreas\PyAndreas\lib\pysa.pyz
+<game>\modloader\PyAndreas\PyAndreas\scripts\
+<game>\modloader\PyAndreas\PyAndreas\examples\
+```
+
+The ASI resolves its data folder relative to its actual loaded location first,
+then falls back to `<game>\PyAndreas` for traditional ASI-loader installs.
+
 ## Build From Source
 
 Requirements:

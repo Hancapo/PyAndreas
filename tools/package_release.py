@@ -126,8 +126,9 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
 
     (root / "INSTALL.txt").write_text(
         f"PyAndreas {project_version()}\n\n"
-        "Requirements: GTA San Andreas PC 1.0 US and an installed ASI loader.\n"
-        "Copy the contents of this folder into the GTA San Andreas game root.\n"
+        "Requirements: GTA San Andreas PC 1.0 US and an ASI loader or Mod Loader.\n"
+        "Copy the contents into the GTA root, or keep the complete layout "
+        "inside one Mod Loader mod folder.\n"
         "The ASI belongs in scripts\\; user Python files belong in "
         "PyAndreas\\scripts\\. Bundled examples are inactive in "
         "PyAndreas\\examples\\; copy only the examples you choose into the "

@@ -2,12 +2,12 @@
 // Plugin host: embeds CPython (32-bit, stable ABI) and forwards plugin-sdk
 // events into the pure-Python 'pysa' package.
 //
-// Expected game-folder layout:
-//   <game>\scripts\PyAndreas.asi           (this plugin)
-//   <game>\PyAndreas\python\               (32-bit embeddable Python: python3.dll, python3xx.dll, python3xx.zip)
-//   <game>\PyAndreas\lib\pysa.pyz           (the pysa package archive)
-//   <game>\PyAndreas\scripts\*.py          (user scripts)
-//   <game>\PyAndreas\PyAndreas.log         (created at runtime)
+// Expected mirrored layout, either in the game root or one Mod Loader mod:
+//   <root>\scripts\PyAndreas.asi            (this plugin)
+//   <root>\PyAndreas\python\                (32-bit embeddable Python)
+//   <root>\PyAndreas\lib\pysa.pyz           (the pysa package archive)
+//   <root>\PyAndreas\scripts\*.py           (active user scripts)
+//   <root>\PyAndreas\examples\*.py          (inactive bundled examples)
 
 #include "PySaModule.h"
 
@@ -15,6 +15,7 @@
 #include "CHud.h"
 
 #include <cstring>
+#include <vector>
 
 using namespace plugin;
 
@@ -64,17 +65,60 @@ PyObject *g_dispatch = nullptr;     // pysa._runtime.dispatch
 bool g_pendingGameStart = false;
 PyThreadState *g_savedState = nullptr;  // set when the GIL is released between frames
 
-std::string GameDir() {
+std::string ParentDir(const std::string &path) {
+    size_t slash = path.find_last_of("\\/");
+    return slash == std::string::npos ? std::string() : path.substr(0, slash);
+}
+
+std::string ExeDir() {
     char path[MAX_PATH];
     GetModuleFileNameA(nullptr, path, MAX_PATH);
-    std::string s(path);
-    size_t slash = s.find_last_of('\\');
-    return slash == std::string::npos ? s : s.substr(0, slash);
+    return ParentDir(path);
+}
+
+std::string AsiDir() {
+    HMODULE module = nullptr;
+    if (!GetModuleHandleExA(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCSTR>(&AsiDir), &module))
+        return std::string();
+    char path[MAX_PATH];
+    if (!GetModuleFileNameA(module, path, MAX_PATH))
+        return std::string();
+    return ParentDir(path);
 }
 
 bool DirExists(const std::string &dir) {
     DWORD attrs = GetFileAttributesA(dir.c_str());
     return attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+bool LooksLikeBaseDir(const std::string &dir) {
+    return DirExists(dir) &&
+           (DirExists(dir + "\\lib") || DirExists(dir + "\\python") ||
+            DirExists(dir + "\\scripts"));
+}
+
+std::string ResolveBaseDir() {
+    std::vector<std::string> candidates;
+    std::string asiDir = AsiDir();
+    if (!asiDir.empty()) {
+        // Mirrored layout: <mod>\scripts\ASI + <mod>\PyAndreas\...
+        std::string parent = ParentDir(asiDir);
+        if (!parent.empty())
+            candidates.push_back(parent + "\\PyAndreas");
+        // Also accept an ASI beside the data folder, or directly inside it.
+        candidates.push_back(asiDir + "\\PyAndreas");
+        candidates.push_back(asiDir);
+    }
+    candidates.push_back(ExeDir() + "\\PyAndreas");
+
+    for (const std::string &candidate : candidates) {
+        if (LooksLikeBaseDir(candidate))
+            return candidate;
+    }
+    return ExeDir() + "\\PyAndreas";  // preserve the traditional error path
 }
 
 // Load the bundled 32-bit Python runtime (python3.dll + python3xx.dll).
@@ -124,12 +168,12 @@ void Fail(const char *why) {
 }
 
 void InitPython() {
-    std::string base = GameDir() + "\\PyAndreas";
+    std::string base = ResolveBaseDir();
     pysa::SetBaseDir(base);
     pysa::Log("PyAndreas starting (base: %s)", base.c_str());
 
     if (!DirExists(base)) {
-        Fail("PyAndreas folder not found next to gta_sa.exe");
+        Fail("could not locate PyAndreas data beside the ASI or gta_sa.exe");
         return;
     }
 
