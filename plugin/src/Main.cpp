@@ -14,7 +14,46 @@
 #include "plugin.h"
 #include "CHud.h"
 
+#include <cstring>
+
 using namespace plugin;
+
+namespace pysa {
+
+struct EventGates {
+    bool hudDraw = false;
+    bool radarDraw = false;
+    bool afterFadeDraw = false;
+    bool menuDraw = false;
+    bool vehicleRender = false;
+    bool pedRender = false;
+    bool objectRender = false;
+} g_eventGates;
+
+bool SetEventEnabled(const char *name, bool enabled) {
+    if (!strcmp(name, "hud_draw")) g_eventGates.hudDraw = enabled;
+    else if (!strcmp(name, "radar_draw")) g_eventGates.radarDraw = enabled;
+    else if (!strcmp(name, "after_fade_draw")) g_eventGates.afterFadeDraw = enabled;
+    else if (!strcmp(name, "menu_draw")) g_eventGates.menuDraw = enabled;
+    else if (!strcmp(name, "vehicle_render")) g_eventGates.vehicleRender = enabled;
+    else if (!strcmp(name, "ped_render")) g_eventGates.pedRender = enabled;
+    else if (!strcmp(name, "object_render")) g_eventGates.objectRender = enabled;
+    else return false;
+    return true;
+}
+
+bool EventEnabled(const char *name) {
+    if (!strcmp(name, "hud_draw")) return g_eventGates.hudDraw;
+    if (!strcmp(name, "radar_draw")) return g_eventGates.radarDraw;
+    if (!strcmp(name, "after_fade_draw")) return g_eventGates.afterFadeDraw;
+    if (!strcmp(name, "menu_draw")) return g_eventGates.menuDraw;
+    if (!strcmp(name, "vehicle_render")) return g_eventGates.vehicleRender;
+    if (!strcmp(name, "ped_render")) return g_eventGates.pedRender;
+    if (!strcmp(name, "object_render")) return g_eventGates.objectRender;
+    return false;
+}
+
+}  // namespace pysa
 
 namespace {
 
@@ -221,6 +260,30 @@ public:
             pysa::FlushDrawQueue();     // text on top
         };
 
+        // These can fire once per rendered entity, so Python explicitly
+        // enables them only when a script has registered a matching handler.
+        Events::drawHudEvent += [] {
+            if (pysa::EventEnabled("hud_draw")) Dispatch("hud_draw");
+        };
+        Events::drawRadarEvent += [] {
+            if (pysa::EventEnabled("radar_draw")) Dispatch("radar_draw");
+        };
+        Events::drawAfterFadeEvent += [] {
+            if (pysa::EventEnabled("after_fade_draw")) Dispatch("after_fade_draw");
+        };
+        Events::menuDrawingEvent += [] {
+            if (pysa::EventEnabled("menu_draw")) Dispatch("menu_draw");
+        };
+        Events::vehicleRenderEvent += [](CVehicle *vehicle) {
+            if (pysa::EventEnabled("vehicle_render")) DispatchPtr("vehicle_render", vehicle);
+        };
+        Events::pedRenderEvent += [](CPed *ped) {
+            if (pysa::EventEnabled("ped_render")) DispatchPtr("ped_render", ped);
+        };
+        Events::objectRenderEvent += [](CObject *object) {
+            if (pysa::EventEnabled("object_render")) DispatchPtr("object_render", object);
+        };
+
         Events::initScriptsEvent += [] {
             // New game / loaded save. Python may not be up yet on the very
             // first session - the tick handler covers that case.
@@ -252,6 +315,7 @@ public:
         Events::shutdownRwEvent += [] {
             if (g_state == State::Running) {
                 Dispatch("shutdown");
+                pysa::g_eventGates = pysa::EventGates{};
                 // Re-acquire the GIL we released after init, then tear down.
                 if (g_savedState) {
                     PyEval_RestoreThread(g_savedState);

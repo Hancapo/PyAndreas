@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PYTHON_DIR = ROOT / "python"
 sys.path.insert(0, str(PYTHON_DIR))
 
-from pysa.signatures import FLAG_COND, SIGS  # noqa: E402
+from pysa.signatures import FLAG_COND, PARAM_TYPES, SIGS  # noqa: E402
 
 
 HEADER = '''"""Static typing stubs for pysa.native.
@@ -27,6 +27,12 @@ from __future__ import annotations
 from typing import Any
 
 from .entities import GameObject, Ped, Vehicle
+from .enums import (BLIP_SPRITE, CAMERA_MODE, CAR_MISSION, DOOR_LOCK,
+                    ENTITY_STATUS, FIGHT_STYLE, GANG, MOVE_STATE, PED_BONE,
+                    PICKUP_TYPE, VEHICLE_DOOR, VEHICLE_WHEEL)
+from .models import PED_TYPE, VEHICLE, WEAPON
+from .ped_models import PED
+from .world import EXPLOSION
 
 
 class _OutMarker: ...
@@ -75,12 +81,47 @@ def safe_param(name: str, index: int, used: set[str]) -> str:
     return name
 
 
-def input_type(kind: str) -> str:
+TYPED_INPUTS = {
+    "bool": "bool",
+    "Char": "Ped | int",
+    "Car": "Vehicle | int",
+    "Heli": "Vehicle | int",
+    "Plane": "Vehicle | int",
+    "Boat": "Vehicle | int",
+    "Train": "Vehicle | int",
+    "Trailer": "Vehicle | int",
+    "Object": "GameObject | int",
+    "WeaponType": "WEAPON | int",
+    "model_vehicle": "VEHICLE | int",
+    "model_char": "PED | int",
+    "PedType": "PED_TYPE | int",
+    "MoveState": "MOVE_STATE | int",
+    "CarDoor": "VEHICLE_DOOR | int",
+    "CarMission": "CAR_MISSION | int",
+    "CameraMode": "CAMERA_MODE | int",
+    "CarLock": "DOOR_LOCK | int",
+    "EntityStatus": "ENTITY_STATUS | int",
+    "FightStyle": "FIGHT_STYLE | int",
+    "PedBone": "PED_BONE | int",
+    "PedBoneId": "PED_BONE | int",
+    "GangType": "GANG | int",
+    "RadarSprite": "BLIP_SPRITE | int",
+    "WheelId": "VEHICLE_WHEEL | int",
+    "ExplosionType": "EXPLOSION | int",
+    "PickupType": "PICKUP_TYPE | int",
+}
+
+
+def input_type(kind: str, source_type: str = "") -> str:
+    if source_type in TYPED_INPUTS:
+        return TYPED_INPUTS[source_type]
     if kind == "f":
         return "float"
     if kind == "s":
         return "str"
-    return "Any"
+    if source_type == "any":
+        return "Any"
+    return "int"
 
 
 def output_type(kind: str) -> str:
@@ -110,17 +151,19 @@ def method_line(name: str, sig: tuple) -> str:
     variadic = inspec.endswith("*")
     base = inspec[:-1] if variadic else inspec
     raw_names = innames.split(",") if innames else []
+    source_types = PARAM_TYPES.get(name, ())
     used = {"self"}
     params = []
     for index, kind in enumerate(base):
         param_name = safe_param(raw_names[index] if index < len(raw_names) else "", index, used)
-        params.append(f"{param_name}: {input_type(kind)}")
+        source_type = source_types[index] if index < len(source_types) else ""
+        params.append(f"{param_name}: {input_type(kind, source_type)}")
     if variadic:
         params.append("*args: Any")
     joined = ", ".join(["self", *params])
     line = f"    def {name}({joined}) -> {return_type(outspec, flags)}: ..."
     if doc:
-        line += f"  # {doc.replace(chr(10), ' ')[:100]}"
+        line += f"  # {doc.replace(chr(10), ' ')[:100].rstrip()}"
     return line
 
 

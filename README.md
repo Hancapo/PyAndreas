@@ -7,9 +7,9 @@ PyAndreas embeds CPython into GTA SA and exposes a Python package, `pysa`, for
 writing in-game scripts with hot reload, event decorators, typed entity wrappers,
 SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 
-> Status: early source release. This targets GTA San Andreas PC 1.0 US and is
-> intended for people comfortable building ASI plugins and working with
-> plugin-sdk.
+> Status: v0.2 development release. This targets GTA San Andreas PC 1.0 US.
+> Copy-ready ZIP releases include the ASI, Python runtime, one-file `pysa.pyz`,
+> examples, install instructions, and a SHA-256 checksum.
 
 ## Highlights
 
@@ -20,7 +20,8 @@ SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 - Work with OOP wrappers for `player`, `Ped`, `Vehicle`, `GameObject`, blips,
   pickups, world state, camera, HUD, and tasks.
 - Call vanilla SA script commands through `cmd.COMMAND_NAME(...)` with generated
-  signatures.
+  signatures and editor types for entities, models, weapons, and common enums.
+- Keep script state with the small dictionary-like `pysa.storage` API.
 - Access raw memory and raw game functions when the high-level API does not
   cover something yet.
 - Install the Python package locally in editable mode for real editor
@@ -199,6 +200,19 @@ This creates `dist\PyAndreas\lib\pysa.pyz` and removes the obsolete generated
 `dist\PyAndreas\lib\pysa` folder. Python imports directly from the archive;
 user scripts remain normal editable `.py` files.
 
+Build the ASI and assemble the complete copy-ready release in one command:
+
+```powershell
+.\tools\build_release.ps1 `
+  -PluginSdkDir C:\path\to\plugin-sdk `
+  -PythonX86Dir C:\path\to\pythonx86\tools
+```
+
+This produces `dist\release`, `dist\PyAndreas-<version>-win32.zip`, and its
+`.sha256` checksum. Add `-GameDir C:\path\to\GTA-SA` to install the assembled
+release after a successful build. By default it packages the embeddable runtime
+already at `dist\PyAndreas\python`; use `-RuntimeDir` to select another one.
+
 ## Development Checks
 
 The Python API and offline runtime have a standard-library test suite:
@@ -216,6 +230,7 @@ The same checks run on Python 3.8 and 3.13 in GitHub Actions.
 | --- | --- |
 | Events | `@pysa.on_tick`, `@pysa.on_tick(ms=500)`, `@pysa.on_draw`, `@pysa.on_key(KEY.F3)`, `@pysa.on_cheat("WORD")` |
 | Plugin lifecycle | `@pysa.on_game_restart`, `@pysa.on_vehicle_model_changed`, `@pysa.on_device_reset`, pool/render lifecycle hooks |
+| Opt-in render events | `@pysa.on_hud_draw`, `@pysa.on_vehicle_render`, `@pysa.on_ped_render` (native-to-Python dispatch is subscription-gated) |
 | Gamepad | `@pysa.on_button(BUTTON.CROSS)`, `pad.pressed(BUTTON.L1)`, `pad.left_stick()`, `pad.rumble()` |
 | Typed constants | `PED.BMYBOUN`, `VEHICLE.INFERNUS`, `WEAPON.M4`, `MOVE_STATE.RUN`, `CAMERA_MODE.FIXED` |
 | Coroutines | `@pysa.script`, `pysa.start(generator)`, `yield 500` to wait game milliseconds |
@@ -224,16 +239,18 @@ The same checks run on Python 3.8 and 3.13 in GitHub Actions.
 | Peds | `Ped.spawn(PED.BMYBOUN, pos)`, `ped.health`, `ped.tasks.go_to(pos, MOVE_STATE.RUN)`, `ped.weapons.give(...)` |
 | Vehicles | `Vehicle.spawn(VEHICLE.INFERNUS)`, `car.speed`, `car.doors[VEHICLE_DOOR.FRONT_LEFT]`, `car.ai.driving_style(DRIVING_STYLE.AVOID_CARS)` |
 | Handling data | `car.handling.mass`, `.traction_multiplier`, `.center_of_mass`, `.suspension_force` (read-only shared model data) |
+| Model information | `car.model_info.game_name`, `.vehicle_type`, `.door_count`, `.dimensions`, `model_info(VEHICLE.INFERNUS)` |
 | World | `world.set_time(...)`, `world.force_weather(...)`, `world.ground_z(...)`, `world.explosion(...)` |
 | HUD | `hud.help_text(...)`, `hud.big_text(...)`, `hud.draw(...)` |
 | Camera | `camera.fix_at(...)`, `camera.point_at(...)`, `camera.restore()`, `camera.shake()` |
-| Blips/pickups | `blips.add_for_char(...)`, `ped.add_blip(color=...)`, `pickups.weapon(...)`, `pickups.money(...)` |
+| Blips/pickups | `blips.add_for_char(...)`, `pickups.weapon(..., pickup_type=PICKUP_TYPE.ONCE)`, inspect active items through `world.pickups` |
 | Markers | `Checkpoint(pos)`, `Marker3D(pos)`, `Sphere(pos, r)` with `pos in sphere` |
-| Entity pools | `for car in world.vehicles:` (also `pysa.vehicles`/`peds`/`objects`); `len(...)`, indexing |
+| Entity pools | `world.vehicles`, `peds`, `objects`, `buildings`, `dummies`, and live `world.pickups`; all support iteration and spatial queries |
 | Pool queries | `world.vehicles.near(pos, r)`, `.nearest(pos, exclude=...)`, `.where(...)`, `.of_model("rhino")` |
 | Vehicle data | `car.model`, `car.model_name` ('infernus'), `car.occupants`, `car.passengers`, `car.driver`, `car.empty` |
 | Spatial | `entity.distance_to(x)`, `entity.is_near(x, r)`, `world.nearest_ped(pos)`, `world.peds_near(pos, r)` |
 | Timers | `Stopwatch().seconds`, `Countdown(5000).finished`, `.fraction`, `.remaining` |
+| Persistence | `state = storage.open("my_mod", {"score": 0})`, dictionary access, atomic `state.save()` and automatic shutdown flush |
 | Audio | `audio.play_sound(pos, id)`, `audio.set_radio(RADIO.K_DST)`, `MissionAudio(0).load(...).play()` |
 | Particle FX | `FxSystem("fire", pos).play()`, `FxSystem.on(ped, "smoke30")`, `fx.corona(pos, size, color)` |
 | GXT text | `text.load_table(...)`, `text.show("KEY", x, y, number=..., color=..., align=...)` |
@@ -258,6 +275,9 @@ Every generated `cmd.*` wrapper follows the same return rules:
   `GameObject`.
 - `-1` entity handles are returned as `None`.
 - Integers are accepted where float parameters are expected.
+- Editor stubs retain domain types such as `Ped`, `Vehicle`, `WEAPON`,
+  `VEHICLE`, `MOVE_STATE`, and `VEHICLE_DOOR` instead of collapsing them to
+  untyped integers.
 
 Commands missing from the generated signature database can still be called with
 the lower-level `call()` API and explicit `Out.INT`, `Out.FLOAT`, or `Out.STR`
@@ -315,13 +335,33 @@ model enum (or an integer for a custom model):
 
 ```python
 @pysa.on_vehicle_model_changed
-def changed(vehicle, model):
+def changed(vehicle: pysa.Vehicle, model: pysa.VEHICLE | int) -> None:
     print(vehicle, model)  # model is normally a VEHICLE member
 ```
 
 Available lifecycle decorators are `on_game_restart`, `on_game_reinit`,
 `on_render_init`, `on_device_lost`, `on_device_reset`, `on_pools_init`,
 `on_pools_shutdown`, `on_vehicle_model_changed`, and `on_ped_model_changed`.
+
+Entity callbacks have shipped editor declarations. Annotate the callback
+parameter once and VS Code/Pylance, PyCharm, and other type-aware editors can
+autocomplete the complete entity API and validate the decorator signature:
+
+```python
+@pysa.on_vehicle_render
+def rendering_car(car: pysa.Vehicle) -> None:
+    if car.health < 300:
+        print(car.model_info.game_name)
+
+@pysa.on_ped_created
+def new_ped(ped: pysa.Ped) -> None:
+    ped.health = 200
+```
+
+Python type checkers cannot infer the local parameter of a newly declared
+function backwards from a decorator, so the `: pysa.Vehicle`/`: pysa.Ped`
+annotation is required for completion inside that function. The decorator
+stubs then preserve and validate that exact callback type.
 
 ## Game Events
 
@@ -330,13 +370,13 @@ lifecycle events (`on_vehicle_created` etc.), with domain-named fields:
 
 ```python
 @pysa.on_vehicle_damage
-def tougher_cars(e):
+def tougher_cars(e: pysa.VehicleDamageEvent) -> None:
     if e.vehicle == player.vehicle:
         e.amount *= 0.5        # take half damage (assign to rewrite)
         # e.cancel()          # or ignore the hit entirely
 
 @pysa.on_explosion
-def shield(e):
+def shield(e: pysa.ExplosionEvent) -> None:
     if e.position.distance_to(player.pos) < 5:
         e.cancel()
 ```
@@ -345,6 +385,14 @@ Each handler gets an event `e` with the subject (`e.vehicle`, a `Vehicle`),
 named typed fields (`e.attacker` auto-wrapped to Ped/Vehicle/GameObject,
 `e.amount` a float, `e.position` a `Vector3`), assignment to rewrite a value
 before it happens, `e.cancel()` to stop it, and `e.raw` for the low-level hook.
+
+Every event has a specific payload class for autocomplete:
+`VehicleDamageEvent`, `VehicleExplodeEvent`, `TyreBurstEvent`,
+`WeaponFireEvent`, `ExplosionEvent`, `WantedLevelChangeEvent`,
+`WeaponGivenEvent`, and `ProjectileFiredEvent`. Weapon fields return `WEAPON`
+members when known; `ExplosionEvent.kind` returns `EXPLOSION_KIND`. This is
+distinct from `world.EXPLOSION`, whose values select SCM-created explosion
+effects.
 
 Available events: `on_vehicle_damage`, `on_vehicle_explode`, `on_tyre_burst`,
 `on_weapon_fire`, `on_weapon_given`, `on_explosion`, `on_wanted_level_change`,

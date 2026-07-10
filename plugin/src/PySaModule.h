@@ -42,6 +42,8 @@ const std::string &BaseDir();    // <game>\PyAndreas
 void FlushDrawQueue();           // text; call from drawingEvent after dispatching "draw"
 void FlushRenderQueue();         // rects/sprites; call before FlushDrawQueue
 void ShutdownHooks();            // remove all function hooks (call before Py_Finalize)
+bool SetEventEnabled(const char *name, bool enabled);
+bool EventEnabled(const char *name);
 
 // Method tables contributed by the render and hook translation units,
 // concatenated into the _pysa module at init.

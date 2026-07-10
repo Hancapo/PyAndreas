@@ -32,6 +32,8 @@ _CHAINS = {
     "CAutomobile": ("CPlaceable", "CEntity", "CPhysical", "CVehicle", "CAutomobile"),
     "CBike": ("CPlaceable", "CEntity", "CPhysical", "CVehicle", "CBike"),
     "CObject": ("CPlaceable", "CEntity", "CPhysical", "CObject"),
+    "CBuilding": ("CPlaceable", "CEntity", "CBuilding"),
+    "CDummy": ("CPlaceable", "CEntity", "CDummy"),
 }
 
 def _read_i8(addr: int) -> int:

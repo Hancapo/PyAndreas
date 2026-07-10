@@ -32,7 +32,23 @@ except ImportError:  # outside the game (tests, editors)
     from . import _mock as _pysa
 
 from .opcodes import OPCODES
-from .signatures import FLAG_COND, SIGS
+from .signatures import FLAG_COND, PARAM_TYPES, SIGS
+
+
+_FRIENDLY_PARAM_TYPES = {
+    "bool": "bool", "Char": "Ped", "Car": "Vehicle", "Heli": "Vehicle",
+    "Plane": "Vehicle", "Boat": "Vehicle", "Train": "Vehicle",
+    "Trailer": "Vehicle", "Object": "GameObject", "WeaponType": "WEAPON",
+    "model_vehicle": "VEHICLE", "model_char": "PED", "PedType": "PED_TYPE",
+    "MoveState": "MOVE_STATE", "CarDoor": "VEHICLE_DOOR",
+    "CarMission": "CAR_MISSION", "CameraMode": "CAMERA_MODE",
+    "CarLock": "DOOR_LOCK", "EntityStatus": "ENTITY_STATUS",
+    "FightStyle": "FIGHT_STYLE", "PedBone": "PED_BONE",
+    "PedBoneId": "PED_BONE", "GangType": "GANG", "RadarSprite": "BLIP_SPRITE",
+    "WheelId": "VEHICLE_WHEEL",
+    "ExplosionType": "world.EXPLOSION",
+    "PickupType": "PICKUP_TYPE",
+}
 
 
 class _OutMarker:
@@ -72,7 +88,14 @@ def signature(name: str) -> str:
     if sig is None:
         return f"{name.upper()}(...) [no signature - use Out markers]"
     _, inspec, outspec, flags, innames, outnames, _ = sig
-    params = innames.replace(",", ", ")
+    names = innames.split(",") if innames else []
+    source_types = PARAM_TYPES.get(name.upper(), ())
+    typed_params = []
+    for index, param in enumerate(names):
+        source = source_types[index] if index < len(source_types) else ""
+        friendly = _FRIENDLY_PARAM_TYPES.get(source)
+        typed_params.append(f"{param}: {friendly}" if friendly else param)
+    params = ", ".join(typed_params)
     if inspec.endswith("*"):
         params = (params + ", *args") if params else "*args"
     out = outnames.replace(",", ", ") if outnames else ("bool" if flags & FLAG_COND else "None")

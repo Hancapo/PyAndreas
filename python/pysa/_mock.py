@@ -6,6 +6,9 @@ state is faked: memory is a sparse dict, commands succeed and return zeros.
 
 _memory = {}
 _log_lines = []
+_model_info = {}
+_enabled_events = set()
+_pickup_info = {}
 
 
 def _reset():
@@ -20,6 +23,9 @@ def _reset():
     _hooks.clear()
     _hook_ctx.clear()
     _next_hook[0] = 0
+    _model_info.clear()
+    _enabled_events.clear()
+    _pickup_info.clear()
 
 
 def call(opcode, spec, *args):
@@ -87,7 +93,8 @@ def write_f32(addr, value, unprotect=False):
 # Simulated pools + a consistent pointer<->handle mapping, so pool iteration
 # (all_peds/all_vehicles/all_objects) can be exercised offline. Tests populate
 # _pool[...] with fake pointers.
-_pool = {"ped": [], "vehicle": [], "object": []}
+_pool = {"ped": [], "vehicle": [], "object": [], "building": [], "dummy": [],
+         "pickup": []}
 _ptr_to_handle = {}
 _handle_to_ptr = {}
 _next_handle = [1]
@@ -132,6 +139,10 @@ def object_ptr(handle):
     return _handle_to_ptr.get(handle, 0)
 
 
+def model_info_ptr(model):
+    return _model_info.get(int(model), 0)
+
+
 def peds():
     return list(_pool["ped"])
 
@@ -142,6 +153,29 @@ def vehicles():
 
 def objects():
     return list(_pool["object"])
+
+
+def buildings():
+    return list(_pool["building"])
+
+
+def dummies():
+    return list(_pool["dummy"])
+
+
+def set_event_enabled(name, enabled):
+    if enabled:
+        _enabled_events.add(str(name))
+    else:
+        _enabled_events.discard(str(name))
+
+
+def pickup_handles():
+    return list(_pool["pickup"])
+
+
+def pickup_info(handle):
+    return _pickup_info.get(int(handle))
 
 
 def help_message(text, quick=True, permanent=False):

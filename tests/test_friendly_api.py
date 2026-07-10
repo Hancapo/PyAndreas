@@ -5,8 +5,11 @@ from enum import IntEnum
 
 from pysa import (CAMERA_MODE, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
                   ENTITY_STATUS, MOVE_STATE, VEHICLE, VEHICLE_DOOR,
-                  VEHICLE_WHEEL, WEAPON, PED, Ped, Vehicle)
-from pysa import _mock, camera, entities, pickups
+                  VEHICLE_WHEEL, WEAPON, PED, PICKUP_TYPE, Building, Dummy,
+                  Ped, Pickup, Vehicle)
+from pysa import _mock, camera, entities, pickups, world
+from pysa.enums import VEHICLE_CLASS, VEHICLE_TYPE
+from pysa.model_info import PedModelInfo, VehicleModelInfo, model_info
 
 
 class FriendlyApiTests(unittest.TestCase):
@@ -64,6 +67,27 @@ class FriendlyApiTests(unittest.TestCase):
         self.assertEqual(result.handle, 9)
         get_model.assert_called_once_with(WEAPON.AK47)
 
+    def test_pickup_types_match_plugin_sdk_and_live_pool_is_inspectable(self):
+        _mock._reset()
+        handle = 77
+        _mock._pool["pickup"].append(handle)
+        _mock._pickup_info[handle] = (
+            355, int(PICKUP_TYPE.ON_STREET), 120, 0, 0.0,
+            10.0, 20.0, 30.0, 0x08,
+        )
+
+        item = world.pickups[0]
+
+        self.assertIsInstance(item, Pickup)
+        self.assertEqual(PICKUP_TYPE.RESPAWNS, 2)
+        self.assertEqual(PICKUP_TYPE.ONCE, 3)
+        self.assertEqual(PICKUP_TYPE.ONCE_TIMEOUT, 4)
+        self.assertIs(item.type, PICKUP_TYPE.ON_STREET)
+        self.assertEqual(item.ammo, 120)
+        self.assertEqual(tuple(item.pos), (10.0, 20.0, 30.0))
+        self.assertTrue(item.visible)
+        self.assertTrue(item.exists)
+
     def test_task_and_vehicle_facades_forward_enums(self):
         ped = Ped(7)
         vehicle = Vehicle(8)
@@ -104,6 +128,65 @@ class FriendlyApiTests(unittest.TestCase):
         self.assertAlmostEqual(center.z, -0.1)
         with self.assertRaises(AttributeError):
             vehicle.handling.mass = 900.0
+
+    def test_vehicle_model_information_is_typed(self):
+        _mock._reset()
+        address = 0x30000
+        collision = 0x40000
+        _mock._model_info[int(VEHICLE.INFERNUS)] = address
+        _mock.write_u32(address + 0x14, collision)
+        _mock.write_f32(address + 0x18, 300.0)
+        _mock.mem_write(address + 0x32, b"INFERNS\0")
+        _mock.write_u32(address + 0x3C, VEHICLE_TYPE.AUTOMOBILE)
+        _mock.write_f32(address + 0x40, 1.0)
+        _mock.write_f32(address + 0x44, 1.1)
+        _mock.write_u16(address + 0x4A, 11)
+        _mock.write_u8(address + 0x4C, 2)
+        _mock.write_u8(address + 0x4D, VEHICLE_CLASS.RICH_FAMILY)
+        for offset, value in enumerate((-1.0, -2.0, -0.5, 1.0, 2.0, 1.5)):
+            _mock.write_f32(collision + offset * 4, value)
+
+        info = model_info(VEHICLE.INFERNUS)
+
+        self.assertIsInstance(info, VehicleModelInfo)
+        self.assertEqual(info.game_name, "INFERNS")
+        self.assertIs(info.vehicle_type, VEHICLE_TYPE.AUTOMOBILE)
+        self.assertIs(info.vehicle_class, VEHICLE_CLASS.RICH_FAMILY)
+        self.assertEqual(info.door_count, 2)
+        self.assertEqual(tuple(info.dimensions), (2.0, 4.0, 2.0))
+
+    def test_static_world_entities_are_friendly_read_only_wrappers(self):
+        _mock._reset()
+        building_addr = 0x50000
+        dummy_addr = 0x60000
+        matrix_addr = 0x70000
+        _mock._pool["building"].append(building_addr)
+        _mock._pool["dummy"].append(dummy_addr)
+        _mock.write_u16(building_addr + 0x22, 1234)
+        _mock.write_u8(building_addr + 0x2F, 2)
+        _mock.write_f32(building_addr + 0x4, 10.0)
+        _mock.write_f32(building_addr + 0x8, 20.0)
+        _mock.write_f32(building_addr + 0xC, 30.0)
+        _mock.write_u16(dummy_addr + 0x22, 567)
+        _mock.write_u32(dummy_addr + 0x14, matrix_addr)
+        _mock.write_f32(matrix_addr + 0x30, 1.0)
+        _mock.write_f32(matrix_addr + 0x34, 2.0)
+        _mock.write_f32(matrix_addr + 0x38, 3.0)
+
+        buildings = entities.all_buildings()
+        dummies = entities.all_dummies()
+
+        self.assertIsInstance(buildings[0], Building)
+        self.assertIsInstance(dummies[0], Dummy)
+        self.assertEqual(buildings[0].model, 1234)
+        self.assertEqual(buildings[0].area, 2)
+        self.assertEqual(tuple(buildings[0].pos), (10.0, 20.0, 30.0))
+        self.assertEqual(tuple(dummies[0].pos), (1.0, 2.0, 3.0))
+
+    def test_integer_ped_model_gets_specialized_information(self):
+        _mock._reset()
+        _mock._model_info[int(PED.MALE01)] = 0x80000
+        self.assertIsInstance(model_info(int(PED.MALE01)), PedModelInfo)
 
 
 if __name__ == "__main__":

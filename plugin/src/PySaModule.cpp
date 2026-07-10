@@ -16,6 +16,8 @@
 #include "plugin.h"
 #include "CRunningScript.h"
 #include "CPools.h"
+#include "CPickups.h"
+#include "CModelInfo.h"
 #include "CHud.h"
 #include "CMessages.h"
 #include "CTimer.h"
@@ -576,6 +578,15 @@ static PyObject *py_object_ptr(PyObject *, PyObject *args) {
     return PyLong_FromUnsignedLong(h == -1 ? 0 : reinterpret_cast<unsigned long>(CPools::GetObject(h)));
 }
 
+static PyObject *py_model_info_ptr(PyObject *, PyObject *args) {
+    int model;
+    if (!PyArg_ParseTuple(args, "i", &model))
+        return nullptr;
+    CBaseModelInfo *info = model >= 0 ? CModelInfo::GetModelInfo(model) : nullptr;
+    return PyLong_FromUnsignedLong(
+        static_cast<unsigned long>(reinterpret_cast<uintptr_t>(info)));
+}
+
 template <typename PoolT>
 static PyObject *ListPool(PoolT *pool) {
     PyObject *list = PyList_New(0);
@@ -598,6 +609,48 @@ static PyObject *ListPool(PoolT *pool) {
 static PyObject *py_peds(PyObject *, PyObject *)     { return ListPool(CPools::ms_pPedPool); }
 static PyObject *py_vehicles(PyObject *, PyObject *) { return ListPool(CPools::ms_pVehiclePool); }
 static PyObject *py_objects(PyObject *, PyObject *)  { return ListPool(CPools::ms_pObjectPool); }
+static PyObject *py_buildings(PyObject *, PyObject *) { return ListPool(CPools::ms_pBuildingPool); }
+static PyObject *py_dummies(PyObject *, PyObject *)   { return ListPool(CPools::ms_pDummyPool); }
+
+static PyObject *py_pickup_handles(PyObject *, PyObject *) {
+    PyObject *list = PyList_New(0);
+    if (!list)
+        return nullptr;
+    if (CPickups::aPickUps) {
+        for (unsigned int i = 0; i < MAX_NUM_PICKUPS; ++i) {
+            if (CPickups::aPickUps[i].m_nPickupType == PICKUP_NONE)
+                continue;
+            PyObject *value = PyLong_FromLong(CPickups::GetUniquePickupIndex(i));
+            if (!value || PyList_Append(list, value) < 0) {
+                Py_XDECREF(value);
+                Py_DECREF(list);
+                return nullptr;
+            }
+            Py_DECREF(value);
+        }
+    }
+    return list;
+}
+
+static PyObject *py_pickup_info(PyObject *, PyObject *args) {
+    int handle;
+    if (!PyArg_ParseTuple(args, "i", &handle))
+        return nullptr;
+    if (!CPickups::aPickUps || handle < 0)
+        return Py_BuildValue("");
+    int index = CPickups::GetActualPickupIndex(handle);
+    if (index < 0 || static_cast<unsigned int>(index) >= MAX_NUM_PICKUPS)
+        return Py_BuildValue("");
+    CPickup &pickup = CPickups::aPickUps[index];
+    if (pickup.m_nPickupType == PICKUP_NONE)
+        return Py_BuildValue("");
+    CVector pos = pickup.GetPosn();
+    unsigned int flags = *reinterpret_cast<unsigned char *>(&pickup.m_nFlags);
+    return Py_BuildValue("(iiiiffffI)", pickup.m_nModelIndex,
+                         pickup.m_nPickupType, pickup.m_nAmmo,
+                         pickup.m_nMoneyPerDay, pickup.m_fRevenueValue,
+                         pos.x, pos.y, pos.z, flags);
+}
 
 // ---------------------------------------------------------------------------
 // HUD messages and 2D text drawing
@@ -728,6 +781,18 @@ static PyObject *py_base_dir(PyObject *, PyObject *) {
     return PyUnicode_FromString(BaseDir().c_str());
 }
 
+static PyObject *py_set_event_enabled(PyObject *, PyObject *args) {
+    const char *name;
+    int enabled;
+    if (!PyArg_ParseTuple(args, "sp", &name, &enabled))
+        return nullptr;
+    if (!SetEventEnabled(name, enabled != 0)) {
+        PyErr_Format(ValueError(), "unsupported native event: %s", name);
+        return nullptr;
+    }
+    return Py_BuildValue("");
+}
+
 // ---------------------------------------------------------------------------
 // Module definition
 // ---------------------------------------------------------------------------
@@ -757,9 +822,17 @@ static PyMethodDef s_methods[] = {
     {"ped_ptr", py_ped_ptr, METH_VARARGS, "ped_ptr(handle) -> address (0 if invalid)"},
     {"vehicle_ptr", py_vehicle_ptr, METH_VARARGS, "vehicle_ptr(handle) -> address (0 if invalid)"},
     {"object_ptr", py_object_ptr, METH_VARARGS, "object_ptr(handle) -> address (0 if invalid)"},
+    {"model_info_ptr", py_model_info_ptr, METH_VARARGS,
+     "model_info_ptr(model) -> CBaseModelInfo* address (0 if unavailable)"},
     {"peds", py_peds, METH_NOARGS, "peds() -> list of CPed* addresses"},
     {"vehicles", py_vehicles, METH_NOARGS, "vehicles() -> list of CVehicle* addresses"},
     {"objects", py_objects, METH_NOARGS, "objects() -> list of CObject* addresses"},
+    {"buildings", py_buildings, METH_NOARGS, "buildings() -> list of CBuilding* addresses"},
+    {"dummies", py_dummies, METH_NOARGS, "dummies() -> list of CDummy* addresses"},
+    {"pickup_handles", py_pickup_handles, METH_NOARGS,
+     "pickup_handles() -> list of active pickup handles"},
+    {"pickup_info", py_pickup_info, METH_VARARGS,
+     "pickup_info(handle) -> model,type,ammo,money,revenue,x,y,z,flags or None"},
     {"help_message", py_help_message, METH_VARARGS, "help_message(text, quick=True, permanent=False)"},
     {"message", py_message, METH_VARARGS, "message(text, time_ms=2000, flag=0)"},
     {"big_message", py_big_message, METH_VARARGS, "big_message(text, time_ms=4000, style=0)"},
@@ -773,6 +846,8 @@ static PyMethodDef s_methods[] = {
     {"time_step", py_time_step, METH_NOARGS, "time_step() -> frame time step (game speed scaled)"},
     {"log", py_log, METH_VARARGS, "log(message) -> write to PyAndreas.log"},
     {"base_dir", py_base_dir, METH_NOARGS, "base_dir() -> <game>\\PyAndreas"},
+    {"set_event_enabled", py_set_event_enabled, METH_VARARGS,
+     "set_event_enabled(name, enabled) -> None (internal event subscription gate)"},
     {nullptr, nullptr, 0, nullptr},
 };
 

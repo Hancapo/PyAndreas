@@ -7,6 +7,12 @@ from __future__ import annotations
 from typing import Any
 
 from .entities import GameObject, Ped, Vehicle
+from .enums import (BLIP_SPRITE, CAMERA_MODE, CAR_MISSION, DOOR_LOCK,
+                    ENTITY_STATUS, FIGHT_STYLE, GANG, MOVE_STATE, PED_BONE,
+                    PICKUP_TYPE, VEHICLE_DOOR, VEHICLE_WHEEL)
+from .models import PED_TYPE, VEHICLE, WEAPON
+from .ped_models import PED
+from .world import EXPLOSION
 
 
 class _OutMarker: ...
@@ -35,351 +41,351 @@ def call_func(addr: int, conv: str = "c", ret: str = "v", spec: str = "", *args:
 
 class _CommandNamespace:
     def ACTIVATE_GARAGE(self, garageId: str) -> None: ...  # Activates the garage
-    def ACTIVATE_HELI_SPEED_CHEAT(self, self_: Any, power: Any) -> None: ...  # Provides the heli with extra thrust power
-    def ACTIVATE_INTERIOR_PEDS(self, state: Any) -> None: ...  # Enables ped spawning in interiors
-    def ACTIVATE_MENU_ITEM(self, self_: Any, row: Any, state: Any) -> None: ...
-    def ACTIVATE_PIMP_CHEAT(self, state: Any) -> None: ...  # Sets whether sleeping with a prostitute earns you money instead of taking it away from you
+    def ACTIVATE_HELI_SPEED_CHEAT(self, self_: Vehicle | int, power: int) -> None: ...  # Provides the heli with extra thrust power
+    def ACTIVATE_INTERIOR_PEDS(self, state: bool) -> None: ...  # Enables ped spawning in interiors
+    def ACTIVATE_MENU_ITEM(self, self_: int, row: int, state: bool) -> None: ...
+    def ACTIVATE_PIMP_CHEAT(self, state: bool) -> None: ...  # Sets whether sleeping with a prostitute earns you money instead of taking it away from you
     def ACTIVATE_SAVE_MENU(self) -> None: ...  # Schedules save game menu to be displayed on next render frame
-    def ADD_AMMO_TO_CHAR(self, self_: Any, weaponType: Any, ammo: Any) -> None: ...  # Adds the specified amount of ammo to the character's weapon, if the character has the weapon
-    def ADD_ARMOUR_TO_CHAR(self, self_: Any, amount: Any) -> None: ...  # Increases the character's armor by the specified value to the maximum of 100
-    def ADD_ATTRACTOR(self, x: float, y: float, z: float, angle: float, _p5: float, sequence: Any) -> int: ...  # Adds a ped attractor
+    def ADD_AMMO_TO_CHAR(self, self_: Ped | int, weaponType: WEAPON | int, ammo: int) -> None: ...  # Adds the specified amount of ammo to the character's weapon, if the character has the weapon
+    def ADD_ARMOUR_TO_CHAR(self, self_: Ped | int, amount: int) -> None: ...  # Increases the character's armor by the specified value to the maximum of 100
+    def ADD_ATTRACTOR(self, x: float, y: float, z: float, angle: float, _p5: float, sequence: int) -> int: ...  # Adds a ped attractor
     def ADD_BIG_GUN_FLASH(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float) -> None: ...  # Creates a gun flash particle effect
-    def ADD_BLIP_FOR_CAR(self, vehicle: Any) -> int: ...  # Adds a blip and a marker to the vehicle
-    def ADD_BLIP_FOR_CAR_OLD(self, vehicle: Any, color: Any, display: Any) -> int: ...  # Adds a blip with properties to the vehicle
-    def ADD_BLIP_FOR_CHAR(self, char: Any) -> int: ...  # Adds a blip and a marker to the character
+    def ADD_BLIP_FOR_CAR(self, vehicle: Vehicle | int) -> int: ...  # Adds a blip and a marker to the vehicle
+    def ADD_BLIP_FOR_CAR_OLD(self, vehicle: Vehicle | int, color: int, display: int) -> int: ...  # Adds a blip with properties to the vehicle
+    def ADD_BLIP_FOR_CHAR(self, char: Ped | int) -> int: ...  # Adds a blip and a marker to the character
     def ADD_BLIP_FOR_COORD(self, x: float, y: float, z: float) -> int: ...  # Adds a blip to the location
-    def ADD_BLIP_FOR_COORD_OLD(self, x: float, y: float, z: float, colour: Any, display: Any) -> int: ...  # Adds a blip with properties at the location
-    def ADD_BLIP_FOR_DEAD_CHAR(self, char: Any) -> int: ...  # Adds a blip and a marker to the character (identical to 0187)
-    def ADD_BLIP_FOR_OBJECT(self, object: Any) -> int: ...  # Adds a blip and a marker to the object
-    def ADD_BLIP_FOR_PICKUP(self, pickup: Any) -> int: ...  # Adds a blip and a marker to the pickup
-    def ADD_BLIP_FOR_SEARCHLIGHT(self, searchlight: Any) -> int: ...  # Creates a blip indicating the searchlights position on the radar
-    def ADD_BLOOD(self, x: float, y: float, z: float, velocityX: float, velocityY: float, velocityZ: float, density: Any, handle: Any) -> None: ...  # Creates blood spray and ground splatter effects
-    def ADD_CHAR_DECISION_MAKER_EVENT_RESPONSE(self, self_: Any, event: Any, taskId: Any, respect: float, hate: float, like: float, dislike: float, inCar: Any, onFoot: Any) -> None: ...  # Sets which action should occur according to the event on the following parameters
-    def ADD_EXPLOSION(self, x: float, y: float, z: float, type: Any) -> None: ...  # Creates an explosion at the point
-    def ADD_EXPLOSION_NO_SOUND(self, x: float, y: float, z: float, type: Any) -> None: ...  # Creates an explosion with no sound
-    def ADD_EXPLOSION_VARIABLE_SHAKE(self, x: float, y: float, z: float, type: Any, shake: float) -> None: ...  # Creates an explosion at the specified coordinates
+    def ADD_BLIP_FOR_COORD_OLD(self, x: float, y: float, z: float, colour: int, display: int) -> int: ...  # Adds a blip with properties at the location
+    def ADD_BLIP_FOR_DEAD_CHAR(self, char: Ped | int) -> int: ...  # Adds a blip and a marker to the character (identical to 0187)
+    def ADD_BLIP_FOR_OBJECT(self, object: GameObject | int) -> int: ...  # Adds a blip and a marker to the object
+    def ADD_BLIP_FOR_PICKUP(self, pickup: int) -> int: ...  # Adds a blip and a marker to the pickup
+    def ADD_BLIP_FOR_SEARCHLIGHT(self, searchlight: int) -> int: ...  # Creates a blip indicating the searchlights position on the radar
+    def ADD_BLOOD(self, x: float, y: float, z: float, velocityX: float, velocityY: float, velocityZ: float, density: int, handle: Ped | int) -> None: ...  # Creates blood spray and ground splatter effects
+    def ADD_CHAR_DECISION_MAKER_EVENT_RESPONSE(self, self_: int, event: int, taskId: int, respect: float, hate: float, like: float, dislike: float, inCar: bool, onFoot: bool) -> None: ...  # Sets which action should occur according to the event on the following parameters
+    def ADD_EXPLOSION(self, x: float, y: float, z: float, type: EXPLOSION | int) -> None: ...  # Creates an explosion at the point
+    def ADD_EXPLOSION_NO_SOUND(self, x: float, y: float, z: float, type: EXPLOSION | int) -> None: ...  # Creates an explosion with no sound
+    def ADD_EXPLOSION_VARIABLE_SHAKE(self, x: float, y: float, z: float, type: int, shake: float) -> None: ...  # Creates an explosion at the specified coordinates
     def ADD_FLOAT_LVAR_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Adds the float LVAR value to the other float LVAR
     def ADD_FLOAT_LVAR_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Adds the float LVAR value to the float VAR
     def ADD_FLOAT_VAR_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Adds the float VAR value to the float LVAR
     def ADD_FLOAT_VAR_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Adds the float VAR value to the other float VAR
-    def ADD_GROUP_DECISION_MAKER_EVENT_RESPONSE(self, self_: Any, event: Any, taskId: Any, respect: float, hate: float, like: float, dislike: float, inCar: Any, onFoot: Any) -> None: ...  # Sets which action should occur according to the event on the following parameters
-    def ADD_HOSPITAL_RESTART(self, x: float, y: float, z: float, heading: float, citiesPassed: Any) -> None: ...  # Adds a hospital restart, which is where the player will spawn after death (wasted) if the point is c
-    def ADD_INT_LVAR_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the int LVAR value to the other int LVAR
-    def ADD_INT_LVAR_TO_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the float LVAR value to the float VAR
-    def ADD_INT_VAR_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the int VAR value to the int LVAR
-    def ADD_INT_VAR_TO_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the int VAR value to the other int VAR
-    def ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS(self, state: Any) -> None: ...  # Sets whether the next text is added to the brief in the menu
-    def ADD_ONE_OFF_SOUND(self, x: float, y: float, z: float, soundId: Any) -> None: ...  # Plays a sound with the specified ID at the location
-    def ADD_PEDTYPE_AS_ATTRACTOR_USER(self, self_: Any, pedType: Any) -> None: ...
-    def ADD_POLICE_RESTART(self, x: float, y: float, z: float, heading: float, citiesPassed: Any) -> None: ...  # Adds a police restart, which is where the player will spawn after being arrested (busted) if the poi
-    def ADD_PRICE_MODIFIER(self, itemId: Any, price: Any) -> None: ...  # Sets a new base price for the shopping.dat item
-    def ADD_SCORE(self, self_: Any, money: Any) -> None: ...  # Adds to the player's money
-    def ADD_SET_PIECE(self, type: Any, fromX: float, fromY: float, toX: float, toY: float, spawnPoliceAAtX: float, spawnPoliceAAtY: float, headedTowardsAAtX: float, headedTowardsAAtY: float, spawnPoliceBAtX: float, spawnPoliceBAtY: float, headedTowardsBAtX: float, headedTowardsBAtY: float) -> None: ...  # Creates a trigger zone for police to appear during chases
-    def ADD_SHORT_RANGE_SPRITE_BLIP_FOR_CONTACT_POINT(self, x: float, y: float, z: float, sprite: Any) -> int: ...  # Adds a short range sprite blip and sphere to the contact point that is not displayed while on missio
-    def ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD(self, x: float, y: float, z: float, sprite: Any) -> int: ...  # Adds a sprite blip for the specified coordinates
+    def ADD_GROUP_DECISION_MAKER_EVENT_RESPONSE(self, self_: int, event: int, taskId: int, respect: float, hate: float, like: float, dislike: float, inCar: bool, onFoot: bool) -> None: ...  # Sets which action should occur according to the event on the following parameters
+    def ADD_HOSPITAL_RESTART(self, x: float, y: float, z: float, heading: float, citiesPassed: int) -> None: ...  # Adds a hospital restart, which is where the player will spawn after death (wasted) if the point is c
+    def ADD_INT_LVAR_TO_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Adds the int LVAR value to the other int LVAR
+    def ADD_INT_LVAR_TO_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Adds the float LVAR value to the float VAR
+    def ADD_INT_VAR_TO_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Adds the int VAR value to the int LVAR
+    def ADD_INT_VAR_TO_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Adds the int VAR value to the other int VAR
+    def ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS(self, state: bool) -> None: ...  # Sets whether the next text is added to the brief in the menu
+    def ADD_ONE_OFF_SOUND(self, x: float, y: float, z: float, soundId: int) -> None: ...  # Plays a sound with the specified ID at the location
+    def ADD_PEDTYPE_AS_ATTRACTOR_USER(self, self_: int, pedType: PED_TYPE | int) -> None: ...
+    def ADD_POLICE_RESTART(self, x: float, y: float, z: float, heading: float, citiesPassed: int) -> None: ...  # Adds a police restart, which is where the player will spawn after being arrested (busted) if the poi
+    def ADD_PRICE_MODIFIER(self, itemId: int, price: int) -> None: ...  # Sets a new base price for the shopping.dat item
+    def ADD_SCORE(self, self_: int, money: int) -> None: ...  # Adds to the player's money
+    def ADD_SET_PIECE(self, type: int, fromX: float, fromY: float, toX: float, toY: float, spawnPoliceAAtX: float, spawnPoliceAAtY: float, headedTowardsAAtX: float, headedTowardsAAtY: float, spawnPoliceBAtX: float, spawnPoliceBAtY: float, headedTowardsBAtX: float, headedTowardsBAtY: float) -> None: ...  # Creates a trigger zone for police to appear during chases
+    def ADD_SHORT_RANGE_SPRITE_BLIP_FOR_CONTACT_POINT(self, x: float, y: float, z: float, sprite: BLIP_SPRITE | int) -> int: ...  # Adds a short range sprite blip and sphere to the contact point that is not displayed while on missio
+    def ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD(self, x: float, y: float, z: float, sprite: BLIP_SPRITE | int) -> int: ...  # Adds a sprite blip for the specified coordinates
     def ADD_SMOKE_PARTICLE(self, x: float, y: float, z: float, velocityX: float, velocityY: float, velocityZ: float, red: float, green: float, blue: float, alpha: float, size: float, lastFactor: float) -> None: ...
-    def ADD_SPARKS(self, x: float, y: float, z: float, velocityX: float, velocityY: float, velocityZ: float, density: Any) -> None: ...  # Creates single burst of spark particles
+    def ADD_SPARKS(self, x: float, y: float, z: float, velocityX: float, velocityY: float, velocityZ: float, density: int) -> None: ...  # Creates single burst of spark particles
     def ADD_SPHERE(self, x: float, y: float, z: float, radius: float) -> int: ...  # Creates a static sphere at the location, with the specified radius
-    def ADD_SPRITE_BLIP_FOR_CONTACT_POINT(self, x: float, y: float, z: float, sprite: Any) -> int: ...  # Adds a long range sprite blip and sphere to the contact point that is not displayed while on mission
-    def ADD_SPRITE_BLIP_FOR_COORD(self, x: float, y: float, z: float, sprite: Any) -> int: ...  # Adds a sprite blip to the location
-    def ADD_STUCK_CAR_CHECK(self, vehicle: Any, distance: float, time: Any) -> None: ...  # Adds the vehicle to the stuck cars array
-    def ADD_STUCK_CAR_CHECK_WITH_WARP(self, vehicle: Any, distance: float, time: Any, stuck: Any, flipped: Any, inWater: Any, numNodesToCheck: Any) -> None: ...  # Attempts to automatically restore vehicles that get stuck or flipped
-    def ADD_STUNT_JUMP(self, startX: float, startY: float, startZ: float, startRadiusX: float, startRadiusY: float, startRadiusZ: float, finishX: float, finishY: float, finishZ: float, finishRadiusX: float, finishRadiusY: float, finishRadiusZ: float, cameraX: float, cameraY: float, cameraZ: float, reward: Any) -> None: ...  # Creates a trigger for a Unique Jump bonus
+    def ADD_SPRITE_BLIP_FOR_CONTACT_POINT(self, x: float, y: float, z: float, sprite: BLIP_SPRITE | int) -> int: ...  # Adds a long range sprite blip and sphere to the contact point that is not displayed while on mission
+    def ADD_SPRITE_BLIP_FOR_COORD(self, x: float, y: float, z: float, sprite: BLIP_SPRITE | int) -> int: ...  # Adds a sprite blip to the location
+    def ADD_STUCK_CAR_CHECK(self, vehicle: Vehicle | int, distance: float, time: int) -> None: ...  # Adds the vehicle to the stuck cars array
+    def ADD_STUCK_CAR_CHECK_WITH_WARP(self, vehicle: Vehicle | int, distance: float, time: int, stuck: bool, flipped: bool, inWater: bool, numNodesToCheck: int) -> None: ...  # Attempts to automatically restore vehicles that get stuck or flipped
+    def ADD_STUNT_JUMP(self, startX: float, startY: float, startZ: float, startRadiusX: float, startRadiusY: float, startRadiusZ: float, finishX: float, finishY: float, finishZ: float, finishRadiusX: float, finishRadiusY: float, finishRadiusZ: float, cameraX: float, cameraY: float, cameraZ: float, reward: int) -> None: ...  # Creates a trigger for a Unique Jump bonus
     def ADD_TIMED_FLOAT_LVAR_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the float value of the specified local variable an
     def ADD_TIMED_FLOAT_LVAR_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the float value of the specified local variable an
     def ADD_TIMED_FLOAT_VAR_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the float value of the specified global variable a
     def ADD_TIMED_FLOAT_VAR_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the float value of the specified global variable a
     def ADD_TIMED_VAL_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the specified value and adds the result to the spe
     def ADD_TIMED_VAL_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the specified value and adds the result to the spe
-    def ADD_TO_CAR_ROTATION_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...
-    def ADD_TO_OBJECT_ROTATION_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the object's rotation velocity from the center of its body
-    def ADD_TO_OBJECT_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Adds the given vector to the object's velocity (0381)
-    def ADD_UPSIDEDOWN_CAR_CHECK(self, self_: Any) -> None: ...  # Activates upside-down car check for the car
+    def ADD_TO_CAR_ROTATION_VELOCITY(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...
+    def ADD_TO_OBJECT_ROTATION_VELOCITY(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Sets the object's rotation velocity from the center of its body
+    def ADD_TO_OBJECT_VELOCITY(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Adds the given vector to the object's velocity (0381)
+    def ADD_UPSIDEDOWN_CAR_CHECK(self, self_: Vehicle | int) -> None: ...  # Activates upside-down car check for the car
     def ADD_VAL_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Adds the value to the value of the float LVAR
     def ADD_VAL_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Adds the value to the value of the float VAR
-    def ADD_VAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the value to the value of the integer LVAR
-    def ADD_VAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Adds the value to the value of the int VAR
-    def ADD_VEHICLE_MOD(self, self_: Any, modelId: Any) -> int: ...  # Adds a new mod with the model to the vehicle
-    def ADD_VELOCITY_RELATIVE_TO_OBJECT_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the object's velocity
-    def ALLOCATE_STREAMED_SCRIPT_TO_OBJECT(self, id: Any, modelId: Any, priority: Any, radius: float, groupingId: Any) -> None: ...  # Makes the game start an ambient script when the player is nearby an object of the specified model
-    def ALLOCATE_STREAMED_SCRIPT_TO_RANDOM_PED(self, id: Any, modelId: Any, priority: Any) -> None: ...  # Makes the game start an ambient script when the player is nearby a character of the specified model
-    def ALLOW_FIXED_CAMERA_COLLISION(self, state: Any) -> None: ...  # Makes the camera remain behind the player when in any garage
-    def ALLOW_PAUSE_IN_WIDESCREEN(self, state: Any) -> None: ...  # Enables the player to access the pause menu while widescreen is enabled
-    def ALTER_WANTED_LEVEL(self, self_: Any, wantedLevel: Any) -> None: ...  # Sets the player's wanted level
-    def ALTER_WANTED_LEVEL_NO_DROP(self, self_: Any, wantedLevel: Any) -> None: ...  # Sets the player's wanted level if the specified level is higher than the current one
-    def ANCHOR_BOAT(self, self_: Any, state: Any) -> None: ...  # Makes the boat stay motionless in the water
+    def ADD_VAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Adds the value to the value of the integer LVAR
+    def ADD_VAL_TO_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Adds the value to the value of the int VAR
+    def ADD_VEHICLE_MOD(self, self_: Vehicle | int, modelId: int) -> int: ...  # Adds a new mod with the model to the vehicle
+    def ADD_VELOCITY_RELATIVE_TO_OBJECT_VELOCITY(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Sets the object's velocity
+    def ALLOCATE_STREAMED_SCRIPT_TO_OBJECT(self, id: int, modelId: int, priority: int, radius: float, groupingId: int) -> None: ...  # Makes the game start an ambient script when the player is nearby an object of the specified model
+    def ALLOCATE_STREAMED_SCRIPT_TO_RANDOM_PED(self, id: int, modelId: PED | int, priority: int) -> None: ...  # Makes the game start an ambient script when the player is nearby a character of the specified model
+    def ALLOW_FIXED_CAMERA_COLLISION(self, state: bool) -> None: ...  # Makes the camera remain behind the player when in any garage
+    def ALLOW_PAUSE_IN_WIDESCREEN(self, state: bool) -> None: ...  # Enables the player to access the pause menu while widescreen is enabled
+    def ALTER_WANTED_LEVEL(self, self_: int, wantedLevel: int) -> None: ...  # Sets the player's wanted level
+    def ALTER_WANTED_LEVEL_NO_DROP(self, self_: int, wantedLevel: int) -> None: ...  # Sets the player's wanted level if the specified level is higher than the current one
+    def ANCHOR_BOAT(self, self_: Vehicle | int, state: bool) -> None: ...  # Makes the boat stay motionless in the water
     def APPEND_TO_NEXT_CUTSCENE(self, objectName: str, animName: str) -> None: ...
-    def APPLY_BRAKES_TO_PLAYERS_CAR(self, self_: Any, state: Any) -> None: ...  # Applies brakes to the player's car
-    def APPLY_FORCE_TO_CAR(self, self_: Any, xDir: float, yDir: float, zDir: float, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Applies force to car with offset from its center of mass
+    def APPLY_BRAKES_TO_PLAYERS_CAR(self, self_: int, state: bool) -> None: ...  # Applies brakes to the player's car
+    def APPLY_FORCE_TO_CAR(self, self_: Vehicle | int, xDir: float, yDir: float, zDir: float, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Applies force to car with offset from its center of mass
     def ARE_ANY_CAR_CHEATS_ACTIVATED(self) -> bool: ...  # Returns true if the player has used any of the cheats
-    def ARE_ANY_CHARS_NEAR_CHAR(self, self_: Any, radius: float) -> bool: ...  # Returns true if any characters are within range of the character
+    def ARE_ANY_CHARS_NEAR_CHAR(self, self_: Ped | int, radius: float) -> bool: ...  # Returns true if any characters are within range of the character
     def ARE_CREDITS_FINISHED(self) -> bool: ...  # Returns true if the credits have finished
     def ARE_MEASUREMENTS_IN_METRES(self) -> bool: ...  # Returns true if the game uses metric measurements (meters instead of feet)
     def ARE_SUBTITLES_SWITCHED_ON(self) -> bool: ...  # Returns true if subtitles are switched on in the settings menu
-    def ATTACH_ANIMS_TO_MODEL(self, pedModelId: Any, animationFile: str) -> None: ...  # Sets an animation pack to be loaded along with the specified model
-    def ATTACH_CAMERA_TO_CHAR(self, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float, tilt: float, switchStyle: Any) -> None: ...  # Keeps the camera relative to the char with the specified offset
-    def ATTACH_CAMERA_TO_CHAR_LOOK_AT_CHAR(self, handle: Any, xOffset: float, yOffset: float, zOffset: float, char: Any, tilt: float, switchStyle: Any) -> None: ...  # Puts the camera on the character like with 067C
-    def ATTACH_CAMERA_TO_CHAR_LOOK_AT_VEHICLE(self, char: Any, xOffset: float, yOffset: float, zOffset: float, vehicle: Any, tilt: float, switchStyle: Any) -> None: ...
-    def ATTACH_CAMERA_TO_VEHICLE(self, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float, tilt: float, switchStyle: Any) -> None: ...  # Keeps the camera relative to the car with the specified offset
-    def ATTACH_CAMERA_TO_VEHICLE_LOOK_AT_CHAR(self, car: Any, xOffset: float, yOffset: float, zOffset: float, char: Any, tilt: float, switchStyle: Any) -> None: ...  # Attaches the camera to the vehicle and points it at the specified character
-    def ATTACH_CAMERA_TO_VEHICLE_LOOK_AT_VEHICLE(self, handle: Any, xOffset: float, yOffset: float, zOffset: float, vehicle: Any, tilt: float, switchStyle: Any) -> None: ...  # Puts the camera on the vehicle like in 0679
-    def ATTACH_CAR_TO_CAR(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
-    def ATTACH_CAR_TO_OBJECT(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...  # Attaches the car to object with offset and rotation
-    def ATTACH_CHAR_TO_BIKE(self, self_: Any, vehicle: Any, xOffset: float, yOffset: float, zOffset: float, heading: Any, headingRange: float, pitchRange: float, weaponType: Any) -> None: ...
-    def ATTACH_CHAR_TO_CAR(self, self_: Any, vehicle: Any, xOffset: float, yOffset: float, zOffset: float, heading: Any, headingRange: float, weaponType: Any) -> None: ...  # Puts character into a turret on the vehicle, allowing them to shoot
-    def ATTACH_CHAR_TO_OBJECT(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, heading: Any, headingRange: float, weaponType: Any) -> None: ...  # Attaches the character to the specified object, in turret mode
-    def ATTACH_FX_SYSTEM_TO_CHAR_BONE(self, self_: Any, handle: Any, pedBone: Any) -> None: ...  # Attaches the specified particle to the specified character
-    def ATTACH_MISSION_AUDIO_TO_CAR(self, slotId: Any, handle: Any) -> None: ...  # Sets the loaded audio to play at the vehicle's location
-    def ATTACH_MISSION_AUDIO_TO_CHAR(self, slotId: Any, handle: Any) -> None: ...  # Sets the loaded audio to play at the char's location
-    def ATTACH_MISSION_AUDIO_TO_OBJECT(self, slotId: Any, handle: Any) -> None: ...  # Sets the loaded audio to play at the object's location
-    def ATTACH_OBJECT_TO_CAR(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
-    def ATTACH_OBJECT_TO_CHAR(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
-    def ATTACH_OBJECT_TO_OBJECT(self, self_: Any, handle: Any, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
-    def ATTACH_SEARCHLIGHT_TO_SEARCHLIGHT_OBJECT(self, self_: Any, spotTower: Any, spotHousing: Any, spotBulb: Any, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Attaches the searchlight to the specified objects
-    def ATTACH_TRAILER_TO_CAB(self, self_: Any, cab: Any) -> None: ...
-    def ATTACH_WINCH_TO_HELI(self, self_: Any, state: Any) -> None: ...
-    def AWARD_PLAYER_MISSION_RESPECT(self, value: Any) -> None: ...  # Increments the earned mission respect points (stat 224) by the given value
-    def BOAT_GOTO_COORDS(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Makes the boat sail to the location
-    def BOAT_STOP(self, self_: Any) -> None: ...  # Turns off the car's engine
-    def BREAK_OBJECT(self, self_: Any, intensity: Any) -> None: ...  # Smashes the object to pieces
-    def BUILD_PLAYER_MODEL(self, self_: Any) -> None: ...  # Rebuilds the player model, applying any required texture changes
-    def BURST_CAR_TYRE(self, self_: Any, tireId: Any) -> None: ...  # Deflates the car's tire
-    def BUY_ITEM(self, itemId: Any) -> None: ...  # Charges the player for the purchase of the item and in many cases, automatically gives the item to t
+    def ATTACH_ANIMS_TO_MODEL(self, pedModelId: int, animationFile: str) -> None: ...  # Sets an animation pack to be loaded along with the specified model
+    def ATTACH_CAMERA_TO_CHAR(self, handle: Ped | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float, tilt: float, switchStyle: int) -> None: ...  # Keeps the camera relative to the char with the specified offset
+    def ATTACH_CAMERA_TO_CHAR_LOOK_AT_CHAR(self, handle: Ped | int, xOffset: float, yOffset: float, zOffset: float, char: Ped | int, tilt: float, switchStyle: int) -> None: ...  # Puts the camera on the character like with 067C
+    def ATTACH_CAMERA_TO_CHAR_LOOK_AT_VEHICLE(self, char: Ped | int, xOffset: float, yOffset: float, zOffset: float, vehicle: Vehicle | int, tilt: float, switchStyle: int) -> None: ...
+    def ATTACH_CAMERA_TO_VEHICLE(self, handle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float, tilt: float, switchStyle: int) -> None: ...  # Keeps the camera relative to the car with the specified offset
+    def ATTACH_CAMERA_TO_VEHICLE_LOOK_AT_CHAR(self, car: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, char: Ped | int, tilt: float, switchStyle: int) -> None: ...  # Attaches the camera to the vehicle and points it at the specified character
+    def ATTACH_CAMERA_TO_VEHICLE_LOOK_AT_VEHICLE(self, handle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, vehicle: Vehicle | int, tilt: float, switchStyle: int) -> None: ...  # Puts the camera on the vehicle like in 0679
+    def ATTACH_CAR_TO_CAR(self, self_: Vehicle | int, handle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
+    def ATTACH_CAR_TO_OBJECT(self, self_: Vehicle | int, handle: GameObject | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...  # Attaches the car to object with offset and rotation
+    def ATTACH_CHAR_TO_BIKE(self, self_: Ped | int, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, heading: int, headingRange: float, pitchRange: float, weaponType: WEAPON | int) -> None: ...
+    def ATTACH_CHAR_TO_CAR(self, self_: Ped | int, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, heading: int, headingRange: float, weaponType: WEAPON | int) -> None: ...  # Puts character into a turret on the vehicle, allowing them to shoot
+    def ATTACH_CHAR_TO_OBJECT(self, self_: Ped | int, handle: GameObject | int, xOffset: float, yOffset: float, zOffset: float, heading: int, headingRange: float, weaponType: WEAPON | int) -> None: ...  # Attaches the character to the specified object, in turret mode
+    def ATTACH_FX_SYSTEM_TO_CHAR_BONE(self, self_: int, handle: Ped | int, pedBone: PED_BONE | int) -> None: ...  # Attaches the specified particle to the specified character
+    def ATTACH_MISSION_AUDIO_TO_CAR(self, slotId: int, handle: Vehicle | int) -> None: ...  # Sets the loaded audio to play at the vehicle's location
+    def ATTACH_MISSION_AUDIO_TO_CHAR(self, slotId: int, handle: Ped | int) -> None: ...  # Sets the loaded audio to play at the char's location
+    def ATTACH_MISSION_AUDIO_TO_OBJECT(self, slotId: int, handle: GameObject | int) -> None: ...  # Sets the loaded audio to play at the object's location
+    def ATTACH_OBJECT_TO_CAR(self, self_: GameObject | int, handle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
+    def ATTACH_OBJECT_TO_CHAR(self, self_: GameObject | int, handle: Ped | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
+    def ATTACH_OBJECT_TO_OBJECT(self, self_: GameObject | int, handle: GameObject | int, xOffset: float, yOffset: float, zOffset: float, xRotation: float, yRotation: float, zRotation: float) -> None: ...
+    def ATTACH_SEARCHLIGHT_TO_SEARCHLIGHT_OBJECT(self, self_: int, spotTower: GameObject | int, spotHousing: GameObject | int, spotBulb: GameObject | int, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Attaches the searchlight to the specified objects
+    def ATTACH_TRAILER_TO_CAB(self, self_: Vehicle | int, cab: Vehicle | int) -> None: ...
+    def ATTACH_WINCH_TO_HELI(self, self_: Vehicle | int, state: bool) -> None: ...
+    def AWARD_PLAYER_MISSION_RESPECT(self, value: int) -> None: ...  # Increments the earned mission respect points (stat 224) by the given value
+    def BOAT_GOTO_COORDS(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Makes the boat sail to the location
+    def BOAT_STOP(self, self_: Vehicle | int) -> None: ...  # Turns off the car's engine
+    def BREAK_OBJECT(self, self_: GameObject | int, intensity: int) -> None: ...  # Smashes the object to pieces
+    def BUILD_PLAYER_MODEL(self, self_: int) -> None: ...  # Rebuilds the player model, applying any required texture changes
+    def BURST_CAR_TYRE(self, self_: Vehicle | int, tireId: VEHICLE_WHEEL | int) -> None: ...  # Deflates the car's tire
+    def BUY_ITEM(self, itemId: int) -> None: ...  # Charges the player for the purchase of the item and in many cases, automatically gives the item to t
     def CAMERA_IS_VECTOR_MOVE_RUNNING(self) -> bool: ...  # Returns true if the camera is moving in position
     def CAMERA_IS_VECTOR_TRACK_RUNNING(self) -> bool: ...  # Returns true if the camera is moving in angle
-    def CAMERA_PERSIST_FOV(self, state: Any) -> None: ...  # Locks the zoom level after the camera has finished zooming
-    def CAMERA_PERSIST_POS(self, state: Any) -> None: ...  # Locks the cameras position
-    def CAMERA_PERSIST_TRACK(self, state: Any) -> None: ...  # Locks the camera target point in position after propagating
+    def CAMERA_PERSIST_FOV(self, state: bool) -> None: ...  # Locks the zoom level after the camera has finished zooming
+    def CAMERA_PERSIST_POS(self, state: bool) -> None: ...  # Locks the cameras position
+    def CAMERA_PERSIST_TRACK(self, state: bool) -> None: ...  # Locks the camera target point in position after propagating
     def CAMERA_RESET_NEW_SCRIPTABLES(self) -> None: ...  # Stops the camera propagating, interpolating, shaking and zooming
-    def CAMERA_SET_LERP_FOV(self, from_: float, to: float, time: Any, ease: Any) -> None: ...  # Sets the cameras zoom factors
-    def CAMERA_SET_SHAKE_SIMULATION_SIMPLE(self, type: Any, timeInMs: float, intensity: float) -> None: ...  # Jiggles the camera in a variety of different ways
-    def CAMERA_SET_VECTOR_MOVE(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, time: Any, ease: Any) -> None: ...  # Puts the camera at the position of the first passed coordinates and moves it to the second passed co
-    def CAMERA_SET_VECTOR_TRACK(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, time: Any, ease: Any) -> None: ...  # Makes the camera point at the first coordinates and then rotate to point at the second coordinates
+    def CAMERA_SET_LERP_FOV(self, from_: float, to: float, time: int, ease: bool) -> None: ...  # Sets the cameras zoom factors
+    def CAMERA_SET_SHAKE_SIMULATION_SIMPLE(self, type: int, timeInMs: float, intensity: float) -> None: ...  # Jiggles the camera in a variety of different ways
+    def CAMERA_SET_VECTOR_MOVE(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, time: int, ease: bool) -> None: ...  # Puts the camera at the position of the first passed coordinates and moves it to the second passed co
+    def CAMERA_SET_VECTOR_TRACK(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, time: int, ease: bool) -> None: ...  # Makes the camera point at the first coordinates and then rotate to point at the second coordinates
     def CANCEL_OVERRIDE_RESTART(self) -> None: ...  # Stops the player from spawning at the override location (016E)
-    def CAN_CHAR_SEE_DEAD_CHAR(self, self_: Any, pedType: Any) -> bool: ...  # Returns true if the character sees a dead body of the given type
-    def CAN_PLAYER_START_MISSION(self, self_: Any) -> bool: ...  # Returns true if the player can move
-    def CAN_TRIGGER_GANG_WAR_WHEN_ON_A_MISSION(self, state: Any) -> None: ...  # Allows the player to provoke turf wars while a mission is active
-    def CAR_GOTO_COORDINATES(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the specified location by any means
-    def CAR_GOTO_COORDINATES_ACCURATE(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the specified location obeying the traffic rules
-    def CAR_GOTO_COORDINATES_RACING(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the destination as fast as possible, trying to overtake other vehicles
-    def CAR_SET_IDLE(self, self_: Any) -> None: ...  # Sets the car's mission to idle (MISSION_NONE), stopping any driving activity
-    def CAR_WANDER_RANDOMLY(self, self_: Any) -> None: ...  # Clears any current tasks the vehicle has and makes it drive around aimlessly
-    def CHANGE_BLIP_COLOUR(self, self_: Any, color: Any) -> None: ...  # Sets the blip's color
-    def CHANGE_BLIP_DISPLAY(self, self_: Any, display: Any) -> None: ...  # Changes the display of the specified blip
-    def CHANGE_BLIP_SCALE(self, self_: Any, size: Any) -> None: ...  # Sets the blip's size
-    def CHANGE_CAR_COLOUR(self, self_: Any, color1: Any, color2: Any) -> None: ...  # Sets the car's primary and secondary colors
-    def CHANGE_CAR_COLOUR_FROM_MENU(self, self_: Any, vehicle: Any, colorSlot: Any, row: Any) -> None: ...
-    def CHANGE_GARAGE_TYPE(self, garageId: str, type: Any) -> None: ...  # Sets the garage's type
-    def CHANGE_PLAYBACK_TO_USE_AI(self, self_: Any) -> None: ...  # Changes vehicle control from playback to AI driven
-    def CLEAR_ALL_CHAR_RELATIONSHIPS(self, self_: Any, relationshipType: Any) -> None: ...
+    def CAN_CHAR_SEE_DEAD_CHAR(self, self_: Ped | int, pedType: PED_TYPE | int) -> bool: ...  # Returns true if the character sees a dead body of the given type
+    def CAN_PLAYER_START_MISSION(self, self_: int) -> bool: ...  # Returns true if the player can move
+    def CAN_TRIGGER_GANG_WAR_WHEN_ON_A_MISSION(self, state: bool) -> None: ...  # Allows the player to provoke turf wars while a mission is active
+    def CAR_GOTO_COORDINATES(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the specified location by any means
+    def CAR_GOTO_COORDINATES_ACCURATE(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the specified location obeying the traffic rules
+    def CAR_GOTO_COORDINATES_RACING(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Makes the AI drive to the destination as fast as possible, trying to overtake other vehicles
+    def CAR_SET_IDLE(self, self_: Vehicle | int) -> None: ...  # Sets the car's mission to idle (MISSION_NONE), stopping any driving activity
+    def CAR_WANDER_RANDOMLY(self, self_: Vehicle | int) -> None: ...  # Clears any current tasks the vehicle has and makes it drive around aimlessly
+    def CHANGE_BLIP_COLOUR(self, self_: int, color: int) -> None: ...  # Sets the blip's color
+    def CHANGE_BLIP_DISPLAY(self, self_: int, display: int) -> None: ...  # Changes the display of the specified blip
+    def CHANGE_BLIP_SCALE(self, self_: int, size: int) -> None: ...  # Sets the blip's size
+    def CHANGE_CAR_COLOUR(self, self_: Vehicle | int, color1: int, color2: int) -> None: ...  # Sets the car's primary and secondary colors
+    def CHANGE_CAR_COLOUR_FROM_MENU(self, self_: int, vehicle: Vehicle | int, colorSlot: int, row: int) -> None: ...
+    def CHANGE_GARAGE_TYPE(self, garageId: str, type: int) -> None: ...  # Sets the garage's type
+    def CHANGE_PLAYBACK_TO_USE_AI(self, self_: Vehicle | int) -> None: ...  # Changes vehicle control from playback to AI driven
+    def CLEAR_ALL_CHAR_RELATIONSHIPS(self, self_: Ped | int, relationshipType: int) -> None: ...
     def CLEAR_ALL_SCRIPT_FIRE_FLAGS(self) -> None: ...  # Marks all fires as no longer needed, allowing them to disappear
     def CLEAR_ALL_SCRIPT_ROADBLOCKS(self) -> None: ...  # Removes references to all created roadblocks (04C0), freeing game memory
-    def CLEAR_AREA(self, x: float, y: float, z: float, radius: float, clearParticles: Any) -> None: ...  # Clears the area, removing all vehicles and pedestrians that are not marked as needed by a mission
+    def CLEAR_AREA(self, x: float, y: float, z: float, radius: float, clearParticles: bool) -> None: ...  # Clears the area, removing all vehicles and pedestrians that are not marked as needed by a mission
     def CLEAR_AREA_OF_CARS(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Clears all cars in the specified 3D area
     def CLEAR_AREA_OF_CHARS(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Clears all pedestrians from the given area
-    def CLEAR_ATTRACTOR(self, self_: Any) -> None: ...
-    def CLEAR_CAR_LAST_DAMAGE_ENTITY(self, self_: Any) -> None: ...  # Clears the car's last damage entity
-    def CLEAR_CAR_LAST_WEAPON_DAMAGE(self, self_: Any) -> None: ...  # Clears the vehicle's last weapon damage (see 031E)
-    def CLEAR_CHAR_DECISION_MAKER_EVENT_RESPONSE(self, self_: Any, event: Any) -> None: ...  # Resets the task for the event of the specified decision maker
-    def CLEAR_CHAR_LAST_DAMAGE_ENTITY(self, self_: Any) -> None: ...
-    def CLEAR_CHAR_LAST_WEAPON_DAMAGE(self, self_: Any) -> None: ...  # Clears the character's last weapon damage (see 031D)
-    def CLEAR_CHAR_RELATIONSHIP(self, self_: Any, relationshipType: Any, toPedType: Any) -> None: ...
-    def CLEAR_CHAR_TASKS(self, self_: Any) -> None: ...  # Clears the char's task, making them quit whatever they were doing
-    def CLEAR_CHAR_TASKS_IMMEDIATELY(self, self_: Any) -> None: ...  # Clears all the characters tasks immediately, resetting the character to an idle state
-    def CLEAR_CONVERSATION_FOR_CHAR(self, handle: Any) -> None: ...
+    def CLEAR_ATTRACTOR(self, self_: int) -> None: ...
+    def CLEAR_CAR_LAST_DAMAGE_ENTITY(self, self_: Vehicle | int) -> None: ...  # Clears the car's last damage entity
+    def CLEAR_CAR_LAST_WEAPON_DAMAGE(self, self_: Vehicle | int) -> None: ...  # Clears the vehicle's last weapon damage (see 031E)
+    def CLEAR_CHAR_DECISION_MAKER_EVENT_RESPONSE(self, self_: int, event: int) -> None: ...  # Resets the task for the event of the specified decision maker
+    def CLEAR_CHAR_LAST_DAMAGE_ENTITY(self, self_: Ped | int) -> None: ...
+    def CLEAR_CHAR_LAST_WEAPON_DAMAGE(self, self_: Ped | int) -> None: ...  # Clears the character's last weapon damage (see 031D)
+    def CLEAR_CHAR_RELATIONSHIP(self, self_: Ped | int, relationshipType: int, toPedType: PED_TYPE | int) -> None: ...
+    def CLEAR_CHAR_TASKS(self, self_: Ped | int) -> None: ...  # Clears the char's task, making them quit whatever they were doing
+    def CLEAR_CHAR_TASKS_IMMEDIATELY(self, self_: Ped | int) -> None: ...  # Clears all the characters tasks immediately, resetting the character to an idle state
+    def CLEAR_CONVERSATION_FOR_CHAR(self, handle: Ped | int) -> None: ...
     def CLEAR_CUTSCENE(self) -> None: ...  # Ends the current cutscene, freeing game memory
-    def CLEAR_EXTRA_COLOURS(self, withFade: Any) -> None: ...  # Clears the extra color of the sky
-    def CLEAR_GLOBAL_VAR_BIT_CONST(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_GLOBAL_VAR_BIT_LVAR(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_GLOBAL_VAR_BIT_VAR(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_GROUP_DECISION_MAKER_EVENT_RESPONSE(self, self_: Any, event: Any) -> None: ...  # Resets the task for the event of the specified group decision maker
-    def CLEAR_HELI_ORIENTATION(self, self_: Any) -> None: ...  # Resets the heli rotation set with 04D0
+    def CLEAR_EXTRA_COLOURS(self, withFade: bool) -> None: ...  # Clears the extra color of the sky
+    def CLEAR_GLOBAL_VAR_BIT_CONST(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_GLOBAL_VAR_BIT_LVAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_GLOBAL_VAR_BIT_VAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_GROUP_DECISION_MAKER_EVENT_RESPONSE(self, self_: int, event: int) -> None: ...  # Resets the task for the event of the specified group decision maker
+    def CLEAR_HELI_ORIENTATION(self, self_: Vehicle | int) -> None: ...  # Resets the heli rotation set with 04D0
     def CLEAR_HELP(self) -> None: ...  # Removes the text box from the screen
-    def CLEAR_LAST_BUILDING_MODEL_SHOT_BY_PLAYER(self, self_: Any) -> None: ...  # Resets the status of the last model the player has shot
+    def CLEAR_LAST_BUILDING_MODEL_SHOT_BY_PLAYER(self, self_: int) -> None: ...  # Resets the status of the last model the player has shot
     def CLEAR_LOADED_SHOP(self) -> None: ...  # Releases the loaded shopping data
-    def CLEAR_LOCAL_VAR_BIT_CONST(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_LOCAL_VAR_BIT_LVAR(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_LOCAL_VAR_BIT_VAR(self, number: Any, bitIndex: Any) -> None: ...  # Clears the nth bit of the number
-    def CLEAR_LOOK_AT(self, self_: Any) -> None: ...  # Clears the char's look task, making them stop looking at whatever they were assigned to look at
-    def CLEAR_MISSION_AUDIO(self, slotId: Any) -> None: ...  # Unloads the mission audio (03CF), freeing game memory
-    def CLEAR_OBJECT_LAST_WEAPON_DAMAGE(self, self_: Any) -> None: ...  # Clears the object's last damaging weapon ID
-    def CLEAR_ONSCREEN_COUNTER(self, counter: Any) -> None: ...  # Removes the onscreen counter (0150 or 03C4)
-    def CLEAR_ONSCREEN_TIMER(self, timer: Any) -> None: ...  # Removes the onscreen timer
+    def CLEAR_LOCAL_VAR_BIT_CONST(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_LOCAL_VAR_BIT_LVAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_LOCAL_VAR_BIT_VAR(self, number: int, bitIndex: int) -> None: ...  # Clears the nth bit of the number
+    def CLEAR_LOOK_AT(self, self_: Ped | int) -> None: ...  # Clears the char's look task, making them stop looking at whatever they were assigned to look at
+    def CLEAR_MISSION_AUDIO(self, slotId: int) -> None: ...  # Unloads the mission audio (03CF), freeing game memory
+    def CLEAR_OBJECT_LAST_WEAPON_DAMAGE(self, self_: GameObject | int) -> None: ...  # Clears the object's last damaging weapon ID
+    def CLEAR_ONSCREEN_COUNTER(self, counter: int) -> None: ...  # Removes the onscreen counter (0150 or 03C4)
+    def CLEAR_ONSCREEN_TIMER(self, timer: int) -> None: ...  # Removes the onscreen timer
     def CLEAR_PRINTS(self) -> None: ...  # Clears all priority text and some styles of big texts
-    def CLEAR_RELATIONSHIP(self, relationshipType: Any, ofPedType: Any, toPedType: Any) -> None: ...
-    def CLEAR_SEQUENCE_TASK(self, self_: Any) -> None: ...  # Clears the task sequence
+    def CLEAR_RELATIONSHIP(self, relationshipType: int, ofPedType: PED_TYPE | int, toPedType: PED_TYPE | int) -> None: ...
+    def CLEAR_SEQUENCE_TASK(self, self_: int) -> None: ...  # Clears the task sequence
     def CLEAR_SKIP(self) -> None: ...
     def CLEAR_SMALL_PRINTS(self) -> None: ...  # Clears small messages from the screen
     def CLEAR_SPECIFIC_ZONES_TO_TRIGGER_GANG_WAR(self) -> None: ...  # Enables turf wars to be provoked in all zones
     def CLEAR_THIS_BIG_PRINT(self, key: str) -> None: ...  # Removes the styled text from the screen
     def CLEAR_THIS_PRINT(self, key: str) -> None: ...  # Removes the priority text from the screen
-    def CLEAR_THIS_PRINT_BIG_NOW(self, textStyle: Any) -> None: ...  # Removes the print big text with the specified style from the screen
-    def CLEAR_WANTED_LEVEL(self, self_: Any) -> None: ...  # Clears the player's wanted level
+    def CLEAR_THIS_PRINT_BIG_NOW(self, textStyle: int) -> None: ...  # Removes the print big text with the specified style from the screen
+    def CLEAR_WANTED_LEVEL(self, self_: int) -> None: ...  # Clears the player's wanted level
     def CLEAR_WANTED_LEVEL_IN_GARAGE(self) -> None: ...  # Suspends the current players wanted level
-    def CLOSE_ALL_CAR_DOORS(self, self_: Any) -> None: ...  # Closes all car doors, hoods and boots
+    def CLOSE_ALL_CAR_DOORS(self, self_: Vehicle | int) -> None: ...  # Closes all car doors, hoods and boots
     def CLOSE_GARAGE(self, garageId: str) -> None: ...  # Closes the garage
-    def CLOSE_SEQUENCE_TASK(self, self_: Any) -> None: ...  # Ends the task sequence
-    def CONNECT_LODS(self, self_: Any, lodObject: Any) -> None: ...  # Sets which LOD object should show when the object is being viewed from far away
-    def CONTROL_CAR_DOOR(self, self_: Any, door: Any, state: Any, angle: float) -> None: ...  # Sets the car's door angle and latch state
-    def CONTROL_CAR_HYDRAULICS(self, self_: Any, frontLeftWheelSuspension: float, rearLeftWheelSuspension: float, frontRightWheelSuspension: float, rearRightWheelSuspension: float) -> None: ...  # Changes the car wheels' suspension level
-    def CONTROL_MOVABLE_VEHICLE_PART(self, self_: Any, range: float) -> None: ...  # Sets the angle of a vehicle's extra
+    def CLOSE_SEQUENCE_TASK(self, self_: int) -> None: ...  # Ends the task sequence
+    def CONNECT_LODS(self, self_: GameObject | int, lodObject: GameObject | int) -> None: ...  # Sets which LOD object should show when the object is being viewed from far away
+    def CONTROL_CAR_DOOR(self, self_: Vehicle | int, door: VEHICLE_DOOR | int, state: int, angle: float) -> None: ...  # Sets the car's door angle and latch state
+    def CONTROL_CAR_HYDRAULICS(self, self_: Vehicle | int, frontLeftWheelSuspension: float, rearLeftWheelSuspension: float, frontRightWheelSuspension: float, rearRightWheelSuspension: float) -> None: ...  # Changes the car wheels' suspension level
+    def CONTROL_MOVABLE_VEHICLE_PART(self, self_: Vehicle | int, range: float) -> None: ...  # Sets the angle of a vehicle's extra
     def CONVERT_METRES_TO_FEET(self, meters: float) -> float: ...  # Returns the result of converting meters to feet
-    def CONVERT_METRES_TO_FEET_INT(self, meters: Any) -> int: ...  # Returns the result of converting meters to feet
-    def COPY_CHAR_DECISION_MAKER(self, handleOrTemplate: Any) -> int: ...  # Copies a decision makers data to another decision maker
-    def COPY_GROUP_DECISION_MAKER(self, handleOrTemplate: Any) -> int: ...  # Creates copy of group decision maker and adds it to mission cleanup list. Otherwise should be releas
-    def COPY_SHARED_CHAR_DECISION_MAKER(self, template: Any) -> int: ...  # Creates decision maker instance based on template. Adds itself to mission cleanup list. Otherwise sh
+    def CONVERT_METRES_TO_FEET_INT(self, meters: int) -> int: ...  # Returns the result of converting meters to feet
+    def COPY_CHAR_DECISION_MAKER(self, handleOrTemplate: int) -> int: ...  # Copies a decision makers data to another decision maker
+    def COPY_GROUP_DECISION_MAKER(self, handleOrTemplate: int) -> int: ...  # Creates copy of group decision maker and adds it to mission cleanup list. Otherwise should be releas
+    def COPY_SHARED_CHAR_DECISION_MAKER(self, template: int) -> int: ...  # Creates decision maker instance based on template. Adds itself to mission cleanup list. Otherwise sh
     def COS(self, angle: float) -> float: ...  # Returns the cosine of the angle
-    def CREATE_BIRDS(self, xFrom: float, yFrom: float, zFrom: float, xTo: float, yTo: float, zTo: float, quantity: Any, type: Any) -> None: ...  # Creates a flock of birds flying in the specified direction
-    def CREATE_CAR(self, modelId: Any, x: float, y: float, z: float) -> Vehicle | None: ...  # Creates a vehicle at the specified location, with the specified model
-    def CREATE_CAR_GENERATOR(self, x: float, y: float, z: float, heading: float, modelId: Any, primaryColor: Any, secondaryColor: Any, forceSpawn: Any, alarmChance: Any, doorLockChance: Any, minDelay: Any, maxDelay: Any) -> int: ...  # Initializes a parked car generator (modelId -1 selects a random vehicle from the local popcycle)
-    def CREATE_CAR_GENERATOR_WITH_PLATE(self, x: float, y: float, z: float, heading: float, modelId: Any, primaryColor: Any, secondaryColor: Any, forceSpawn: Any, alarmChance: Any, doorLockChance: Any, minDelay: Any, maxDelay: Any, plateName: str) -> int: ...  # Creates a parked car generator with a number plate (modelId -1 selects a random vehicle from the loc
-    def CREATE_CHAR(self, pedType: Any, modelId: Any, x: float, y: float, z: float) -> Ped | None: ...  # Creates a character at the specified location, with the specified model and pedtype
-    def CREATE_CHAR_AS_PASSENGER(self, vehicle: Any, pedType: Any, modelId: Any, seat: Any) -> Ped | None: ...  # Creates a character with the specified model in the passenger seat of the vehicle
-    def CREATE_CHAR_AT_ATTRACTOR(self, pedType: Any, modelId: Any, attractor: Any, task: Any) -> Ped | None: ...
-    def CREATE_CHAR_INSIDE_CAR(self, vehicle: Any, pedType: Any, modelId: Any) -> Ped | None: ...  # Creates a character in the driver's seat of the vehicle
-    def CREATE_CHECKPOINT(self, type: Any, x: float, y: float, z: float, pointX: float, pointY: float, pointZ: float, radius: float) -> int: ...  # Creates racing/flight style red checkpoint object
-    def CREATE_EMERGENCY_SERVICES_CAR(self, model: Any, x: float, y: float, z: float) -> None: ...  # Creates an emergency service vehicle on the closest road to the specified coordinates
-    def CREATE_FORSALE_PROPERTY_PICKUP(self, x: float, y: float, z: float, price: Any, message: str) -> int: ...  # Creates an asset pickup for an asset which can be bought
-    def CREATE_FX_SYSTEM(self, name: str, x: float, y: float, z: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle effect
-    def CREATE_FX_SYSTEM_ON_CAR(self, name: str, vehicle: Any, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle effect attached to a vehicle
-    def CREATE_FX_SYSTEM_ON_CAR_WITH_DIRECTION(self, name: str, vehicle: Any, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle and attaches it to the specified vehicle with the specified offset and direction
-    def CREATE_FX_SYSTEM_ON_CHAR(self, name: str, char: Any, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle attached to a character
-    def CREATE_FX_SYSTEM_ON_CHAR_WITH_DIRECTION(self, name: str, char: Any, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle effect attached to a character
-    def CREATE_FX_SYSTEM_ON_OBJECT(self, name: str, object: Any, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: Any) -> int: ...  # Creates a particle effect on an object
-    def CREATE_FX_SYSTEM_ON_OBJECT_WITH_DIRECTION(self, name: str, object: Any, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: Any) -> int: ...  # Creates particle effect on an object
-    def CREATE_GROUP(self, defaultTaskAllocator: Any) -> int: ...  # Creates a new group, which multiple characters can be assigned to, allowing control over all of them
+    def CREATE_BIRDS(self, xFrom: float, yFrom: float, zFrom: float, xTo: float, yTo: float, zTo: float, quantity: int, type: int) -> None: ...  # Creates a flock of birds flying in the specified direction
+    def CREATE_CAR(self, modelId: VEHICLE | int, x: float, y: float, z: float) -> Vehicle | None: ...  # Creates a vehicle at the specified location, with the specified model
+    def CREATE_CAR_GENERATOR(self, x: float, y: float, z: float, heading: float, modelId: VEHICLE | int, primaryColor: int, secondaryColor: int, forceSpawn: bool, alarmChance: int, doorLockChance: int, minDelay: int, maxDelay: int) -> int: ...  # Initializes a parked car generator (modelId -1 selects a random vehicle from the local popcycle)
+    def CREATE_CAR_GENERATOR_WITH_PLATE(self, x: float, y: float, z: float, heading: float, modelId: VEHICLE | int, primaryColor: int, secondaryColor: int, forceSpawn: bool, alarmChance: int, doorLockChance: int, minDelay: int, maxDelay: int, plateName: str) -> int: ...  # Creates a parked car generator with a number plate (modelId -1 selects a random vehicle from the loc
+    def CREATE_CHAR(self, pedType: PED_TYPE | int, modelId: PED | int, x: float, y: float, z: float) -> Ped | None: ...  # Creates a character at the specified location, with the specified model and pedtype
+    def CREATE_CHAR_AS_PASSENGER(self, vehicle: Vehicle | int, pedType: PED_TYPE | int, modelId: PED | int, seat: int) -> Ped | None: ...  # Creates a character with the specified model in the passenger seat of the vehicle
+    def CREATE_CHAR_AT_ATTRACTOR(self, pedType: PED_TYPE | int, modelId: PED | int, attractor: int, task: int) -> Ped | None: ...
+    def CREATE_CHAR_INSIDE_CAR(self, vehicle: Vehicle | int, pedType: PED_TYPE | int, modelId: PED | int) -> Ped | None: ...  # Creates a character in the driver's seat of the vehicle
+    def CREATE_CHECKPOINT(self, type: int, x: float, y: float, z: float, pointX: float, pointY: float, pointZ: float, radius: float) -> int: ...  # Creates racing/flight style red checkpoint object
+    def CREATE_EMERGENCY_SERVICES_CAR(self, model: VEHICLE | int, x: float, y: float, z: float) -> None: ...  # Creates an emergency service vehicle on the closest road to the specified coordinates
+    def CREATE_FORSALE_PROPERTY_PICKUP(self, x: float, y: float, z: float, price: int, message: str) -> int: ...  # Creates an asset pickup for an asset which can be bought
+    def CREATE_FX_SYSTEM(self, name: str, x: float, y: float, z: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle effect
+    def CREATE_FX_SYSTEM_ON_CAR(self, name: str, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle effect attached to a vehicle
+    def CREATE_FX_SYSTEM_ON_CAR_WITH_DIRECTION(self, name: str, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle and attaches it to the specified vehicle with the specified offset and direction
+    def CREATE_FX_SYSTEM_ON_CHAR(self, name: str, char: Ped | int, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle attached to a character
+    def CREATE_FX_SYSTEM_ON_CHAR_WITH_DIRECTION(self, name: str, char: Ped | int, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle effect attached to a character
+    def CREATE_FX_SYSTEM_ON_OBJECT(self, name: str, object: GameObject | int, xOffset: float, yOffset: float, zOffset: float, ignoreBoundingChecks: bool) -> int: ...  # Creates a particle effect on an object
+    def CREATE_FX_SYSTEM_ON_OBJECT_WITH_DIRECTION(self, name: str, object: GameObject | int, xOffset: float, yOffset: float, zOffset: float, xDirection: float, yDirection: float, zDirection: float, ignoreBoundingChecks: bool) -> int: ...  # Creates particle effect on an object
+    def CREATE_GROUP(self, defaultTaskAllocator: int) -> int: ...  # Creates a new group, which multiple characters can be assigned to, allowing control over all of them
     def CREATE_HORSESHOE_PICKUP(self, x: float, y: float, z: float) -> int: ...  # Creates a collectible horseshoe at the specified coordinates
     def CREATE_LOCKED_PROPERTY_PICKUP(self, x: float, y: float, z: float, message: str) -> int: ...  # Creates an asset icon for an asset that is not for sale
-    def CREATE_MENU(self, header: str, topLeftX: float, topLeftY: float, width: float, numColumns: Any, interactive: Any, background: Any, alignment: Any) -> int: ...  # Creates the specified panel on the screen with basic settings
-    def CREATE_MENU_GRID(self, header: str, topLeftX: float, topLeftY: float, width: float, numColumns: Any, interactive: Any, background: Any, alignment: Any) -> int: ...  # Creates the same color chart that you see in car modification shops
-    def CREATE_MISSION_TRAIN(self, type: Any, x: float, y: float, z: float, direction: Any) -> int: ...  # Creates a script handled train from a predefined type (the type dictates how long the train is and t
-    def CREATE_MONEY_PICKUP(self, x: float, y: float, z: float, cashAmount: Any, permanent: Any) -> int: ...  # Creates a money pickup with the specified cash value
-    def CREATE_OBJECT(self, modelId: Any, x: float, y: float, z: float) -> GameObject | None: ...  # Creates an object at the specified location, with the specified model
-    def CREATE_OBJECT_NO_OFFSET(self, modelId: Any, x: float, y: float, z: float) -> GameObject | None: ...  # Creates an object without offset at the location
+    def CREATE_MENU(self, header: str, topLeftX: float, topLeftY: float, width: float, numColumns: int, interactive: bool, background: bool, alignment: int) -> int: ...  # Creates the specified panel on the screen with basic settings
+    def CREATE_MENU_GRID(self, header: str, topLeftX: float, topLeftY: float, width: float, numColumns: int, interactive: bool, background: bool, alignment: int) -> int: ...  # Creates the same color chart that you see in car modification shops
+    def CREATE_MISSION_TRAIN(self, type: int, x: float, y: float, z: float, direction: bool) -> int: ...  # Creates a script handled train from a predefined type (the type dictates how long the train is and t
+    def CREATE_MONEY_PICKUP(self, x: float, y: float, z: float, cashAmount: int, permanent: bool) -> int: ...  # Creates a money pickup with the specified cash value
+    def CREATE_OBJECT(self, modelId: int, x: float, y: float, z: float) -> GameObject | None: ...  # Creates an object at the specified location, with the specified model
+    def CREATE_OBJECT_NO_OFFSET(self, modelId: int, x: float, y: float, z: float) -> GameObject | None: ...  # Creates an object without offset at the location
     def CREATE_OYSTER_PICKUP(self, x: float, y: float, z: float) -> int: ...  # Creates a collectible oyster at the specified coordinates
-    def CREATE_PICKUP(self, modelId: Any, pickupType: Any, x: float, y: float, z: float) -> int: ...  # Creates a pickup with the given model and type
-    def CREATE_PICKUP_WITH_AMMO(self, modelId: Any, pickupType: Any, ammo: Any, x: float, y: float, z: float) -> int: ...  # Creates a weapon pickup, giving the player the specified amount of ammo when they pick it up
-    def CREATE_PLAYER(self, playerIndex: Any, x: float, y: float, z: float) -> int: ...  # Creates a player at the specified location
-    def CREATE_PROTECTION_PICKUP(self, x: float, y: float, z: float, revenueLimit: Any, revenueRate: Any) -> int: ...  # Creates an asset revenue pickup
+    def CREATE_PICKUP(self, modelId: int, pickupType: PICKUP_TYPE | int, x: float, y: float, z: float) -> int: ...  # Creates a pickup with the given model and type
+    def CREATE_PICKUP_WITH_AMMO(self, modelId: int, pickupType: PICKUP_TYPE | int, ammo: int, x: float, y: float, z: float) -> int: ...  # Creates a weapon pickup, giving the player the specified amount of ammo when they pick it up
+    def CREATE_PLAYER(self, playerIndex: int, x: float, y: float, z: float) -> int: ...  # Creates a player at the specified location
+    def CREATE_PROTECTION_PICKUP(self, x: float, y: float, z: float, revenueLimit: int, revenueRate: int) -> int: ...  # Creates an asset revenue pickup
     def CREATE_RANDOM_CAR_FOR_CAR_PARK(self, x: float, y: float, z: float, heading: float) -> None: ...  # Starts spawning random cars at the specified location
     def CREATE_RANDOM_CHAR(self, x: float, y: float, z: float) -> Ped | None: ...  # Creates a character with a randomised model and pedtype at the specified coordinates
-    def CREATE_RANDOM_CHAR_AS_DRIVER(self, vehicle: Any) -> Ped | None: ...  # Creates a driver in the vehicle
-    def CREATE_RANDOM_CHAR_AS_PASSENGER(self, vehicle: Any, seat: Any) -> Ped | None: ...  # Creates a random character in the passenger seat of the vehicle
-    def CREATE_SCRIPT_ROADBLOCK(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, type: Any) -> None: ...  # Creates a roadblock in the specified area with the specified type
+    def CREATE_RANDOM_CHAR_AS_DRIVER(self, vehicle: Vehicle | int) -> Ped | None: ...  # Creates a driver in the vehicle
+    def CREATE_RANDOM_CHAR_AS_PASSENGER(self, vehicle: Vehicle | int, seat: int) -> Ped | None: ...  # Creates a random character in the passenger seat of the vehicle
+    def CREATE_SCRIPT_ROADBLOCK(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, type: int) -> None: ...  # Creates a roadblock in the specified area with the specified type
     def CREATE_SEARCHLIGHT(self, x: float, y: float, z: float, xPoint: float, yPoint: float, zPoint: float, radius: float, radiusPoint: float) -> int: ...
-    def CREATE_SEARCHLIGHT_ON_VEHICLE(self, vehicle: Any, xOffset: float, yOffset: float, zOffset: float, xPoint: float, yPoint: float, zPoint: float, pointRadius: float, radius: float) -> int: ...  # Creates a searchlight-styled light cone on a car with the specified offset and points to a certain p
+    def CREATE_SEARCHLIGHT_ON_VEHICLE(self, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float, xPoint: float, yPoint: float, zPoint: float, pointRadius: float, radius: float) -> int: ...  # Creates a searchlight-styled light cone on a car with the specified offset and points to a certain p
     def CREATE_SNAPSHOT_PICKUP(self, x: float, y: float, z: float) -> int: ...  # Creates a collectible snapshot at the specified coordinates
-    def CREATE_SWAT_ROPE(self, pedType: Any, modelId: Any, x: float, y: float, z: float) -> Ped | None: ...  # Creates a character descending from a rope
-    def CREATE_USER_3D_MARKER(self, x: float, y: float, z: float, color: Any) -> int: ...  # Creates a marker similar to the yellow enex markers
-    def CSET_LVAR_FLOAT_TO_LVAR_INT(self, arg0: float, arg1: Any) -> None: ...  # Converts the integer value of the second local variable to a float and stores the result to the firs
-    def CSET_LVAR_FLOAT_TO_VAR_INT(self, arg0: float, arg1: Any) -> None: ...  # Converts the integer value of the global variable to a float and then stores the result in the local
-    def CSET_LVAR_INT_TO_LVAR_FLOAT(self, arg0: Any, arg1: float) -> None: ...  # Converts a float value to an integer (via truncating)
-    def CSET_LVAR_INT_TO_VAR_FLOAT(self, arg0: Any, arg1: float) -> None: ...  # Converts the float value of the global variable to an integer (via flooring) and stores the result i
-    def CSET_VAR_FLOAT_TO_LVAR_INT(self, arg0: float, arg1: Any) -> None: ...  # Converts the integer value of the local variable to a float and stores the result in the global vari
-    def CSET_VAR_FLOAT_TO_VAR_INT(self, arg0: float, arg1: Any) -> None: ...  # Converts the integer value of the second global variable to a float and stores the result in the fir
-    def CSET_VAR_INT_TO_LVAR_FLOAT(self, arg0: Any, arg1: float) -> None: ...  # Converts the float value of the local variable to an integer (via flooring) and stores the result to
-    def CSET_VAR_INT_TO_VAR_FLOAT(self, arg0: Any, arg1: float) -> None: ...  # Converts the float in the second global variable to an integer (via flooring) and stores the integer
-    def CUSTOM_PLATE_DESIGN_FOR_NEXT_CAR(self, modelId: Any, design: Any) -> None: ...  # Sets the town ID of the license plate which is created on the specified model, affecting which textu
-    def CUSTOM_PLATE_FOR_NEXT_CAR(self, modelId: Any, text: str) -> None: ...  # Sets the numberplate of the next car to be spawned with the specified model
-    def DAMAGE_CAR_DOOR(self, self_: Any, door: Any) -> None: ...  # Damages a component on the vehicle
-    def DAMAGE_CAR_PANEL(self, self_: Any, panelId: Any) -> None: ...  # Damages a panel on the car
-    def DAMAGE_CHAR(self, self_: Any, amount: Any, damageArmour: Any) -> None: ...  # Decreases the characters health
+    def CREATE_SWAT_ROPE(self, pedType: PED_TYPE | int, modelId: PED | int, x: float, y: float, z: float) -> Ped | None: ...  # Creates a character descending from a rope
+    def CREATE_USER_3D_MARKER(self, x: float, y: float, z: float, color: int) -> int: ...  # Creates a marker similar to the yellow enex markers
+    def CSET_LVAR_FLOAT_TO_LVAR_INT(self, arg0: float, arg1: int) -> None: ...  # Converts the integer value of the second local variable to a float and stores the result to the firs
+    def CSET_LVAR_FLOAT_TO_VAR_INT(self, arg0: float, arg1: int) -> None: ...  # Converts the integer value of the global variable to a float and then stores the result in the local
+    def CSET_LVAR_INT_TO_LVAR_FLOAT(self, arg0: int, arg1: float) -> None: ...  # Converts a float value to an integer (via truncating)
+    def CSET_LVAR_INT_TO_VAR_FLOAT(self, arg0: int, arg1: float) -> None: ...  # Converts the float value of the global variable to an integer (via flooring) and stores the result i
+    def CSET_VAR_FLOAT_TO_LVAR_INT(self, arg0: float, arg1: int) -> None: ...  # Converts the integer value of the local variable to a float and stores the result in the global vari
+    def CSET_VAR_FLOAT_TO_VAR_INT(self, arg0: float, arg1: int) -> None: ...  # Converts the integer value of the second global variable to a float and stores the result in the fir
+    def CSET_VAR_INT_TO_LVAR_FLOAT(self, arg0: int, arg1: float) -> None: ...  # Converts the float value of the local variable to an integer (via flooring) and stores the result to
+    def CSET_VAR_INT_TO_VAR_FLOAT(self, arg0: int, arg1: float) -> None: ...  # Converts the float in the second global variable to an integer (via flooring) and stores the integer
+    def CUSTOM_PLATE_DESIGN_FOR_NEXT_CAR(self, modelId: VEHICLE | int, design: int) -> None: ...  # Sets the town ID of the license plate which is created on the specified model, affecting which textu
+    def CUSTOM_PLATE_FOR_NEXT_CAR(self, modelId: VEHICLE | int, text: str) -> None: ...  # Sets the numberplate of the next car to be spawned with the specified model
+    def DAMAGE_CAR_DOOR(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> None: ...  # Damages a component on the vehicle
+    def DAMAGE_CAR_PANEL(self, self_: Vehicle | int, panelId: int) -> None: ...  # Damages a panel on the car
+    def DAMAGE_CHAR(self, self_: Ped | int, amount: int, damageArmour: bool) -> None: ...  # Decreases the characters health
     def DEACTIVATE_GARAGE(self, garageId: str) -> None: ...  # Deactivates the garage
     def DEBUG_OFF(self) -> None: ...  # Deactivates debug features in this script
     def DEBUG_ON(self) -> None: ...  # Activates debug features in this script
-    def DECLARE_MISSION_FLAG(self, flag: Any) -> None: ...  # Links the global variable to the specific hardcoded flag that defines is there an active mission or 
-    def DECREMENT_FLOAT_STAT(self, id: Any, value: float) -> None: ...  # Decreases the float stat by the value given
-    def DECREMENT_INT_STAT(self, id: Any, value: Any) -> None: ...  # Decreases the integer stat by the value given
+    def DECLARE_MISSION_FLAG(self, flag: int) -> None: ...  # Links the global variable to the specific hardcoded flag that defines is there an active mission or
+    def DECREMENT_FLOAT_STAT(self, id: int, value: float) -> None: ...  # Decreases the float stat by the value given
+    def DECREMENT_INT_STAT(self, id: int, value: int) -> None: ...  # Decreases the integer stat by the value given
     def DELETE_ALL_TRAINS(self) -> None: ...  # Destroys all trains, including those that are not created by the script
-    def DELETE_CAR(self, self_: Any) -> None: ...  # Removes the vehicle from the game
-    def DELETE_CHAR(self, self_: Any) -> None: ...  # Removes the character from the game and mission cleanup list, freeing game memory
-    def DELETE_CHECKPOINT(self, self_: Any) -> None: ...
-    def DELETE_MENU(self, self_: Any) -> None: ...  # Removes the specified panel from the screen
-    def DELETE_MISSION_TRAIN(self, self_: Any) -> None: ...  # Removes the specified script created train
+    def DELETE_CAR(self, self_: Vehicle | int) -> None: ...  # Removes the vehicle from the game
+    def DELETE_CHAR(self, self_: Ped | int) -> None: ...  # Removes the character from the game and mission cleanup list, freeing game memory
+    def DELETE_CHECKPOINT(self, self_: int) -> None: ...
+    def DELETE_MENU(self, self_: int) -> None: ...  # Removes the specified panel from the screen
+    def DELETE_MISSION_TRAIN(self, self_: Vehicle | int) -> None: ...  # Removes the specified script created train
     def DELETE_MISSION_TRAINS(self) -> None: ...  # Destroys all script-created trains
-    def DELETE_OBJECT(self, self_: Any) -> None: ...  # Destroys the object, freeing game memory
-    def DELETE_PLAYER(self, self_: Any) -> None: ...  # Removes the specified player
-    def DELETE_SEARCHLIGHT(self, self_: Any) -> None: ...
-    def DETACH_CAR(self, self_: Any, pitch: float, heading: float, strength: float, applyTurnForce: Any) -> None: ...  # Detaches the car with optional rotation and force
-    def DETACH_CHAR_FROM_CAR(self, self_: Any) -> None: ...  # Takes the character out of turret mode (0464)
-    def DETACH_OBJECT(self, self_: Any, pitch: float, heading: float, strength: float, applyTurnForce: Any) -> None: ...  # Detaches the object with optional rotation and force
-    def DETACH_TRAILER_FROM_CAB(self, self_: Any, cab: Any) -> None: ...  # Detaches the trailer from the car which it is attached to
-    def DISABLE_ALL_ENTRY_EXITS(self, state: Any) -> None: ...  # Disables all entry/exit markers
-    def DISABLE_CHAR_SPEECH(self, self_: Any, stopNow: Any) -> None: ...  # Prevents any character speech from playing
-    def DISABLE_HELI_AUDIO(self, self_: Any, state: Any) -> None: ...  # Sets whether the helicopter sound is muted
-    def DISABLE_PLAYER_SPRINT(self, self_: Any, state: Any) -> None: ...
-    def DISPLAY_CAR_NAMES(self, state: Any) -> None: ...  # Sets whether the name of the current vehicle should be displayed
-    def DISPLAY_HUD(self, state: Any) -> None: ...  # Sets whether the HUD displays
-    def DISPLAY_NON_MINIGAME_HELP_MESSAGES(self, state: Any) -> None: ...  # Overrides the text block set by 09BD
-    def DISPLAY_NTH_ONSCREEN_COUNTER_WITH_STRING(self, counter: Any, display: Any, slot: Any, text: str) -> None: ...  # Displays an onscreen counter with the text in the specified slot, either shown in numbers or as a ba
-    def DISPLAY_ONSCREEN_COUNTER_WITH_STRING(self, counter: Any, display: Any, text: str) -> None: ...  # Displays an onscreen counter with the text, either shown in numbers or as a bar
-    def DISPLAY_ONSCREEN_TIMER(self, timer: Any, direction: Any) -> None: ...  # Creates a countdown or countup onscreen timer
-    def DISPLAY_ONSCREEN_TIMER_WITH_STRING(self, timer: Any, direction: Any, text: str) -> None: ...  # Creates a countdown or countup onscreen timer with the text
-    def DISPLAY_RADAR(self, state: Any) -> None: ...  # Displays or hides the radar
+    def DELETE_OBJECT(self, self_: GameObject | int) -> None: ...  # Destroys the object, freeing game memory
+    def DELETE_PLAYER(self, self_: int) -> None: ...  # Removes the specified player
+    def DELETE_SEARCHLIGHT(self, self_: int) -> None: ...
+    def DETACH_CAR(self, self_: Vehicle | int, pitch: float, heading: float, strength: float, applyTurnForce: bool) -> None: ...  # Detaches the car with optional rotation and force
+    def DETACH_CHAR_FROM_CAR(self, self_: Ped | int) -> None: ...  # Takes the character out of turret mode (0464)
+    def DETACH_OBJECT(self, self_: GameObject | int, pitch: float, heading: float, strength: float, applyTurnForce: bool) -> None: ...  # Detaches the object with optional rotation and force
+    def DETACH_TRAILER_FROM_CAB(self, self_: Vehicle | int, cab: Vehicle | int) -> None: ...  # Detaches the trailer from the car which it is attached to
+    def DISABLE_ALL_ENTRY_EXITS(self, state: bool) -> None: ...  # Disables all entry/exit markers
+    def DISABLE_CHAR_SPEECH(self, self_: Ped | int, stopNow: bool) -> None: ...  # Prevents any character speech from playing
+    def DISABLE_HELI_AUDIO(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the helicopter sound is muted
+    def DISABLE_PLAYER_SPRINT(self, self_: int, state: bool) -> None: ...
+    def DISPLAY_CAR_NAMES(self, state: bool) -> None: ...  # Sets whether the name of the current vehicle should be displayed
+    def DISPLAY_HUD(self, state: bool) -> None: ...  # Sets whether the HUD displays
+    def DISPLAY_NON_MINIGAME_HELP_MESSAGES(self, state: bool) -> None: ...  # Overrides the text block set by 09BD
+    def DISPLAY_NTH_ONSCREEN_COUNTER_WITH_STRING(self, counter: int, display: int, slot: int, text: str) -> None: ...  # Displays an onscreen counter with the text in the specified slot, either shown in numbers or as a ba
+    def DISPLAY_ONSCREEN_COUNTER_WITH_STRING(self, counter: int, display: int, text: str) -> None: ...  # Displays an onscreen counter with the text, either shown in numbers or as a bar
+    def DISPLAY_ONSCREEN_TIMER(self, timer: int, direction: int) -> None: ...  # Creates a countdown or countup onscreen timer
+    def DISPLAY_ONSCREEN_TIMER_WITH_STRING(self, timer: int, direction: int, text: str) -> None: ...  # Creates a countdown or countup onscreen timer with the text
+    def DISPLAY_RADAR(self, state: bool) -> None: ...  # Displays or hides the radar
     def DISPLAY_TEXT(self, offsetLeft: float, offsetTop: float, key: str) -> None: ...  # Draws text at the specified on-screen position
-    def DISPLAY_TEXT_WITH_2_NUMBERS(self, offsetLeft: float, offsetTop: float, key: str, num1: Any, num2: Any) -> None: ...  # Draws text with two numbers
-    def DISPLAY_TEXT_WITH_FLOAT(self, leftTopX: float, leftTopY: float, key: str, value: float, precision: Any) -> None: ...  # Converts the float to two separate numbers to use in a 2-numbered GXT entry, and draws the text
-    def DISPLAY_TEXT_WITH_NUMBER(self, offsetLeft: float, offsetTop: float, key: str, num: Any) -> None: ...  # Draws text with one number
-    def DISPLAY_ZONE_NAMES(self, state: Any) -> None: ...  # Sets whether the area text for the current area should show
+    def DISPLAY_TEXT_WITH_2_NUMBERS(self, offsetLeft: float, offsetTop: float, key: str, num1: int, num2: int) -> None: ...  # Draws text with two numbers
+    def DISPLAY_TEXT_WITH_FLOAT(self, leftTopX: float, leftTopY: float, key: str, value: float, precision: int) -> None: ...  # Converts the float to two separate numbers to use in a 2-numbered GXT entry, and draws the text
+    def DISPLAY_TEXT_WITH_NUMBER(self, offsetLeft: float, offsetTop: float, key: str, num: int) -> None: ...  # Draws text with one number
+    def DISPLAY_ZONE_NAMES(self, state: bool) -> None: ...  # Sets whether the area text for the current area should show
     def DIV_FLOAT_LVAR_BY_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Divides the float LVAR by the float LVAR
     def DIV_FLOAT_LVAR_BY_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Divides the float LVAR by the float VAR
     def DIV_FLOAT_LVAR_BY_VAL(self, arg0: float, arg1: float) -> None: ...  # Divides the float LVAR by the value
     def DIV_FLOAT_VAR_BY_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Divides the float VAR by the float LVAR
     def DIV_FLOAT_VAR_BY_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Divides the float VAR value by the float VAR
     def DIV_FLOAT_VAR_BY_VAL(self, arg0: float, arg1: float) -> None: ...  # Divides the float VAR by the value
-    def DIV_INT_LVAR_BY_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int LVAR by the int LVAR
-    def DIV_INT_LVAR_BY_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int LVAR by the int VAR
-    def DIV_INT_LVAR_BY_VAL(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int LVAR by the value
-    def DIV_INT_VAR_BY_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int VAR by the int LVAR
-    def DIV_INT_VAR_BY_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int VAR value by the int VAR
-    def DIV_INT_VAR_BY_VAL(self, arg0: Any, arg1: Any) -> None: ...  # Divides the int VAR by the value
-    def DOES_BLIP_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid blip handle
-    def DOES_CAR_HAVE_HYDRAULICS(self, self_: Any) -> bool: ...  # Returns true if the car has hydraulics installed
-    def DOES_CAR_HAVE_STUCK_CAR_CHECK(self, self_: Any) -> bool: ...  # Returns true if the car has car stuck check enabled
-    def DOES_CHAR_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid character handle
-    def DOES_DECISION_MAKER_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid decision maker handle
-    def DOES_GROUP_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid group handle
-    def DOES_OBJECT_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid object handle
-    def DOES_OBJECT_HAVE_THIS_MODEL(self, self_: Any, modelId: Any) -> bool: ...  # Returns true if the object's model is the model specified
-    def DOES_PICKUP_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid pickup handle
-    def DOES_SCRIPT_FIRE_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid script fire handle
-    def DOES_SEARCHLIGHT_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid searchlight handle
-    def DOES_VEHICLE_EXIST(self, handle: Any) -> bool: ...  # Returns true if the handle is a valid vehicle handle
-    def DONT_REMOVE_CHAR(self, self_: Any) -> None: ...  # Removes the character from the mission cleanup list, preventing it from being deleted when the missi
-    def DONT_REMOVE_OBJECT(self, self_: Any) -> None: ...  # Removes the object from the mission cleanup list, preventing it from being deleted when the mission 
+    def DIV_INT_LVAR_BY_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Divides the int LVAR by the int LVAR
+    def DIV_INT_LVAR_BY_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Divides the int LVAR by the int VAR
+    def DIV_INT_LVAR_BY_VAL(self, arg0: int, arg1: int) -> None: ...  # Divides the int LVAR by the value
+    def DIV_INT_VAR_BY_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Divides the int VAR by the int LVAR
+    def DIV_INT_VAR_BY_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Divides the int VAR value by the int VAR
+    def DIV_INT_VAR_BY_VAL(self, arg0: int, arg1: int) -> None: ...  # Divides the int VAR by the value
+    def DOES_BLIP_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid blip handle
+    def DOES_CAR_HAVE_HYDRAULICS(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car has hydraulics installed
+    def DOES_CAR_HAVE_STUCK_CAR_CHECK(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car has car stuck check enabled
+    def DOES_CHAR_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid character handle
+    def DOES_DECISION_MAKER_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid decision maker handle
+    def DOES_GROUP_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid group handle
+    def DOES_OBJECT_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid object handle
+    def DOES_OBJECT_HAVE_THIS_MODEL(self, self_: GameObject | int, modelId: int) -> bool: ...  # Returns true if the object's model is the model specified
+    def DOES_PICKUP_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid pickup handle
+    def DOES_SCRIPT_FIRE_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid script fire handle
+    def DOES_SEARCHLIGHT_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid searchlight handle
+    def DOES_VEHICLE_EXIST(self, handle: int) -> bool: ...  # Returns true if the handle is a valid vehicle handle
+    def DONT_REMOVE_CHAR(self, self_: Ped | int) -> None: ...  # Removes the character from the mission cleanup list, preventing it from being deleted when the missi
+    def DONT_REMOVE_OBJECT(self, self_: GameObject | int) -> None: ...  # Removes the object from the mission cleanup list, preventing it from being deleted when the mission
     def DONT_SUPPRESS_ANY_CAR_MODELS(self) -> None: ...  # Resets the disabled car model list for car generators
-    def DONT_SUPPRESS_CAR_MODEL(self, modelId: Any) -> None: ...  # Allows the specified car model to spawn for car generators
+    def DONT_SUPPRESS_CAR_MODEL(self, modelId: VEHICLE | int) -> None: ...  # Allows the specified car model to spawn for car generators
     def DO_2D_RECTANGLES_COLLIDE(self, rectangle1PositionX: float, rectangle1PositionY: float, rectangle1SizeX: float, rectangle1SizeY: float, rectangle2PositionX: float, rectangle2PositionY: float, rectangle2SizeX: float, rectangle2SizeY: float) -> bool: ...  # Returns true if rectangle1 is inside rectangle2 or partially intersects it
     def DO_CAMERA_BUMP(self, xOffset: float, yOffset: float) -> None: ...  # Bumps the camera in the specified direction as if it had collided
     def DO_DEBUG_STUFF(self) -> None: ...  # Increments an unused counter, likely used in the debug version of the game
-    def DO_FADE(self, time: Any, direction: Any) -> None: ...  # Fades the screen for the specified time
+    def DO_FADE(self, time: int, direction: int) -> None: ...  # Fades the screen for the specified time
     def DO_WEAPON_STUFF_AT_START_OF_2P_GAME(self) -> None: ...  # Gives all the weapons of player 1 to player 2 during a cooperative mission
-    def DRAW_CORONA(self, x: float, y: float, z: float, size: float, coronaType: Any, flareType: Any, r: Any, g: Any, b: Any) -> None: ...  # Displays a corona with fade in-out effect at the specified location
-    def DRAW_CROSSHAIR(self, state: Any) -> None: ...  # Sets whether the HUD should always display weapon aiming crosshairs, used in the mission 'Catalyst' 
-    def DRAW_LIGHT_WITH_RANGE(self, x: float, y: float, z: float, red: Any, green: Any, blue: Any, radius: float) -> None: ...  # Draws colored light in radius of the specified point
-    def DRAW_ODDJOB_TITLE_BEFORE_FADE(self, state: Any) -> None: ...  # Sets whether the styled text stays on the screen when it fades out
-    def DRAW_RECT(self, x: float, y: float, width: float, height: float, r: Any, g: Any, b: Any, a: Any) -> None: ...  # Draws a box at the specified screen X and Y position, with the specified size and RGBA colors
-    def DRAW_SHADOW(self, textureType: Any, x: float, y: float, z: float, angle: float, length: float, intensity: Any, r: Any, g: Any, b: Any) -> None: ...  # Draws a shadow in the current frame
+    def DRAW_CORONA(self, x: float, y: float, z: float, size: float, coronaType: int, flareType: int, r: int, g: int, b: int) -> None: ...  # Displays a corona with fade in-out effect at the specified location
+    def DRAW_CROSSHAIR(self, state: bool) -> None: ...  # Sets whether the HUD should always display weapon aiming crosshairs, used in the mission 'Catalyst'
+    def DRAW_LIGHT_WITH_RANGE(self, x: float, y: float, z: float, red: int, green: int, blue: int, radius: float) -> None: ...  # Draws colored light in radius of the specified point
+    def DRAW_ODDJOB_TITLE_BEFORE_FADE(self, state: bool) -> None: ...  # Sets whether the styled text stays on the screen when it fades out
+    def DRAW_RECT(self, x: float, y: float, width: float, height: float, r: int, g: int, b: int, a: int) -> None: ...  # Draws a box at the specified screen X and Y position, with the specified size and RGBA colors
+    def DRAW_SHADOW(self, textureType: int, x: float, y: float, z: float, angle: float, length: float, intensity: int, r: int, g: int, b: int) -> None: ...  # Draws a shadow in the current frame
     def DRAW_SPHERE(self, x: float, y: float, z: float, diameter: float) -> None: ...  # Displays a red cylinder sphere
-    def DRAW_SPRITE(self, spriteSlot: Any, offsetLeft: float, offsetTop: float, width: float, height: float, r: Any, g: Any, b: Any, a: Any) -> None: ...  # Draws a loaded texture (038F) at the specified on-screen X and Y coordinates, with the specified siz
-    def DRAW_SPRITE_WITH_ROTATION(self, spriteSlot: Any, offsetLeft: float, offsetTop: float, width: float, height: float, angle: float, red: Any, green: Any, blue: Any, alpha: Any) -> None: ...  # This is an extended version of 038D with scale and angle parameters
-    def DRAW_SUBTITLES_BEFORE_FADE(self, state: Any) -> None: ...  # Sets whether the text stays on the screen when it fades out
-    def DRAW_WEAPONSHOP_CORONA(self, x: float, y: float, z: float, size: float, coronaType: Any, flareType: Any, r: Any, g: Any, b: Any) -> None: ...  # Displays a corona with the lowered draw distance at the specified coordinates
-    def DRAW_WINDOW(self, leftTopX: float, leftTopY: float, rightBottomX: float, rightBottomY: float, header: str, zIndex: Any) -> None: ...  # Draws a black box with styled text from corner A to corner B
-    def DROP_OBJECT(self, self_: Any, state: Any) -> None: ...
-    def DROP_SECOND_OBJECT(self, self_: Any, state: Any) -> None: ...
-    def ENABLE_AMBIENT_CRIME(self, state: Any) -> None: ...  # Sets whether cops will chase and kill criminals when their task is 'TASK_COMPLEX_KILL_CRIMINAL'
-    def ENABLE_BURGLARY_HOUSES(self, state: Any) -> None: ...  # Switches enex markers used for burglary missions on or off
-    def ENABLE_CHAR_SPEECH(self, self_: Any) -> None: ...  # Enables pain audio if it was disabled using 094E
-    def ENABLE_CONVERSATION(self, handle: Any, state: Any) -> None: ...  # Pauses the scripted conversation assigned to the specified character
-    def ENABLE_CRANE_CONTROLS(self, up: Any, down: Any, release: Any) -> None: ...  # Enables/disables individual crane controls
-    def ENABLE_DISABLED_ATTRACTORS_ON_OBJECT(self, self_: Any, state: Any) -> None: ...  # Sets whether the object attracts spawned peds to interact with it
-    def ENABLE_ENTRY_EXIT_PLAYER_GROUP_WARPING(self, x: float, y: float, radius: float, state: Any) -> None: ...  # Enables the entry/exit marker in the specified radius of the coordinates
-    def ENSURE_PLAYER_HAS_DRIVE_BY_WEAPON(self, self_: Any, ammo: Any) -> None: ...  # Sets the amount of ammo a player has during a driveby
-    def EXPLODE_CAR(self, self_: Any) -> None: ...  # Makes the vehicle explode
-    def EXPLODE_CAR_IN_CUTSCENE(self, self_: Any) -> None: ...  # Makes the vehicle explode without affecting its surroundings
-    def EXPLODE_CAR_IN_CUTSCENE_SHAKE_AND_BITS(self, self_: Any, shake: Any, effect: Any, sound: Any) -> None: ...  # Causes the vehicle to explode, without damage to surrounding entities
-    def EXPLODE_CHAR_HEAD(self, self_: Any) -> None: ...  # Dismembers the character
+    def DRAW_SPRITE(self, spriteSlot: int, offsetLeft: float, offsetTop: float, width: float, height: float, r: int, g: int, b: int, a: int) -> None: ...  # Draws a loaded texture (038F) at the specified on-screen X and Y coordinates, with the specified siz
+    def DRAW_SPRITE_WITH_ROTATION(self, spriteSlot: int, offsetLeft: float, offsetTop: float, width: float, height: float, angle: float, red: int, green: int, blue: int, alpha: int) -> None: ...  # This is an extended version of 038D with scale and angle parameters
+    def DRAW_SUBTITLES_BEFORE_FADE(self, state: bool) -> None: ...  # Sets whether the text stays on the screen when it fades out
+    def DRAW_WEAPONSHOP_CORONA(self, x: float, y: float, z: float, size: float, coronaType: int, flareType: int, r: int, g: int, b: int) -> None: ...  # Displays a corona with the lowered draw distance at the specified coordinates
+    def DRAW_WINDOW(self, leftTopX: float, leftTopY: float, rightBottomX: float, rightBottomY: float, header: str, zIndex: int) -> None: ...  # Draws a black box with styled text from corner A to corner B
+    def DROP_OBJECT(self, self_: Ped | int, state: bool) -> None: ...
+    def DROP_SECOND_OBJECT(self, self_: Ped | int, state: bool) -> None: ...
+    def ENABLE_AMBIENT_CRIME(self, state: bool) -> None: ...  # Sets whether cops will chase and kill criminals when their task is 'TASK_COMPLEX_KILL_CRIMINAL'
+    def ENABLE_BURGLARY_HOUSES(self, state: bool) -> None: ...  # Switches enex markers used for burglary missions on or off
+    def ENABLE_CHAR_SPEECH(self, self_: Ped | int) -> None: ...  # Enables pain audio if it was disabled using 094E
+    def ENABLE_CONVERSATION(self, handle: Ped | int, state: bool) -> None: ...  # Pauses the scripted conversation assigned to the specified character
+    def ENABLE_CRANE_CONTROLS(self, up: bool, down: bool, release: bool) -> None: ...  # Enables/disables individual crane controls
+    def ENABLE_DISABLED_ATTRACTORS_ON_OBJECT(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object attracts spawned peds to interact with it
+    def ENABLE_ENTRY_EXIT_PLAYER_GROUP_WARPING(self, x: float, y: float, radius: float, state: bool) -> None: ...  # Enables the entry/exit marker in the specified radius of the coordinates
+    def ENSURE_PLAYER_HAS_DRIVE_BY_WEAPON(self, self_: int, ammo: int) -> None: ...  # Sets the amount of ammo a player has during a driveby
+    def EXPLODE_CAR(self, self_: Vehicle | int) -> None: ...  # Makes the vehicle explode
+    def EXPLODE_CAR_IN_CUTSCENE(self, self_: Vehicle | int) -> None: ...  # Makes the vehicle explode without affecting its surroundings
+    def EXPLODE_CAR_IN_CUTSCENE_SHAKE_AND_BITS(self, self_: Vehicle | int, shake: bool, effect: bool, sound: bool) -> None: ...  # Causes the vehicle to explode, without damage to surrounding entities
+    def EXPLODE_CHAR_HEAD(self, self_: Ped | int) -> None: ...  # Dismembers the character
     def EXTEND_PATROL_ROUTE(self, x: float, y: float, z: float, animationName: str, animationFile: str) -> None: ...  # Adds a new point to the patrol route
     def EXTEND_ROUTE(self, x: float, y: float, z: float) -> None: ...  # Adds a point to the task route
     def EXTINGUISH_FIRE_AT_POINT(self, x: float, y: float, z: float, radius: float) -> None: ...  # Removes all fires within the specified area
@@ -388,381 +394,381 @@ class _CommandNamespace:
     def FETCH_NEXT_CARD(self) -> int: ...  # Returns a random number between 1 and 52, inclusive
     def FIND_MAX_NUMBER_OF_GROUP_MEMBERS(self) -> int: ...  # Returns a number of group members the player can recruit with the current respect
     def FIND_NUMBER_TAGS_TAGGED(self) -> int: ...  # Gets the number of spraytags painted over
-    def FIND_TRAIN_DIRECTION(self, self_: Any) -> bool: ...  # Returns true if the train is travelling clockwise, around San Andreas
+    def FIND_TRAIN_DIRECTION(self, self_: Vehicle | int) -> bool: ...  # Returns true if the train is travelling clockwise, around San Andreas
     def FINISH_SETTING_UP_CONVERSATION(self) -> None: ...  # Finalizes the current conversation sequence started with 0717. Selected answers will be subtitled
     def FINISH_SETTING_UP_CONVERSATION_NO_SUBTITLES(self) -> None: ...  # Finalizes the current conversation sequence started with 0717. Selected answers will not be subtitle
-    def FIRE_HUNTER_GUN(self, self_: Any) -> None: ...  # Makes the Hunter helicopter fire cannon gun
-    def FIRE_SINGLE_BULLET(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, damage: Any) -> None: ...  # Creates firearm projectile effect between two coordinates. Leaves visible trace and deals damage on 
-    def FIX_CAR(self, self_: Any) -> None: ...  # Restores the vehicle to full health and removes the damage
-    def FIX_CAR_DOOR(self, self_: Any, door: Any) -> None: ...  # Repairs the car door
-    def FIX_CAR_PANEL(self, self_: Any, panelId: Any) -> None: ...  # Repairs or reinstalls car's body part
-    def FIX_CAR_TYRE(self, self_: Any, tireId: Any) -> None: ...  # Repairs a car's tire
-    def FLASH_HUD_OBJECT(self, object: Any) -> None: ...  # Makes a specific part of the HUD disappear and reappear several times
+    def FIRE_HUNTER_GUN(self, self_: Vehicle | int) -> None: ...  # Makes the Hunter helicopter fire cannon gun
+    def FIRE_SINGLE_BULLET(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, damage: int) -> None: ...  # Creates firearm projectile effect between two coordinates. Leaves visible trace and deals damage on
+    def FIX_CAR(self, self_: Vehicle | int) -> None: ...  # Restores the vehicle to full health and removes the damage
+    def FIX_CAR_DOOR(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> None: ...  # Repairs the car door
+    def FIX_CAR_PANEL(self, self_: Vehicle | int, panelId: int) -> None: ...  # Repairs or reinstalls car's body part
+    def FIX_CAR_TYRE(self, self_: Vehicle | int, tireId: VEHICLE_WHEEL | int) -> None: ...  # Repairs a car's tire
+    def FLASH_HUD_OBJECT(self, object: int) -> None: ...  # Makes a specific part of the HUD disappear and reappear several times
     def FLUSH_PATROL_ROUTE(self) -> None: ...  # Clears all previous patrol data to start a new patrol route, which can be used in combination with 0
     def FLUSH_ROUTE(self) -> None: ...  # Flushes the task route
-    def FORCE_ALL_VEHICLE_LIGHTS_OFF(self, state: Any) -> None: ...  # Disables all vehicle lights from being rendered if enabled
-    def FORCE_BIG_MESSAGE_AND_COUNTER(self, state: Any) -> None: ...  # Prevents timers and big texts from being hidden if there is another conflicting type of text on scre
-    def FORCE_CAR_LIGHTS(self, self_: Any, lightMode: Any) -> None: ...  # Sets an override for the car's lights
+    def FORCE_ALL_VEHICLE_LIGHTS_OFF(self, state: bool) -> None: ...  # Disables all vehicle lights from being rendered if enabled
+    def FORCE_BIG_MESSAGE_AND_COUNTER(self, state: bool) -> None: ...  # Prevents timers and big texts from being hidden if there is another conflicting type of text on scre
+    def FORCE_CAR_LIGHTS(self, self_: Vehicle | int, lightMode: int) -> None: ...  # Sets an override for the car's lights
     def FORCE_DEATH_RESTART(self) -> None: ...  # Triggers usual after player death game bahavior (respawn in front of the hospital, weapons taken awa
-    def FORCE_INTERIOR_LIGHTING_FOR_PLAYER(self, self_: Any, state: Any) -> None: ...
-    def FORCE_WEATHER(self, type: Any) -> None: ...  # Forces the game weather to the specified type
-    def FORCE_WEATHER_NOW(self, type: Any) -> None: ...  # Forces the upcoming weather to the specified type
-    def FREEZE_CAR_POSITION(self, self_: Any, state: Any) -> None: ...  # Locks the vehicle's position
-    def FREEZE_CAR_POSITION_AND_DONT_LOAD_COLLISION(self, self_: Any, state: Any) -> None: ...  # Makes the car maintain its position
-    def FREEZE_CHAR_POSITION(self, self_: Any, state: Any) -> None: ...  # Sets whether the character's position remains unchanged
-    def FREEZE_CHAR_POSITION_AND_DONT_LOAD_COLLISION(self, self_: Any, state: Any) -> None: ...
-    def FREEZE_OBJECT_POSITION(self, self_: Any, state: Any) -> None: ...  # Sets whether the object's position remains unchanged
-    def FREEZE_ONSCREEN_TIMER(self, state: Any) -> None: ...  # Makes the on-screen timer stop updating
+    def FORCE_INTERIOR_LIGHTING_FOR_PLAYER(self, self_: int, state: bool) -> None: ...
+    def FORCE_WEATHER(self, type: int) -> None: ...  # Forces the game weather to the specified type
+    def FORCE_WEATHER_NOW(self, type: int) -> None: ...  # Forces the upcoming weather to the specified type
+    def FREEZE_CAR_POSITION(self, self_: Vehicle | int, state: bool) -> None: ...  # Locks the vehicle's position
+    def FREEZE_CAR_POSITION_AND_DONT_LOAD_COLLISION(self, self_: Vehicle | int, state: bool) -> None: ...  # Makes the car maintain its position
+    def FREEZE_CHAR_POSITION(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character's position remains unchanged
+    def FREEZE_CHAR_POSITION_AND_DONT_LOAD_COLLISION(self, self_: Ped | int, state: bool) -> None: ...
+    def FREEZE_OBJECT_POSITION(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object's position remains unchanged
+    def FREEZE_ONSCREEN_TIMER(self, state: bool) -> None: ...  # Makes the on-screen timer stop updating
     def GENERATE_RANDOM_FLOAT(self) -> float: ...  # Returns a random float between 0.0 to 1.0; excluding 1.0
     def GENERATE_RANDOM_FLOAT_IN_RANGE(self, min: float, max: float) -> float: ...  # Returns a random float within the specified range; including min and max values
     def GENERATE_RANDOM_INT(self) -> int: ...  # Returns a random integer between 0 and 32767
-    def GENERATE_RANDOM_INT_IN_RANGE(self, min: Any, max: Any) -> int: ...  # Returns a random integer within the specified range; including min and excluding max values
+    def GENERATE_RANDOM_INT_IN_RANGE(self, min: int, max: int) -> int: ...  # Returns a random integer within the specified range; including min and excluding max values
     def GET_2D_LINES_INTERSECT_POINT(self, line1StartX: float, line1StartY: float, line1EndX: float, line1EndY: float, line2StartX: float, line2StartY: float, line2EndX: float, line2EndY: float) -> tuple[float, float] | None: ...  # Returns the point of intersection of two lines. If they do not intersect, both returned values are -
     def GET_ACTIVE_CAMERA_COORDINATES(self) -> tuple[float, float, float]: ...  # Stores the cameras coordinates
     def GET_ACTIVE_CAMERA_POINT_AT(self) -> tuple[float, float, float]: ...  # Gets the coordinates the camera is pointing to
-    def GET_AMMO_IN_CHAR_WEAPON(self, self_: Any, weaponType: Any) -> int: ...  # Gets the amount of ammo in the specified weapon of the character
+    def GET_AMMO_IN_CHAR_WEAPON(self, self_: Ped | int, weaponType: WEAPON | int) -> int: ...  # Gets the amount of ammo in the specified weapon of the character
     def GET_ANGLE_BETWEEN_2D_VECTORS(self, x1: float, y1: float, x2: float, y2: float) -> float: ...  # Gets the angle between the two 2D vectors
     def GET_AREA_VISIBLE(self) -> int: ...  # Gets the current interior ID
-    def GET_AVAILABLE_VEHICLE_MOD(self, self_: Any, slotId: Any) -> int: ...  # Returns a model id available for the vehicle's mod slot, or -1 otherwise
-    def GET_BEAT_PROXIMITY(self, offset: Any) -> tuple[int, int, int]: ...  # Returns information about a beat offset from the current playback position of the active beat track 
+    def GET_AVAILABLE_VEHICLE_MOD(self, self_: Vehicle | int, slotId: int) -> int: ...  # Returns a model id available for the vehicle's mod slot, or -1 otherwise
+    def GET_BEAT_PROXIMITY(self, offset: int) -> tuple[int, int, int]: ...  # Returns information about a beat offset from the current playback position of the active beat track
     def GET_BEAT_TRACK_STATUS(self) -> int: ...  # Returns the status of the currenly active beat track (0954)
     def GET_CAMERA_FOV(self) -> float: ...  # Returns the cameras field of view
-    def GET_CAR_BLOCKING_CAR(self, self_: Any) -> Vehicle | None: ...  # Returns a handle of the vehicle preventing this car from getting to its destination
-    def GET_CAR_CHAR_IS_USING(self, self_: Any) -> Vehicle | None: ...  # Stores a handle for the vehicle the character is in or entering (alts: 00D9,03C0,0484)
-    def GET_CAR_COLOURS(self, self_: Any) -> tuple[int, int]: ...  # Gets the car's primary and secondary colors
-    def GET_CAR_COORDINATES(self, self_: Any) -> tuple[float, float, float]: ...  # Returns the vehicle's coordinates
-    def GET_CAR_DOOR_LOCK_STATUS(self, self_: Any) -> int: ...  # Returns the door lock mode of the vehicle
-    def GET_CAR_FORWARD_X(self, self_: Any) -> float: ...  # Returns the X coord of the vehicle's angle
-    def GET_CAR_FORWARD_Y(self, self_: Any) -> float: ...  # Returns the Y coord of the vehicle's angle
-    def GET_CAR_HEADING(self, self_: Any) -> float: ...  # Returns the vehicle's heading (z-angle)
-    def GET_CAR_HEALTH(self, self_: Any) -> int: ...  # Returns the vehicle's health
-    def GET_CAR_MASS(self, self_: Any) -> float: ...  # Returns the vehicle's mass
-    def GET_CAR_MODEL(self, self_: Any) -> int: ...  # Returns the car's model id
-    def GET_CAR_MODEL_VALUE(self, model: Any) -> int: ...  # Returns the value of the specified car model
-    def GET_CAR_MOVING_COMPONENT_OFFSET(self, self_: Any) -> float: ...  # Sets the angle of a vehicle's extra
-    def GET_CAR_PITCH(self, self_: Any) -> float: ...  # Returns the X Angle of the vehicle
-    def GET_CAR_ROLL(self, self_: Any) -> float: ...  # Returns the Y Angle of the vehicle
-    def GET_CAR_SPEED(self, self_: Any) -> float: ...  # Gets the car's speed
-    def GET_CAR_SPEED_VECTOR(self, self_: Any) -> tuple[float, float, float]: ...
-    def GET_CAR_UPRIGHT_VALUE(self, self_: Any) -> float: ...  # Gets the car's vertical angle
-    def GET_CHAR_ANIM_CURRENT_TIME(self, self_: Any, animationName: str) -> float: ...  # Returns the progress of the animation on the char, ranging from 0.0 to 1.0
-    def GET_CHAR_ANIM_TOTAL_TIME(self, self_: Any, animationName: str) -> float: ...  # Returns a float of the length of the animation in milliseconds
-    def GET_CHAR_AREA_VISIBLE(self, self_: Any) -> int: ...  # Returns the interior ID that the character is in
-    def GET_CHAR_ARMOUR(self, self_: Any) -> int: ...  # Returns the character's armor amount
-    def GET_CHAR_COORDINATES(self, self_: Any) -> tuple[float, float, float]: ...  # Returns the character's coordinates
-    def GET_CHAR_HEADING(self, self_: Any) -> float: ...  # Returns the character's heading (z-angle)
-    def GET_CHAR_HEALTH(self, self_: Any) -> int: ...  # Returns the character's health
-    def GET_CHAR_HEIGHT_ABOVE_GROUND(self, self_: Any) -> float: ...  # Returns the char's distance from ground
-    def GET_CHAR_HIGHEST_PRIORITY_EVENT(self, self_: Any) -> int: ...  # Gets the characters active ped event
-    def GET_CHAR_IN_CAR_PASSENGER_SEAT(self, self_: Any, seat: Any) -> Ped | None: ...  # Returns the handle of a character sitting in the specified car seat
-    def GET_CHAR_MODEL(self, self_: Any) -> int: ...  # Returns the characters model
-    def GET_CHAR_SPEED(self, self_: Any) -> float: ...  # Returns the char's movement speed
-    def GET_CHAR_SWIM_STATE(self, self_: Any) -> int: ...
-    def GET_CHAR_VELOCITY(self, self_: Any) -> tuple[float, float, float]: ...  # Gets the characters velocity
-    def GET_CHAR_WEAPON_IN_SLOT(self, self_: Any, slot: Any) -> tuple[int, int, int]: ...  # Returns the weapon type, ammo and model from the specified slot
+    def GET_CAR_BLOCKING_CAR(self, self_: Vehicle | int) -> Vehicle | None: ...  # Returns a handle of the vehicle preventing this car from getting to its destination
+    def GET_CAR_CHAR_IS_USING(self, self_: Ped | int) -> Vehicle | None: ...  # Stores a handle for the vehicle the character is in or entering (alts: 00D9,03C0,0484)
+    def GET_CAR_COLOURS(self, self_: Vehicle | int) -> tuple[int, int]: ...  # Gets the car's primary and secondary colors
+    def GET_CAR_COORDINATES(self, self_: Vehicle | int) -> tuple[float, float, float]: ...  # Returns the vehicle's coordinates
+    def GET_CAR_DOOR_LOCK_STATUS(self, self_: Vehicle | int) -> int: ...  # Returns the door lock mode of the vehicle
+    def GET_CAR_FORWARD_X(self, self_: Vehicle | int) -> float: ...  # Returns the X coord of the vehicle's angle
+    def GET_CAR_FORWARD_Y(self, self_: Vehicle | int) -> float: ...  # Returns the Y coord of the vehicle's angle
+    def GET_CAR_HEADING(self, self_: Vehicle | int) -> float: ...  # Returns the vehicle's heading (z-angle)
+    def GET_CAR_HEALTH(self, self_: Vehicle | int) -> int: ...  # Returns the vehicle's health
+    def GET_CAR_MASS(self, self_: Vehicle | int) -> float: ...  # Returns the vehicle's mass
+    def GET_CAR_MODEL(self, self_: Vehicle | int) -> int: ...  # Returns the car's model id
+    def GET_CAR_MODEL_VALUE(self, model: VEHICLE | int) -> int: ...  # Returns the value of the specified car model
+    def GET_CAR_MOVING_COMPONENT_OFFSET(self, self_: Vehicle | int) -> float: ...  # Sets the angle of a vehicle's extra
+    def GET_CAR_PITCH(self, self_: Vehicle | int) -> float: ...  # Returns the X Angle of the vehicle
+    def GET_CAR_ROLL(self, self_: Vehicle | int) -> float: ...  # Returns the Y Angle of the vehicle
+    def GET_CAR_SPEED(self, self_: Vehicle | int) -> float: ...  # Gets the car's speed
+    def GET_CAR_SPEED_VECTOR(self, self_: Vehicle | int) -> tuple[float, float, float]: ...
+    def GET_CAR_UPRIGHT_VALUE(self, self_: Vehicle | int) -> float: ...  # Gets the car's vertical angle
+    def GET_CHAR_ANIM_CURRENT_TIME(self, self_: Ped | int, animationName: str) -> float: ...  # Returns the progress of the animation on the char, ranging from 0.0 to 1.0
+    def GET_CHAR_ANIM_TOTAL_TIME(self, self_: Ped | int, animationName: str) -> float: ...  # Returns a float of the length of the animation in milliseconds
+    def GET_CHAR_AREA_VISIBLE(self, self_: Ped | int) -> int: ...  # Returns the interior ID that the character is in
+    def GET_CHAR_ARMOUR(self, self_: Ped | int) -> int: ...  # Returns the character's armor amount
+    def GET_CHAR_COORDINATES(self, self_: Ped | int) -> tuple[float, float, float]: ...  # Returns the character's coordinates
+    def GET_CHAR_HEADING(self, self_: Ped | int) -> float: ...  # Returns the character's heading (z-angle)
+    def GET_CHAR_HEALTH(self, self_: Ped | int) -> int: ...  # Returns the character's health
+    def GET_CHAR_HEIGHT_ABOVE_GROUND(self, self_: Ped | int) -> float: ...  # Returns the char's distance from ground
+    def GET_CHAR_HIGHEST_PRIORITY_EVENT(self, self_: Ped | int) -> int: ...  # Gets the characters active ped event
+    def GET_CHAR_IN_CAR_PASSENGER_SEAT(self, self_: Vehicle | int, seat: int) -> Ped | None: ...  # Returns the handle of a character sitting in the specified car seat
+    def GET_CHAR_MODEL(self, self_: Ped | int) -> int: ...  # Returns the characters model
+    def GET_CHAR_SPEED(self, self_: Ped | int) -> float: ...  # Returns the char's movement speed
+    def GET_CHAR_SWIM_STATE(self, self_: Ped | int) -> int: ...
+    def GET_CHAR_VELOCITY(self, self_: Ped | int) -> tuple[float, float, float]: ...  # Gets the characters velocity
+    def GET_CHAR_WEAPON_IN_SLOT(self, self_: Ped | int, slot: int) -> tuple[int, int, int]: ...  # Returns the weapon type, ammo and model from the specified slot
     def GET_CITY_FROM_COORDS(self, x: float, y: float, z: float) -> int: ...  # Returns the city the specified location is within
-    def GET_CITY_PLAYER_IS_IN(self, self_: Any) -> int: ...  # Gets the player's current city
+    def GET_CITY_PLAYER_IS_IN(self, self_: int) -> int: ...  # Gets the player's current city
     def GET_CLOSEST_CAR_NODE(self, x: float, y: float, z: float) -> tuple[float, float, float]: ...  # Returns the nearest path note from the specified coordinates that a vehicle can drive on
     def GET_CLOSEST_CAR_NODE_WITH_HEADING(self, x: float, y: float, z: float) -> tuple[float, float, float, float]: ...  # Returns the position and heading of the closest vehicle path node to the specified position
     def GET_CLOSEST_CHAR_NODE(self, x: float, y: float, z: float) -> tuple[float, float, float]: ...  # Returns the nearest path node from the specified coordinates that a pedestrian can walk on
     def GET_CLOSEST_STEALABLE_OBJECT(self, x: float, y: float, z: float, radius: float) -> GameObject | None: ...  # Gets the closest object which can be stolen for burglary missions
     def GET_CLOSEST_STRAIGHT_ROAD(self, x: float, y: float, z: float, minDist: float, maxDist: float) -> tuple[float, float, float, float, float, float, float]: ...  # Gets two closest path nodes within the specified distance range
-    def GET_CLOTHES_ITEM(self, self_: Any, bodyPart: Any) -> tuple[int, int]: ...
+    def GET_CLOTHES_ITEM(self, self_: int, bodyPart: int) -> tuple[int, int]: ...
     def GET_CONTROLLER_MODE(self) -> int: ...  # Returns the controller mode
-    def GET_CURRENT_CAR_MOD(self, self_: Any, slot: Any) -> int: ...  # Returns the model of the component installed on the specified slot of the vehicle, or -1 otherwise
-    def GET_CURRENT_CHAR_WEAPON(self, self_: Any) -> int: ...  # Returns the type of weapon that the character is currently holding
+    def GET_CURRENT_CAR_MOD(self, self_: Vehicle | int, slot: int) -> int: ...  # Returns the model of the component installed on the specified slot of the vehicle, or -1 otherwise
+    def GET_CURRENT_CHAR_WEAPON(self, self_: Ped | int) -> int: ...  # Returns the type of weapon that the character is currently holding
     def GET_CURRENT_DATE(self) -> tuple[int, int]: ...  # Returns the in-game day of the month and month of the year
     def GET_CURRENT_DAY_OF_WEEK(self) -> int: ...  # Returns an integer representation of the in-game day of the week
     def GET_CURRENT_LANGUAGE(self) -> int: ...  # Returns the current language set in the menu language settings
     def GET_CURRENT_POPULATION_ZONE_TYPE(self) -> int: ...  # Returns the population type in the zone the player is currently in
-    def GET_CURRENT_VEHICLE_PAINTJOB(self, self_: Any) -> int: ...  # Gets the car's paintjob
+    def GET_CURRENT_VEHICLE_PAINTJOB(self, self_: Vehicle | int) -> int: ...  # Gets the car's paintjob
     def GET_CUTSCENE_OFFSET(self) -> tuple[float, float, float]: ...  # Stores the offset of the currently loaded cutscene
     def GET_CUTSCENE_TIME(self) -> int: ...  # Returns the time in milliseconds passed since the cutscene has started (02E7)
-    def GET_DEAD_CHAR_COORDINATES(self, self_: Any) -> tuple[float, float, float]: ...
-    def GET_DEAD_CHAR_PICKUP_COORDS(self, char: Any) -> tuple[float, float, float]: ...  # Returns appropriate coordinates for creating a pickup by a dead character
+    def GET_DEAD_CHAR_COORDINATES(self, self_: Ped | int) -> tuple[float, float, float]: ...
+    def GET_DEAD_CHAR_PICKUP_COORDS(self, char: Ped | int) -> tuple[float, float, float]: ...  # Returns appropriate coordinates for creating a pickup by a dead character
     def GET_DEBUG_CAMERA_COORDINATES(self) -> tuple[float, float, float]: ...  # Returns the debug camera position
     def GET_DEBUG_CAMERA_POINT_AT(self) -> tuple[float, float, float]: ...  # Stores the location the debug camera is pointing to
     def GET_DISTANCE_BETWEEN_COORDS_2D(self, fromX: float, fromY: float, toX: float, toZ: float) -> float: ...  # Gets the distance between two points
     def GET_DISTANCE_BETWEEN_COORDS_3D(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float) -> float: ...  # Gets the distance between two points
-    def GET_DOOR_ANGLE_RATIO(self, self_: Any, door: Any) -> float: ...  # Gets the specified car doors angle, relative to the hinge
-    def GET_DRIVER_OF_CAR(self, self_: Any) -> Ped | None: ...  # Returns the car's driver handle
-    def GET_EXTRA_CAR_COLOURS(self, self_: Any) -> tuple[int, int]: ...  # Returns the car's tertiary and quaternary colors. See also 03F3
+    def GET_DOOR_ANGLE_RATIO(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> float: ...  # Gets the specified car doors angle, relative to the hinge
+    def GET_DRIVER_OF_CAR(self, self_: Vehicle | int) -> Ped | None: ...  # Returns the car's driver handle
+    def GET_EXTRA_CAR_COLOURS(self, self_: Vehicle | int) -> tuple[int, int]: ...  # Returns the car's tertiary and quaternary colors. See also 03F3
     def GET_FADING_STATUS(self) -> bool: ...  # Returns true if the screen is fading (016A)
-    def GET_FLOAT_STAT(self, id: Any) -> float: ...  # Returns the value of the specified float stat
+    def GET_FLOAT_STAT(self, id: int) -> float: ...  # Returns the value of the specified float stat
     def GET_GAME_TIMER(self) -> int: ...  # Returns the time passed in milliseconds since the game started
     def GET_GROUND_Z_FOR_3D_COORD(self, x: float, y: float, z: float) -> float: ...  # Stores the ground position at the location
-    def GET_GROUP_MEMBER(self, self_: Any, slotId: Any) -> Ped | None: ...  # Returns the nth group member
-    def GET_GROUP_SIZE(self, self_: Any) -> tuple[int, int]: ...
+    def GET_GROUP_MEMBER(self, self_: int, slotId: int) -> Ped | None: ...  # Returns the nth group member
+    def GET_GROUP_SIZE(self, self_: int) -> tuple[int, int]: ...
     def GET_HASH_KEY(self, text: str) -> int: ...  # Returns the CRC hash of the input string
     def GET_HEADING_FROM_VECTOR_2D(self, x: float, y: float) -> float: ...  # Gets the angle for the XY offset
-    def GET_HUD_COLOUR(self, color: Any) -> tuple[int, int, int, int]: ...  # Returns the RGBA of the specified HUD color
-    def GET_INT_STAT(self, id: Any) -> int: ...  # Returns the value of the specified integer stat
-    def GET_ITEM_IN_SHOP(self, nth: Any) -> int: ...  # Returns an identifier for an item associated with the shopping data entry
-    def GET_LEVEL_DESIGN_COORDS_FOR_OBJECT(self, self_: Any, nth: Any) -> tuple[float, float, float]: ...
+    def GET_HUD_COLOUR(self, color: int) -> tuple[int, int, int, int]: ...  # Returns the RGBA of the specified HUD color
+    def GET_INT_STAT(self, id: int) -> int: ...  # Returns the value of the specified integer stat
+    def GET_ITEM_IN_SHOP(self, nth: int) -> int: ...  # Returns an identifier for an item associated with the shopping data entry
+    def GET_LEVEL_DESIGN_COORDS_FOR_OBJECT(self, self_: GameObject | int, nth: int) -> tuple[float, float, float]: ...
     def GET_LOADED_SHOP(self) -> str: ...  # Returns the name of currently loaded subsection in shopping
-    def GET_MAXIMUM_NUMBER_OF_PASSENGERS(self, self_: Any) -> int: ...  # Returns the maximum number of passengers that could sit in the car
+    def GET_MAXIMUM_NUMBER_OF_PASSENGERS(self, self_: Vehicle | int) -> int: ...  # Returns the maximum number of passengers that could sit in the car
     def GET_MAX_WANTED_LEVEL(self) -> int: ...  # Gets the maximum wanted level the player can receive
-    def GET_MENU_ITEM_ACCEPTED(self, self_: Any) -> int: ...  # Returns the last row of a panel selected with the sprint key
-    def GET_MENU_ITEM_SELECTED(self, self_: Any) -> int: ...  # Returns the currently highlighted row in a panel
-    def GET_MINUTES_TO_TIME_OF_DAY(self, hours: Any, minutes: Any) -> int: ...  # Returns the number of minutes left until the clock matches the time specified
-    def GET_MODEL_DIMENSIONS(self, modelId: Any) -> tuple[float, float, float, float, float, float]: ...
-    def GET_NAME_OF_ENTRY_EXIT_CHAR_USED(self, self_: Any) -> str: ...  # Gets the name of the characters interior
+    def GET_MENU_ITEM_ACCEPTED(self, self_: int) -> int: ...  # Returns the last row of a panel selected with the sprint key
+    def GET_MENU_ITEM_SELECTED(self, self_: int) -> int: ...  # Returns the currently highlighted row in a panel
+    def GET_MINUTES_TO_TIME_OF_DAY(self, hours: int, minutes: int) -> int: ...  # Returns the number of minutes left until the clock matches the time specified
+    def GET_MODEL_DIMENSIONS(self, modelId: int) -> tuple[float, float, float, float, float, float]: ...
+    def GET_NAME_OF_ENTRY_EXIT_CHAR_USED(self, self_: Ped | int) -> str: ...  # Gets the name of the characters interior
     def GET_NAME_OF_INFO_ZONE(self, x: float, y: float, z: float) -> str: ...  # Returns the name of the zone at the specified coordinates
-    def GET_NAME_OF_ITEM(self, itemId: Any) -> str: ...
+    def GET_NAME_OF_ITEM(self, itemId: int) -> str: ...
     def GET_NAME_OF_ZONE(self, x: float, y: float, z: float) -> str: ...  # Returns the GXT key associated with the zone at the specified coordinates
     def GET_NEAREST_TAG_POSITION(self, xCoord: float, yCoord: float, zCoord: float) -> tuple[float, float, float]: ...
-    def GET_NTH_CLOSEST_CAR_NODE(self, fromX: float, fromY: float, fromZ: float, n: Any) -> tuple[float, float, float]: ...  # Gets the coordinates of the nth car path node closest to the given coordinates
-    def GET_NTH_CLOSEST_CAR_NODE_WITH_HEADING(self, xCoord: float, yCoord: float, zCoord: float, nth: Any) -> tuple[float, float, float, float]: ...
+    def GET_NTH_CLOSEST_CAR_NODE(self, fromX: float, fromY: float, fromZ: float, n: int) -> tuple[float, float, float]: ...  # Gets the coordinates of the nth car path node closest to the given coordinates
+    def GET_NTH_CLOSEST_CAR_NODE_WITH_HEADING(self, xCoord: float, yCoord: float, zCoord: float, nth: int) -> tuple[float, float, float, float]: ...
     def GET_NUMBER_OF_FIRES_IN_AREA(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> int: ...  # Gets the number of fires within the specified area
     def GET_NUMBER_OF_FIRES_IN_RANGE(self, x: float, y: float, z: float, radius: float) -> int: ...
-    def GET_NUMBER_OF_FOLLOWERS(self, self_: Any) -> int: ...  # Returns the number of members which are in a group of the character (01DE)
-    def GET_NUMBER_OF_INSTANCES_OF_STREAMED_SCRIPT(self, id: Any) -> int: ...  # Gets the number of instances of a script
+    def GET_NUMBER_OF_FOLLOWERS(self, self_: Ped | int) -> int: ...  # Returns the number of members which are in a group of the character (01DE)
+    def GET_NUMBER_OF_INSTANCES_OF_STREAMED_SCRIPT(self, id: int) -> int: ...  # Gets the number of instances of a script
     def GET_NUMBER_OF_ITEMS_IN_SHOP(self) -> int: ...
-    def GET_NUMBER_OF_PASSENGERS(self, self_: Any) -> int: ...  # Returns the number of passengers sitting in the car
-    def GET_NUM_AVAILABLE_PAINTJOBS(self, self_: Any) -> int: ...  # Gets the number of possible paintjobs that can be applied to the car
-    def GET_NUM_CAR_COLOURS(self, self_: Any) -> int: ...  # Returns number of color variations defined for the model of this car in carcols.dat
-    def GET_NUM_OF_MODELS_KILLED_BY_PLAYER(self, self_: Any, modelId: Any) -> int: ...  # Returns the number of times the player has destroyed a specific model
-    def GET_OBJECT_ANIM_CURRENT_TIME(self, self_: Any, animationName: str) -> float: ...  # Gets the current progress of the object's animation
-    def GET_OBJECT_COORDINATES(self, self_: Any) -> tuple[float, float, float]: ...  # Returns the object's coordinates
-    def GET_OBJECT_HEADING(self, self_: Any) -> float: ...  # Returns the object's heading (z-angle)
-    def GET_OBJECT_HEALTH(self, self_: Any) -> int: ...
-    def GET_OBJECT_MASS(self, self_: Any) -> float: ...  # Returns the object's mass
-    def GET_OBJECT_MODEL(self, self_: Any) -> int: ...  # Returns the object's model index
-    def GET_OBJECT_QUATERNION(self, self_: Any) -> tuple[float, float, float, float]: ...  # Gets the object's quaternion
-    def GET_OBJECT_ROTATION_VELOCITY(self, self_: Any) -> tuple[float, float, float]: ...
-    def GET_OBJECT_SPEED(self, self_: Any) -> float: ...  # Gets the speed of the object
-    def GET_OBJECT_TURN_MASS(self, self_: Any) -> float: ...  # Returns the object's turn mass
-    def GET_OBJECT_VELOCITY(self, self_: Any) -> tuple[float, float, float]: ...  # Returns the object's X, Y, and Z velocity
-    def GET_OFFSET_FROM_CAR_IN_WORLD_COORDS(self, self_: Any, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the coordinates of an offset of the vehicle's position, depending on the vehicle's rotation
-    def GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS(self, self_: Any, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the coordinates of the character, with an offset
-    def GET_OFFSET_FROM_OBJECT_IN_WORLD_COORDS(self, self_: Any, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the object's coordinates with an offset
-    def GET_PAD_STATE(self, pad: Any, buttonId: Any) -> int: ...  # Stores the status of the specified key into a variable
+    def GET_NUMBER_OF_PASSENGERS(self, self_: Vehicle | int) -> int: ...  # Returns the number of passengers sitting in the car
+    def GET_NUM_AVAILABLE_PAINTJOBS(self, self_: Vehicle | int) -> int: ...  # Gets the number of possible paintjobs that can be applied to the car
+    def GET_NUM_CAR_COLOURS(self, self_: Vehicle | int) -> int: ...  # Returns number of color variations defined for the model of this car in carcols.dat
+    def GET_NUM_OF_MODELS_KILLED_BY_PLAYER(self, self_: int, modelId: int) -> int: ...  # Returns the number of times the player has destroyed a specific model
+    def GET_OBJECT_ANIM_CURRENT_TIME(self, self_: GameObject | int, animationName: str) -> float: ...  # Gets the current progress of the object's animation
+    def GET_OBJECT_COORDINATES(self, self_: GameObject | int) -> tuple[float, float, float]: ...  # Returns the object's coordinates
+    def GET_OBJECT_HEADING(self, self_: GameObject | int) -> float: ...  # Returns the object's heading (z-angle)
+    def GET_OBJECT_HEALTH(self, self_: GameObject | int) -> int: ...
+    def GET_OBJECT_MASS(self, self_: GameObject | int) -> float: ...  # Returns the object's mass
+    def GET_OBJECT_MODEL(self, self_: GameObject | int) -> int: ...  # Returns the object's model index
+    def GET_OBJECT_QUATERNION(self, self_: GameObject | int) -> tuple[float, float, float, float]: ...  # Gets the object's quaternion
+    def GET_OBJECT_ROTATION_VELOCITY(self, self_: GameObject | int) -> tuple[float, float, float]: ...
+    def GET_OBJECT_SPEED(self, self_: GameObject | int) -> float: ...  # Gets the speed of the object
+    def GET_OBJECT_TURN_MASS(self, self_: GameObject | int) -> float: ...  # Returns the object's turn mass
+    def GET_OBJECT_VELOCITY(self, self_: GameObject | int) -> tuple[float, float, float]: ...  # Returns the object's X, Y, and Z velocity
+    def GET_OFFSET_FROM_CAR_IN_WORLD_COORDS(self, self_: Vehicle | int, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the coordinates of an offset of the vehicle's position, depending on the vehicle's rotation
+    def GET_OFFSET_FROM_CHAR_IN_WORLD_COORDS(self, self_: Ped | int, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the coordinates of the character, with an offset
+    def GET_OFFSET_FROM_OBJECT_IN_WORLD_COORDS(self, self_: GameObject | int, xOffset: float, yOffset: float, zOffset: float) -> tuple[float, float, float]: ...  # Returns the object's coordinates with an offset
+    def GET_PAD_STATE(self, pad: int, buttonId: int) -> int: ...  # Stores the status of the specified key into a variable
     def GET_PARKING_NODE_IN_AREA(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> tuple[float, float, float]: ...  # Stores the coordinates of the nearest car park node in the specified area
     def GET_PC_MOUSE_MOVEMENT(self) -> tuple[float, float]: ...  # Gives the offset of the mouse or right thumbstick movement
-    def GET_PED_TYPE(self, self_: Any) -> int: ...  # Gets the ped type of the character
+    def GET_PED_TYPE(self, self_: Ped | int) -> int: ...  # Gets the ped type of the character
     def GET_PERCENTAGE_TAGGED_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float) -> int: ...  # Gets the percentage of the number of tags sprayed in the area
-    def GET_PICKUP_COORDINATES(self, self_: Any) -> tuple[float, float, float]: ...  # Returns the X, Y and Z coordinates of the pickup
-    def GET_PLANE_UNDERCARRIAGE_POSITION(self, self_: Any) -> float: ...
-    def GET_PLAYER_CHAR(self, self_: Any) -> Ped | None: ...  # Gets the character handle for the specified player
-    def GET_PLAYER_GROUP(self, self_: Any) -> int: ...
+    def GET_PICKUP_COORDINATES(self, self_: int) -> tuple[float, float, float]: ...  # Returns the X, Y and Z coordinates of the pickup
+    def GET_PLANE_UNDERCARRIAGE_POSITION(self, self_: Vehicle | int) -> float: ...
+    def GET_PLAYER_CHAR(self, self_: int) -> Ped | None: ...  # Gets the character handle for the specified player
+    def GET_PLAYER_GROUP(self, self_: int) -> int: ...
     def GET_PLAYER_IN_CAR_CAMERA_MODE(self) -> int: ...  # Gets the players chosen camera mode of the current vehicle
-    def GET_PLAYER_MAX_ARMOUR(self, self_: Any) -> int: ...
-    def GET_POSITION_OF_ANALOGUE_STICKS(self, pad: Any) -> tuple[int, int, int, int]: ...  # Returns the offset of the specified Left/Right, Up/Down, Look Left/Look Right and Look Up/Look Down 
-    def GET_POSITION_OF_ENTRY_EXIT_CHAR_USED(self, self_: Any) -> tuple[float, float, float, float]: ...  # Returns the coordinates and heading of the entry (enex) marker the character used to get to the curr
-    def GET_PRICE_OF_ITEM(self, itemId: Any) -> int: ...
+    def GET_PLAYER_MAX_ARMOUR(self, self_: int) -> int: ...
+    def GET_POSITION_OF_ANALOGUE_STICKS(self, pad: int) -> tuple[int, int, int, int]: ...  # Returns the offset of the specified Left/Right, Up/Down, Look Left/Look Right and Look Up/Look Down
+    def GET_POSITION_OF_ENTRY_EXIT_CHAR_USED(self, self_: Ped | int) -> tuple[float, float, float, float]: ...  # Returns the coordinates and heading of the entry (enex) marker the character used to get to the curr
+    def GET_PRICE_OF_ITEM(self, itemId: int) -> int: ...
     def GET_PROGRESS_PERCENTAGE(self) -> float: ...  # Gets the progress of completion as a percentage
     def GET_RADIO_CHANNEL(self) -> int: ...  # Returns the current radio station that is being played
-    def GET_RANDOM_CAR_IN_SPHERE_NO_SAVE(self, x: float, y: float, z: float, radius: float, model: Any) -> Vehicle | None: ...
-    def GET_RANDOM_CAR_MODEL_IN_MEMORY(self, normalOnly: Any) -> tuple[int, int]: ...
-    def GET_RANDOM_CAR_OF_TYPE_IN_ANGLED_AREA_NO_SAVE(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, modelId: Any) -> Vehicle | None: ...
-    def GET_RANDOM_CAR_OF_TYPE_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, modelId: Any) -> Vehicle | None: ...  # Returns the handle of a random car with the specified model in the specified 2D area, or -1 otherwis
-    def GET_RANDOM_CAR_OF_TYPE_IN_AREA_NO_SAVE(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, modelId: Any) -> Vehicle | None: ...  # Loops through the pool of vehicles to retrieve one that matches the specified model in the specified
+    def GET_RANDOM_CAR_IN_SPHERE_NO_SAVE(self, x: float, y: float, z: float, radius: float, model: VEHICLE | int) -> Vehicle | None: ...
+    def GET_RANDOM_CAR_MODEL_IN_MEMORY(self, normalOnly: bool) -> tuple[int, int]: ...
+    def GET_RANDOM_CAR_OF_TYPE_IN_ANGLED_AREA_NO_SAVE(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, modelId: VEHICLE | int) -> Vehicle | None: ...
+    def GET_RANDOM_CAR_OF_TYPE_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, modelId: VEHICLE | int) -> Vehicle | None: ...  # Returns the handle of a random car with the specified model in the specified 2D area, or -1 otherwis
+    def GET_RANDOM_CAR_OF_TYPE_IN_AREA_NO_SAVE(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, modelId: VEHICLE | int) -> Vehicle | None: ...  # Loops through the pool of vehicles to retrieve one that matches the specified model in the specified
     def GET_RANDOM_CHAR_IN_AREA_OFFSET_NO_SAVE(self, x: float, y: float, z: float, radiusX: float, radiusY: float, radiusZ: float) -> Ped | None: ...  # Returns the first char in the ped pool within radius of the specified point
-    def GET_RANDOM_CHAR_IN_SPHERE(self, x: float, y: float, z: float, radius: float, civilian: Any, gang: Any, criminal: Any) -> Ped | None: ...
+    def GET_RANDOM_CHAR_IN_SPHERE(self, x: float, y: float, z: float, radius: float, civilian: bool, gang: bool, criminal: bool) -> Ped | None: ...
     def GET_RANDOM_CHAR_IN_SPHERE_NO_BRAIN(self, x: float, y: float, z: float, radius: float) -> Ped | None: ...  # Finds the nearest character to the specified point, in the specified radius
     def GET_RANDOM_CHAR_IN_SPHERE_ONLY_DRUGS_BUYERS(self, x: float, y: float, z: float, radius: float) -> Ped | None: ...  # Loops through the ped pool and returns the first character that is within the specified radius and h
-    def GET_RANDOM_CHAR_IN_ZONE(self, zone: str, civilian: Any, gang: Any, criminalOrProstitute: Any) -> Ped | None: ...  # Gets a random character in the specified zone whose pedtype matches the specified values
-    def GET_REMOTE_CONTROLLED_CAR(self, player: Any) -> Vehicle | None: ...  # Returns the player's radio-controlled vehicle (alts:00D9,03C0,0811)
+    def GET_RANDOM_CHAR_IN_ZONE(self, zone: str, civilian: bool, gang: bool, criminalOrProstitute: bool) -> Ped | None: ...  # Gets a random character in the specified zone whose pedtype matches the specified values
+    def GET_REMOTE_CONTROLLED_CAR(self, player: int) -> Vehicle | None: ...  # Returns the player's radio-controlled vehicle (alts:00D9,03C0,0811)
     def GET_RID_OF_PLAYER_PROSTITUTE(self) -> None: ...  # Cancels any prostitute invitations received in-game and makes any current prostitutes quit
-    def GET_ROPE_HEIGHT_FOR_OBJECT(self, self_: Any) -> float: ...
-    def GET_SCRIPT_FIRE_COORDS(self, self_: Any) -> tuple[float, float, float]: ...  # Gets the coordinates of the fire
-    def GET_SCRIPT_TASK_STATUS(self, self_: Any, task: Any) -> int: ...  # Returns the status of the specified script task of the character
-    def GET_SEQUENCE_PROGRESS(self, self_: Any) -> int: ...  # Gets the characters task sequence progress, as started by 0618
-    def GET_SEQUENCE_PROGRESS_RECURSIVE(self, self_: Any) -> tuple[int, int]: ...
-    def GET_SHOPPING_EXTRA_INFO(self, itemId: Any, flag: Any) -> int: ...
-    def GET_SOUND_LEVEL_AT_COORDS(self, handle: Any, x: float, y: float, z: float) -> float: ...  # Gets the level that the character can hear noise at the specified position
+    def GET_ROPE_HEIGHT_FOR_OBJECT(self, self_: GameObject | int) -> float: ...
+    def GET_SCRIPT_FIRE_COORDS(self, self_: int) -> tuple[float, float, float]: ...  # Gets the coordinates of the fire
+    def GET_SCRIPT_TASK_STATUS(self, self_: Ped | int, task: int) -> int: ...  # Returns the status of the specified script task of the character
+    def GET_SEQUENCE_PROGRESS(self, self_: Ped | int) -> int: ...  # Gets the characters task sequence progress, as started by 0618
+    def GET_SEQUENCE_PROGRESS_RECURSIVE(self, self_: Ped | int) -> tuple[int, int]: ...
+    def GET_SHOPPING_EXTRA_INFO(self, itemId: int, flag: int) -> int: ...
+    def GET_SOUND_LEVEL_AT_COORDS(self, handle: Ped | int, x: float, y: float, z: float) -> float: ...  # Gets the level that the character can hear noise at the specified position
     def GET_STRING_WIDTH(self, entry: str) -> int: ...  # Gets the width of the GXT entry string
-    def GET_STRING_WIDTH_WITH_NUMBER(self, gxtEntry: str, number: Any) -> int: ...  # Gets the width of the GXT entry string with the specified number
+    def GET_STRING_WIDTH_WITH_NUMBER(self, gxtEntry: str, number: int) -> int: ...  # Gets the width of the GXT entry string with the specified number
     def GET_TERRITORY_UNDER_CONTROL_PERCENTAGE(self) -> int: ...
     def GET_TIME_OF_DAY(self) -> tuple[int, int]: ...  # Returns the number of hours and minutes passed since midnight
-    def GET_TOTAL_NUMBER_OF_PEDS_KILLED_BY_PLAYER(self, self_: Any) -> int: ...  # Returns the number of peds killed by the player since the last reset (0297)
-    def GET_TRAIN_CABOOSE(self, self_: Any) -> Vehicle | None: ...  # Gets the handle of the last carriage (known as the "caboose")
-    def GET_TRAIN_CARRIAGE(self, self_: Any, number: Any) -> Vehicle | None: ...  # Gets the nth train carriage
-    def GET_USER_OF_CLOSEST_MAP_ATTRACTOR(self, x: float, y: float, z: float, radius: float, modelId: Any, attractorName: str) -> Ped | None: ...  # Returns the character using a map attractor with the specified model in the specified area
-    def GET_VEHICLE_CLASS(self, self_: Any) -> int: ...  # Returns the vehicle's class as defined in vehicles.ide
-    def GET_VEHICLE_MOD_TYPE(self, modelId: Any) -> int: ...  # Returns a slot the upgrade model is for
-    def GET_VEHICLE_QUATERNION(self, self_: Any) -> tuple[float, float, float, float]: ...  # Gets the quaternion values of the car
-    def GET_WATER_HEIGHT_AT_COORDS(self, x: float, y: float, waves: Any) -> float: ...  # Gets the height of the water at the specified 2D coordinates
-    def GET_WEAPONTYPE_MODEL(self, weaponType: Any) -> int: ...  # Gets the model ID of the weapon according to the weapon type
-    def GET_WEAPONTYPE_SLOT(self, weaponType: Any) -> int: ...
-    def GET_WHEELIE_STATS(self, self_: Any) -> tuple[int, float, int, float, int, float]: ...  # Returns the stats of the most recent wheelie or stoppie attempt
+    def GET_TOTAL_NUMBER_OF_PEDS_KILLED_BY_PLAYER(self, self_: int) -> int: ...  # Returns the number of peds killed by the player since the last reset (0297)
+    def GET_TRAIN_CABOOSE(self, self_: Vehicle | int) -> Vehicle | None: ...  # Gets the handle of the last carriage (known as the "caboose")
+    def GET_TRAIN_CARRIAGE(self, self_: Vehicle | int, number: int) -> Vehicle | None: ...  # Gets the nth train carriage
+    def GET_USER_OF_CLOSEST_MAP_ATTRACTOR(self, x: float, y: float, z: float, radius: float, modelId: int, attractorName: str) -> Ped | None: ...  # Returns the character using a map attractor with the specified model in the specified area
+    def GET_VEHICLE_CLASS(self, self_: Vehicle | int) -> int: ...  # Returns the vehicle's class as defined in vehicles.ide
+    def GET_VEHICLE_MOD_TYPE(self, modelId: int) -> int: ...  # Returns a slot the upgrade model is for
+    def GET_VEHICLE_QUATERNION(self, self_: Vehicle | int) -> tuple[float, float, float, float]: ...  # Gets the quaternion values of the car
+    def GET_WATER_HEIGHT_AT_COORDS(self, x: float, y: float, waves: bool) -> float: ...  # Gets the height of the water at the specified 2D coordinates
+    def GET_WEAPONTYPE_MODEL(self, weaponType: WEAPON | int) -> int: ...  # Gets the model ID of the weapon according to the weapon type
+    def GET_WEAPONTYPE_SLOT(self, weaponType: WEAPON | int) -> int: ...
+    def GET_WHEELIE_STATS(self, self_: int) -> tuple[int, float, int, float, int, float]: ...  # Returns the stats of the most recent wheelie or stoppie attempt
     def GET_ZONE_DEALER_STRENGTH(self, zone: str) -> int: ...  # Returns the drug dealer density of the specified zone
-    def GET_ZONE_GANG_STRENGTH(self, zone: str, gangId: Any) -> int: ...  # Returns the density of the gang members in the specified zone
-    def GIVE_MELEE_ATTACK_TO_CHAR(self, self_: Any, style: Any, move: Any) -> None: ...  # Sets the specified characters fighting style and moves
-    def GIVE_NON_PLAYER_CAR_NITRO(self, self_: Any) -> None: ...  # Makes the car have one nitro
-    def GIVE_PLAYER_CLOTHES(self, self_: Any, textureHash: Any, modelHash: Any, bodyPart: Any) -> None: ...
-    def GIVE_PLAYER_CLOTHES_OUTSIDE_SHOP(self, self_: Any, textureName: str, modelName: str, bodyPart: Any) -> None: ...  # Sets the players clothing
-    def GIVE_REMOTE_CONTROLLED_MODEL_TO_PLAYER(self, handle: Any, x: float, y: float, z: float, angle: float, modelId: Any) -> None: ...  # Puts the player in control of a remote-control vehicle
-    def GIVE_VEHICLE_PAINTJOB(self, self_: Any, paintjobId: Any) -> None: ...  # Sets the car's paintjob
-    def GIVE_WEAPON_TO_CHAR(self, self_: Any, weaponType: Any, ammo: Any) -> None: ...  # Gives the character the weapon with the specified amount of ammo
-    def GRAB_ENTITY_ON_ROPE_FOR_OBJECT(self, self_: Any) -> tuple[Vehicle | None, Ped | None, GameObject | None]: ...
-    def GRAB_ENTITY_ON_WINCH(self, self_: Any) -> tuple[Ped | None, Vehicle | None, GameObject | None]: ...  # Retrieves the entity attached to the heli's magnet and returns to specific variables depending on th
+    def GET_ZONE_GANG_STRENGTH(self, zone: str, gangId: GANG | int) -> int: ...  # Returns the density of the gang members in the specified zone
+    def GIVE_MELEE_ATTACK_TO_CHAR(self, self_: Ped | int, style: FIGHT_STYLE | int, move: int) -> None: ...  # Sets the specified characters fighting style and moves
+    def GIVE_NON_PLAYER_CAR_NITRO(self, self_: Vehicle | int) -> None: ...  # Makes the car have one nitro
+    def GIVE_PLAYER_CLOTHES(self, self_: int, textureHash: int, modelHash: int, bodyPart: int) -> None: ...
+    def GIVE_PLAYER_CLOTHES_OUTSIDE_SHOP(self, self_: int, textureName: str, modelName: str, bodyPart: int) -> None: ...  # Sets the players clothing
+    def GIVE_REMOTE_CONTROLLED_MODEL_TO_PLAYER(self, handle: int, x: float, y: float, z: float, angle: float, modelId: VEHICLE | int) -> None: ...  # Puts the player in control of a remote-control vehicle
+    def GIVE_VEHICLE_PAINTJOB(self, self_: Vehicle | int, paintjobId: int) -> None: ...  # Sets the car's paintjob
+    def GIVE_WEAPON_TO_CHAR(self, self_: Ped | int, weaponType: WEAPON | int, ammo: int) -> None: ...  # Gives the character the weapon with the specified amount of ammo
+    def GRAB_ENTITY_ON_ROPE_FOR_OBJECT(self, self_: GameObject | int) -> tuple[Vehicle | None, Ped | None, GameObject | None]: ...
+    def GRAB_ENTITY_ON_WINCH(self, self_: Vehicle | int) -> tuple[Ped | None, Vehicle | None, GameObject | None]: ...  # Retrieves the entity attached to the heli's magnet and returns to specific variables depending on th
     def HAS_ANIMATION_LOADED(self, animationFile: str) -> bool: ...  # Returns true if the specified IFP file is loaded
-    def HAS_CAR_BEEN_DAMAGED_BY_CAR(self, self_: Any, other: Any) -> bool: ...  # Returns true if the vehicle has been damaged by another specified vehicle
-    def HAS_CAR_BEEN_DAMAGED_BY_CHAR(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the car has been damaged by the specified char
-    def HAS_CAR_BEEN_DAMAGED_BY_WEAPON(self, self_: Any, weaponType: Any) -> bool: ...  # Returns true if the vehicle has been hit by the specified weapon
-    def HAS_CAR_BEEN_RESPRAYED(self, self_: Any) -> bool: ...  # Returns true if the vehicle was resprayed in the last frame AND resets the resprayed state to false
-    def HAS_CAR_RECORDING_BEEN_LOADED(self, pathId: Any) -> bool: ...  # Returns true if the car recording has finished loading
-    def HAS_CHAR_BEEN_ARRESTED(self, self_: Any) -> bool: ...  # Returns true if the character has been arrested
-    def HAS_CHAR_BEEN_DAMAGED_BY_CAR(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the char has been hurt by the specified vehicle
-    def HAS_CHAR_BEEN_DAMAGED_BY_CHAR(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the character has been hurt by the other character
-    def HAS_CHAR_BEEN_DAMAGED_BY_WEAPON(self, self_: Any, weaponType: Any) -> bool: ...  # Returns true if the character has been hit by the specified weapon
-    def HAS_CHAR_BEEN_PHOTOGRAPHED(self, self_: Any) -> bool: ...  # Returns true if the character has been photographed
-    def HAS_CHAR_GOT_WEAPON(self, self_: Any, weaponType: Any) -> bool: ...  # Returns true if the character has the specified weapon
-    def HAS_CHAR_SPOTTED_CHAR(self, self_: Any, target: Any) -> bool: ...  # Returns true if the character can see the target character
-    def HAS_CHAR_SPOTTED_CHAR_IN_FRONT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the character can see the other character in front of them
+    def HAS_CAR_BEEN_DAMAGED_BY_CAR(self, self_: Vehicle | int, other: Vehicle | int) -> bool: ...  # Returns true if the vehicle has been damaged by another specified vehicle
+    def HAS_CAR_BEEN_DAMAGED_BY_CHAR(self, self_: Vehicle | int, handle: Ped | int) -> bool: ...  # Returns true if the car has been damaged by the specified char
+    def HAS_CAR_BEEN_DAMAGED_BY_WEAPON(self, self_: Vehicle | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the vehicle has been hit by the specified weapon
+    def HAS_CAR_BEEN_RESPRAYED(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle was resprayed in the last frame AND resets the resprayed state to false
+    def HAS_CAR_RECORDING_BEEN_LOADED(self, pathId: int) -> bool: ...  # Returns true if the car recording has finished loading
+    def HAS_CHAR_BEEN_ARRESTED(self, self_: Ped | int) -> bool: ...  # Returns true if the character has been arrested
+    def HAS_CHAR_BEEN_DAMAGED_BY_CAR(self, self_: Ped | int, handle: Vehicle | int) -> bool: ...  # Returns true if the char has been hurt by the specified vehicle
+    def HAS_CHAR_BEEN_DAMAGED_BY_CHAR(self, self_: Ped | int, handle: Ped | int) -> bool: ...  # Returns true if the character has been hurt by the other character
+    def HAS_CHAR_BEEN_DAMAGED_BY_WEAPON(self, self_: Ped | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the character has been hit by the specified weapon
+    def HAS_CHAR_BEEN_PHOTOGRAPHED(self, self_: Ped | int) -> bool: ...  # Returns true if the character has been photographed
+    def HAS_CHAR_GOT_WEAPON(self, self_: Ped | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the character has the specified weapon
+    def HAS_CHAR_SPOTTED_CHAR(self, self_: Ped | int, target: Ped | int) -> bool: ...  # Returns true if the character can see the target character
+    def HAS_CHAR_SPOTTED_CHAR_IN_FRONT(self, self_: Ped | int, handle: Ped | int) -> bool: ...  # Returns true if the character can see the other character in front of them
     def HAS_CUTSCENE_FINISHED(self) -> bool: ...  # Returns true if the cutscene has finished
     def HAS_CUTSCENE_LOADED(self) -> bool: ...  # Returns true if the cutscene has finished loading
     def HAS_DEATHARREST_BEEN_EXECUTED(self) -> bool: ...  # Returns true if the player is dead (wasted) or arrested (busted)
     def HAS_GAME_JUST_RETURNED_FROM_FRONTEND(self) -> bool: ...  # Returns true if the player just exited the menu on the last frame
     def HAS_LANGUAGE_CHANGED(self) -> bool: ...  # Returns true if the current language set is different from the previous language set
-    def HAS_MISSION_AUDIO_FINISHED(self, slotId: Any) -> bool: ...  # Returns true if the audio (03CF) is no longer playing
-    def HAS_MISSION_AUDIO_LOADED(self, slotId: Any) -> bool: ...  # Returns true if the mission audio requested with LOAD_MISSION_AUDIO has loaded
-    def HAS_MODEL_LOADED(self, modelId: Any) -> bool: ...  # Returns true if the model is available for creation
-    def HAS_OBJECT_BEEN_DAMAGED(self, self_: Any) -> bool: ...  # Returns true if the object is damaged
-    def HAS_OBJECT_BEEN_DAMAGED_BY_WEAPON(self, self_: Any, weaponType: Any) -> bool: ...  # Returns true if the object has been damaged by the specified weapon or damage type
-    def HAS_OBJECT_BEEN_PHOTOGRAPHED(self, self_: Any) -> bool: ...  # Returns true if the object has been photographed
-    def HAS_OBJECT_BEEN_UPROOTED(self, self_: Any) -> bool: ...  # Returns true if the object has been made moveable by the 0392
-    def HAS_OBJECT_COLLIDED_WITH_ANYTHING(self, self_: Any) -> bool: ...  # Returns true if the object has collided
-    def HAS_OBJECT_OF_TYPE_BEEN_SMASHED(self, x: float, y: float, z: float, radius: float, modelId: Any) -> bool: ...
-    def HAS_PICKUP_BEEN_COLLECTED(self, self_: Any) -> bool: ...  # Returns true if specified pickup has been collected
-    def HAS_PLAYER_BOUGHT_ITEM(self, itemId: Any) -> bool: ...  # Returns true if the shopping item has been bought
+    def HAS_MISSION_AUDIO_FINISHED(self, slotId: int) -> bool: ...  # Returns true if the audio (03CF) is no longer playing
+    def HAS_MISSION_AUDIO_LOADED(self, slotId: int) -> bool: ...  # Returns true if the mission audio requested with LOAD_MISSION_AUDIO has loaded
+    def HAS_MODEL_LOADED(self, modelId: int) -> bool: ...  # Returns true if the model is available for creation
+    def HAS_OBJECT_BEEN_DAMAGED(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is damaged
+    def HAS_OBJECT_BEEN_DAMAGED_BY_WEAPON(self, self_: GameObject | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the object has been damaged by the specified weapon or damage type
+    def HAS_OBJECT_BEEN_PHOTOGRAPHED(self, self_: GameObject | int) -> bool: ...  # Returns true if the object has been photographed
+    def HAS_OBJECT_BEEN_UPROOTED(self, self_: GameObject | int) -> bool: ...  # Returns true if the object has been made moveable by the 0392
+    def HAS_OBJECT_COLLIDED_WITH_ANYTHING(self, self_: GameObject | int) -> bool: ...  # Returns true if the object has collided
+    def HAS_OBJECT_OF_TYPE_BEEN_SMASHED(self, x: float, y: float, z: float, radius: float, modelId: int) -> bool: ...
+    def HAS_PICKUP_BEEN_COLLECTED(self, self_: int) -> bool: ...  # Returns true if specified pickup has been collected
+    def HAS_PLAYER_BOUGHT_ITEM(self, itemId: int) -> bool: ...  # Returns true if the shopping item has been bought
     def HAS_SAVE_GAME_FINISHED(self) -> bool: ...  # Returns false if save game menu was requested with activate_save_menu command, but not displayed yet
-    def HAS_SPECIAL_CHARACTER_LOADED(self, slotId: Any) -> bool: ...  # Returns true if the special character's model (023C) is available for creation
-    def HAS_STREAMED_SCRIPT_LOADED(self, id: Any) -> bool: ...  # Returns true if the ambient script has finished loading (08A9)
-    def HAS_TRAIN_DERAILED(self, self_: Any) -> bool: ...  # Returns true if the train has derailed (usually from going too fast)
-    def HAS_VEHICLE_MOD_LOADED(self, modelId: Any) -> bool: ...  # Returns true if the vehicle upgrade model has loaded
-    def HELI_ATTACK_PLAYER(self, self_: Any, handle: Any, radius: float) -> None: ...  # Makes the heli follow and attack the current player in the given radius
-    def HELI_FOLLOW_ENTITY(self, self_: Any, char: Any, vehicle: Any, radius: float) -> None: ...  # Makes the heli follow the specified char or vehicle in the air
-    def HELI_GOTO_COORDS(self, self_: Any, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...  # Makes the helicopter fly to the specified location, keeping a specific Z height/altitude
-    def HELI_KEEP_ENTITY_IN_VIEW(self, self_: Any, char: Any, vehicle: Any, minAltitude: float, maxAltitude: Any) -> None: ...
-    def HELI_LAND_AT_COORDS(self, self_: Any, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...
-    def HIDE_ALL_FRONTEND_BLIPS(self, state: Any) -> None: ...
-    def HIDE_CHAR_WEAPON_FOR_SCRIPTED_CUTSCENE(self, self_: Any, state: Any) -> None: ...  # Hides all of the specified char's weapons
-    def HIGHLIGHT_MENU_ITEM(self, self_: Any, row: Any, state: Any) -> None: ...  # Highlights the menu item - used to indicate an owned shopping item
-    def IF(self, arg0: Any) -> None: ...  # Begins a conditional statement with the specified number of conditions
-    def IGNORE_HEIGHT_DIFFERENCE_FOLLOWING_NODES(self, self_: Any, state: Any) -> None: ...
-    def IMPROVE_CAR_BY_CHEATING(self, self_: Any, state: Any) -> None: ...  # Sets whether a ped driven vehicle's handling is affected by the 'perfect handling' cheat
-    def INCREASE_PLAYER_MAX_ARMOUR(self, self_: Any, value: Any) -> None: ...  # Increases the player's max armor by the specified value and changes current armor to the new maximum
-    def INCREASE_PLAYER_MAX_HEALTH(self, self_: Any, value: Any) -> None: ...  # Increases the player's max health by the specified value and changes current health to the new maxim
-    def INCREMENT_FLOAT_STAT(self, id: Any, value: float) -> None: ...  # Increases the float stat by the value specified
-    def INCREMENT_FLOAT_STAT_NO_MESSAGE(self, id: Any, value: float) -> None: ...  # Increases the float stat by the value given without displaying popup message
-    def INCREMENT_INT_STAT(self, id: Any, value: Any) -> None: ...  # Increases the integer stat by the value given
-    def INCREMENT_INT_STAT_NO_MESSAGE(self, id: Any, value: Any) -> None: ...  # Increases the integer stat by the value given without displaying popup message
+    def HAS_SPECIAL_CHARACTER_LOADED(self, slotId: int) -> bool: ...  # Returns true if the special character's model (023C) is available for creation
+    def HAS_STREAMED_SCRIPT_LOADED(self, id: int) -> bool: ...  # Returns true if the ambient script has finished loading (08A9)
+    def HAS_TRAIN_DERAILED(self, self_: Vehicle | int) -> bool: ...  # Returns true if the train has derailed (usually from going too fast)
+    def HAS_VEHICLE_MOD_LOADED(self, modelId: int) -> bool: ...  # Returns true if the vehicle upgrade model has loaded
+    def HELI_ATTACK_PLAYER(self, self_: Vehicle | int, handle: int, radius: float) -> None: ...  # Makes the heli follow and attack the current player in the given radius
+    def HELI_FOLLOW_ENTITY(self, self_: Vehicle | int, char: Ped | int, vehicle: Vehicle | int, radius: float) -> None: ...  # Makes the heli follow the specified char or vehicle in the air
+    def HELI_GOTO_COORDS(self, self_: Vehicle | int, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...  # Makes the helicopter fly to the specified location, keeping a specific Z height/altitude
+    def HELI_KEEP_ENTITY_IN_VIEW(self, self_: Vehicle | int, char: Ped | int, vehicle: Vehicle | int, minAltitude: float, maxAltitude: Any) -> None: ...
+    def HELI_LAND_AT_COORDS(self, self_: Vehicle | int, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...
+    def HIDE_ALL_FRONTEND_BLIPS(self, state: bool) -> None: ...
+    def HIDE_CHAR_WEAPON_FOR_SCRIPTED_CUTSCENE(self, self_: Ped | int, state: bool) -> None: ...  # Hides all of the specified char's weapons
+    def HIGHLIGHT_MENU_ITEM(self, self_: int, row: int, state: bool) -> None: ...  # Highlights the menu item - used to indicate an owned shopping item
+    def IF(self, arg0: int) -> None: ...  # Begins a conditional statement with the specified number of conditions
+    def IGNORE_HEIGHT_DIFFERENCE_FOLLOWING_NODES(self, self_: Ped | int, state: bool) -> None: ...
+    def IMPROVE_CAR_BY_CHEATING(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether a ped driven vehicle's handling is affected by the 'perfect handling' cheat
+    def INCREASE_PLAYER_MAX_ARMOUR(self, self_: int, value: int) -> None: ...  # Increases the player's max armor by the specified value and changes current armor to the new maximum
+    def INCREASE_PLAYER_MAX_HEALTH(self, self_: int, value: int) -> None: ...  # Increases the player's max health by the specified value and changes current health to the new maxim
+    def INCREMENT_FLOAT_STAT(self, id: int, value: float) -> None: ...  # Increases the float stat by the value specified
+    def INCREMENT_FLOAT_STAT_NO_MESSAGE(self, id: int, value: float) -> None: ...  # Increases the float stat by the value given without displaying popup message
+    def INCREMENT_INT_STAT(self, id: int, value: int) -> None: ...  # Increases the integer stat by the value given
+    def INCREMENT_INT_STAT_NO_MESSAGE(self, id: int, value: int) -> None: ...  # Increases the integer stat by the value given without displaying popup message
     def INIT_ZONE_POPULATION_SETTINGS(self) -> None: ...  # Resets all changes made to the zone info
     def IS_2PLAYER_GAME_GOING_ON(self) -> bool: ...  # Returns true if the game is in 2-player mode
     def IS_ANY_PICKUP_AT_COORDS(self, x: float, y: float, z: float) -> bool: ...  # Returns true if the pickup at the specified coordinates is available to be picked up
-    def IS_AREA_OCCUPIED(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, solid: Any, car: Any, char: Any, object: Any, particle: Any) -> bool: ...  # Returns true if there is anything with the specified properties within the 3D area
-    def IS_ATTACHED_PLAYER_HEADING_ACHIEVED(self, self_: Any) -> bool: ...  # Returns true if the heading has finished being applied, as started by 0858
+    def IS_AREA_OCCUPIED(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, solid: bool, car: bool, char: bool, object: bool, particle: bool) -> bool: ...  # Returns true if there is anything with the specified properties within the 3D area
+    def IS_ATTACHED_PLAYER_HEADING_ACHIEVED(self, self_: int) -> bool: ...  # Returns true if the heading has finished being applied, as started by 0858
     def IS_AUSTRALIAN_GAME(self) -> bool: ...  # Returns true if the current game is an Australian release
-    def IS_BIG_VEHICLE(self, self_: Any) -> bool: ...  # Returns true if the specified vehicle has the 'is big' flag set in vehicles
-    def IS_BUTTON_PRESSED(self, pad: Any, buttonId: Any) -> bool: ...  # Returns true if the pad's button has been pressed
-    def IS_CAR_DEAD(self, handle: Any) -> bool: ...  # Returns true if the handle is an invalid vehicle handle or the vehicle has been destroyed (wrecked)
-    def IS_CAR_DOOR_DAMAGED(self, self_: Any, door: Any) -> bool: ...  # Returns true if the specified vehicle part is visibly damaged
-    def IS_CAR_DOOR_FULLY_OPEN(self, self_: Any, door: Any) -> bool: ...
-    def IS_CAR_HEALTH_GREATER(self, self_: Any, health: Any) -> bool: ...  # Returns true if the car's health is over the specified value
-    def IS_CAR_IN_AIR_PROPER(self, self_: Any) -> bool: ...  # Returns true if the vehicle is in the air
-    def IS_CAR_IN_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the vehicle is located within the specified 2D area
-    def IS_CAR_IN_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the vehicle is located within the specified 3D area
-    def IS_CAR_IN_WATER(self, self_: Any) -> bool: ...  # Returns true if the vehicle is submerged in water
-    def IS_CAR_LOW_RIDER(self, self_: Any) -> bool: ...  # Returns true if the vehicle is a low rider
-    def IS_CAR_MODEL(self, self_: Any, modelId: Any) -> bool: ...  # Returns true if the vehicle has the specified model
-    def IS_CAR_ON_FIRE(self, self_: Any) -> bool: ...  # Returns true if the car is burning
-    def IS_CAR_ON_SCREEN(self, self_: Any) -> bool: ...  # Returns true if the car is visible
-    def IS_CAR_PASSENGER_SEAT_FREE(self, self_: Any, seat: Any) -> bool: ...  # Returns true if the specified car seat is empty
-    def IS_CAR_STOPPED(self, self_: Any) -> bool: ...  # Returns true if the vehicle is not moving
-    def IS_CAR_STOPPED_IN_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the car stopped within the specified 2D area
-    def IS_CAR_STOPPED_IN_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the car stopped within the specified 3D area
-    def IS_CAR_STREET_RACER(self, self_: Any) -> bool: ...  # Returns true if the vehicle is a street racer
-    def IS_CAR_STUCK(self, vehicle: Any) -> bool: ...  # Returns true if the car is stuck
-    def IS_CAR_STUCK_ON_ROOF(self, self_: Any) -> bool: ...  # Returns true if the car has been upside down for more than 2 seconds (requires 0190)
-    def IS_CAR_TOUCHING_CAR(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the car is touching the other car
-    def IS_CAR_TYRE_BURST(self, self_: Any, tireId: Any) -> bool: ...  # Returns true if a given tire on the car is deflated
-    def IS_CAR_UPRIGHT(self, self_: Any) -> bool: ...  # Returns true if the vehicle is in the normal position (upright)
-    def IS_CAR_UPSIDEDOWN(self, self_: Any) -> bool: ...  # Returns true if the car is upside down
-    def IS_CAR_VISIBLY_DAMAGED(self, self_: Any) -> bool: ...  # Returns true if any of the car components is visibly damaged or lost
-    def IS_CAR_WAITING_FOR_WORLD_COLLISION(self, self_: Any) -> bool: ...
-    def IS_CHAR_ATTACHED_TO_ANY_CAR(self, self_: Any) -> bool: ...  # Returns true if the char is turreted on any vehicle
-    def IS_CHAR_AT_SCRIPTED_ATTRACTOR(self, self_: Any, handle: Any) -> bool: ...
-    def IS_CHAR_DEAD(self, handle: Any) -> bool: ...  # Returns true if the handle is an invalid character handle or the character is dead (wasted)
-    def IS_CHAR_DUCKING(self, self_: Any) -> bool: ...  # Returns true if the specified character is crouching
-    def IS_CHAR_GETTING_IN_TO_A_CAR(self, self_: Any) -> bool: ...  # Returns true if the character is entering a car, but is not in the car
-    def IS_CHAR_HEAD_MISSING(self, self_: Any) -> bool: ...  # Returns true if the character has had its head shot off
-    def IS_CHAR_HEALTH_GREATER(self, self_: Any, health: Any) -> bool: ...  # Returns true if the character's health is over the specified value
-    def IS_CHAR_HOLDING_OBJECT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the char is lifting the specified object
-    def IS_CHAR_IN_AIR(self, self_: Any) -> bool: ...  # Returns true if the character is in the air
-    def IS_CHAR_IN_ANGLED_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 2D area
-    def IS_CHAR_IN_ANGLED_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 3D area
-    def IS_CHAR_IN_ANGLED_AREA_IN_CAR_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is in a car which is within the angled 2D area
-    def IS_CHAR_IN_ANGLED_AREA_IN_CAR_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is in a car which is within the angled 3D area
-    def IS_CHAR_IN_ANGLED_AREA_ON_FOOT_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 2D area
-    def IS_CHAR_IN_ANGLED_AREA_ON_FOOT_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 3D area
-    def IS_CHAR_IN_ANY_BOAT(self, self_: Any) -> bool: ...  # Returns true if the character is driving a boat
-    def IS_CHAR_IN_ANY_CAR(self, self_: Any) -> bool: ...  # Returns true if the character has a vehicle, even if they are not actually sat inside it (opening an
-    def IS_CHAR_IN_ANY_HELI(self, self_: Any) -> bool: ...  # Returns true if the character is flying a helicopter
-    def IS_CHAR_IN_ANY_PLANE(self, self_: Any) -> bool: ...  # Returns true if the character is in a plane
-    def IS_CHAR_IN_ANY_POLICE_VEHICLE(self, self_: Any) -> bool: ...  # Returns true if the character is driving a police vehicle
-    def IS_CHAR_IN_ANY_SEARCHLIGHT(self, self_: Any) -> int | None: ...  # Returns the handle for the searchlight that's targeting the character
-    def IS_CHAR_IN_ANY_TRAIN(self, self_: Any) -> bool: ...  # Returns true if the specified character is in a train
-    def IS_CHAR_IN_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 2D area
-    def IS_CHAR_IN_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 3D area
-    def IS_CHAR_IN_AREA_IN_CAR_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 2D area in a vehicle
-    def IS_CHAR_IN_AREA_IN_CAR_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 3D area in a vehicle
-    def IS_CHAR_IN_AREA_ON_FOOT_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 2D area on foot
-    def IS_CHAR_IN_AREA_ON_FOOT_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the specified 3D area on foot
-    def IS_CHAR_IN_CAR(self, self_: Any, vehicle: Any) -> bool: ...  # Returns true if the character is in the specified vehicle
-    def IS_CHAR_IN_FLYING_VEHICLE(self, self_: Any) -> bool: ...  # Returns true if the character is in a flying vehicle
-    def IS_CHAR_IN_MODEL(self, self_: Any, modelId: Any) -> bool: ...  # Returns true if the character is driving a vehicle with the specified model
-    def IS_CHAR_IN_SEARCHLIGHT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the searchlight has spotted the char
-    def IS_CHAR_IN_TAXI(self, self_: Any) -> bool: ...  # Returns true if the character is driving a taxi
-    def IS_CHAR_IN_WATER(self, self_: Any) -> bool: ...  # Returns true if the character is in water
-    def IS_CHAR_IN_ZONE(self, self_: Any, zone: str) -> bool: ...  # Returns true if the character is in the specified map zone
-    def IS_CHAR_MALE(self, self_: Any) -> bool: ...  # Returns true if the character is male
-    def IS_CHAR_MODEL(self, self_: Any, modelId: Any) -> bool: ...  # Returns true if the character's model ID is equivalent to the model ID passed
-    def IS_CHAR_ON_ANY_BIKE(self, self_: Any) -> bool: ...  # Returns true if the character is riding a bike
-    def IS_CHAR_ON_FOOT(self, self_: Any) -> bool: ...  # Returns true if the character is on foot, and not occupying a vehicle
-    def IS_CHAR_ON_SCREEN(self, self_: Any) -> bool: ...  # Returns true if the character is visible
-    def IS_CHAR_PLAYING_ANIM(self, self_: Any, animationName: str) -> bool: ...  # Returns true if character is performing the specified animation
-    def IS_CHAR_RESPONDING_TO_EVENT(self, self_: Any, event: Any) -> bool: ...  # Returns true if the character is responding to the specified ped event
-    def IS_CHAR_SHOOTING(self, self_: Any) -> bool: ...  # Returns true if the character is firing a weapon
-    def IS_CHAR_SHOOTING_IN_AREA(self, self_: Any, leftBottomX: float, leftBottomY: float, topRightX: float, topRightY: float, drawSphere: Any) -> bool: ...  # Returns true if the character fired a weapon within the specified 2D area
-    def IS_CHAR_SITTING_IN_ANY_CAR(self, self_: Any) -> bool: ...  # Returns true if the character is sitting in any vehicle
-    def IS_CHAR_SITTING_IN_CAR(self, self_: Any, vehicle: Any) -> bool: ...  # Returns true if the character is sitting in the specified vehicle
-    def IS_CHAR_STOPPED(self, self_: Any) -> bool: ...  # Returns true if the character is not moving
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 2D area and is motionless
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 3D area and is motionless
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_IN_CAR_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is in a motionless car within the angled 2D area
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_IN_CAR_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is in a motionless car within the angled 3D area
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_ON_FOOT_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is within the angled 2D area
-    def IS_CHAR_STOPPED_IN_ANGLED_AREA_ON_FOOT_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the character is on foot within the angled 3D area and is motionless
-    def IS_CHAR_STOPPED_IN_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 2D area
-    def IS_CHAR_STOPPED_IN_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 3D area
-    def IS_CHAR_STOPPED_IN_AREA_IN_CAR_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 2D area in a vehicle
-    def IS_CHAR_STOPPED_IN_AREA_IN_CAR_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 3D area in a vehicle
-    def IS_CHAR_STOPPED_IN_AREA_ON_FOOT_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 2D area on foot
-    def IS_CHAR_STOPPED_IN_AREA_ON_FOOT_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the specified 3D area on foot
-    def IS_CHAR_STUCK_UNDER_CAR(self, self_: Any) -> bool: ...  # Returns true if the char is stuck under a car
-    def IS_CHAR_SWIMMING(self, self_: Any) -> bool: ...
-    def IS_CHAR_TALKING(self, self_: Any) -> bool: ...  # Returns true if the character is playing any speech
-    def IS_CHAR_TOUCHING_CHAR(self, self_: Any, other: Any) -> bool: ...  # Returns true if the character is touching the other character
-    def IS_CHAR_TOUCHING_OBJECT(self, self_: Any, object: Any) -> bool: ...  # Returns true if the character is colliding with the specified object
-    def IS_CHAR_TOUCHING_OBJECT_ON_FOOT(self, self_: Any, object: Any) -> bool: ...  # Returns true if the character is colliding with the specified object on foot
-    def IS_CHAR_TOUCHING_VEHICLE(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the character is colliding with a car
-    def IS_CHAR_USING_MAP_ATTRACTOR(self, self_: Any) -> bool: ...  # Returns true if the character is using a map attractor
-    def IS_CHAR_WAITING_FOR_WORLD_COLLISION(self, self_: Any) -> bool: ...
-    def IS_CLOSEST_OBJECT_OF_TYPE_SMASHED_OR_DAMAGED(self, x: float, y: float, z: float, radius: float, modelId: Any, smashed: Any, damaged: Any) -> bool: ...
-    def IS_CONSTANT_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the integer constant is equal to or greater than the value of the local variable
-    def IS_CONSTANT_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the integer constant is equal to or greater than the value of the global variable
-    def IS_CONSTANT_GREATER_THAN_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the integer constant is greater than the value of the local variable
-    def IS_CONSTANT_GREATER_THAN_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the integer constant is greater than the value of the global variable
-    def IS_CONVERSATION_AT_NODE(self, handle: Any, speech: str) -> bool: ...  # Returns true if the conversation is at the specified node
+    def IS_BIG_VEHICLE(self, self_: Vehicle | int) -> bool: ...  # Returns true if the specified vehicle has the 'is big' flag set in vehicles
+    def IS_BUTTON_PRESSED(self, pad: int, buttonId: int) -> bool: ...  # Returns true if the pad's button has been pressed
+    def IS_CAR_DEAD(self, handle: int) -> bool: ...  # Returns true if the handle is an invalid vehicle handle or the vehicle has been destroyed (wrecked)
+    def IS_CAR_DOOR_DAMAGED(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> bool: ...  # Returns true if the specified vehicle part is visibly damaged
+    def IS_CAR_DOOR_FULLY_OPEN(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> bool: ...
+    def IS_CAR_HEALTH_GREATER(self, self_: Vehicle | int, health: int) -> bool: ...  # Returns true if the car's health is over the specified value
+    def IS_CAR_IN_AIR_PROPER(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is in the air
+    def IS_CAR_IN_AREA_2D(self, self_: Vehicle | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the vehicle is located within the specified 2D area
+    def IS_CAR_IN_AREA_3D(self, self_: Vehicle | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the vehicle is located within the specified 3D area
+    def IS_CAR_IN_WATER(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is submerged in water
+    def IS_CAR_LOW_RIDER(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is a low rider
+    def IS_CAR_MODEL(self, self_: Vehicle | int, modelId: VEHICLE | int) -> bool: ...  # Returns true if the vehicle has the specified model
+    def IS_CAR_ON_FIRE(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car is burning
+    def IS_CAR_ON_SCREEN(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car is visible
+    def IS_CAR_PASSENGER_SEAT_FREE(self, self_: Vehicle | int, seat: int) -> bool: ...  # Returns true if the specified car seat is empty
+    def IS_CAR_STOPPED(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is not moving
+    def IS_CAR_STOPPED_IN_AREA_2D(self, self_: Vehicle | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the car stopped within the specified 2D area
+    def IS_CAR_STOPPED_IN_AREA_3D(self, self_: Vehicle | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the car stopped within the specified 3D area
+    def IS_CAR_STREET_RACER(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is a street racer
+    def IS_CAR_STUCK(self, vehicle: Vehicle | int) -> bool: ...  # Returns true if the car is stuck
+    def IS_CAR_STUCK_ON_ROOF(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car has been upside down for more than 2 seconds (requires 0190)
+    def IS_CAR_TOUCHING_CAR(self, self_: Vehicle | int, handle: Vehicle | int) -> bool: ...  # Returns true if the car is touching the other car
+    def IS_CAR_TYRE_BURST(self, self_: Vehicle | int, tireId: VEHICLE_WHEEL | int) -> bool: ...  # Returns true if a given tire on the car is deflated
+    def IS_CAR_UPRIGHT(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is in the normal position (upright)
+    def IS_CAR_UPSIDEDOWN(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car is upside down
+    def IS_CAR_VISIBLY_DAMAGED(self, self_: Vehicle | int) -> bool: ...  # Returns true if any of the car components is visibly damaged or lost
+    def IS_CAR_WAITING_FOR_WORLD_COLLISION(self, self_: Vehicle | int) -> bool: ...
+    def IS_CHAR_ATTACHED_TO_ANY_CAR(self, self_: Ped | int) -> bool: ...  # Returns true if the char is turreted on any vehicle
+    def IS_CHAR_AT_SCRIPTED_ATTRACTOR(self, self_: Ped | int, handle: int) -> bool: ...
+    def IS_CHAR_DEAD(self, handle: int) -> bool: ...  # Returns true if the handle is an invalid character handle or the character is dead (wasted)
+    def IS_CHAR_DUCKING(self, self_: Ped | int) -> bool: ...  # Returns true if the specified character is crouching
+    def IS_CHAR_GETTING_IN_TO_A_CAR(self, self_: Ped | int) -> bool: ...  # Returns true if the character is entering a car, but is not in the car
+    def IS_CHAR_HEAD_MISSING(self, self_: Ped | int) -> bool: ...  # Returns true if the character has had its head shot off
+    def IS_CHAR_HEALTH_GREATER(self, self_: Ped | int, health: int) -> bool: ...  # Returns true if the character's health is over the specified value
+    def IS_CHAR_HOLDING_OBJECT(self, self_: Ped | int, handle: GameObject | int) -> bool: ...  # Returns true if the char is lifting the specified object
+    def IS_CHAR_IN_AIR(self, self_: Ped | int) -> bool: ...  # Returns true if the character is in the air
+    def IS_CHAR_IN_ANGLED_AREA_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 2D area
+    def IS_CHAR_IN_ANGLED_AREA_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 3D area
+    def IS_CHAR_IN_ANGLED_AREA_IN_CAR_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is in a car which is within the angled 2D area
+    def IS_CHAR_IN_ANGLED_AREA_IN_CAR_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is in a car which is within the angled 3D area
+    def IS_CHAR_IN_ANGLED_AREA_ON_FOOT_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 2D area
+    def IS_CHAR_IN_ANGLED_AREA_ON_FOOT_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 3D area
+    def IS_CHAR_IN_ANY_BOAT(self, self_: Ped | int) -> bool: ...  # Returns true if the character is driving a boat
+    def IS_CHAR_IN_ANY_CAR(self, self_: Ped | int) -> bool: ...  # Returns true if the character has a vehicle, even if they are not actually sat inside it (opening an
+    def IS_CHAR_IN_ANY_HELI(self, self_: Ped | int) -> bool: ...  # Returns true if the character is flying a helicopter
+    def IS_CHAR_IN_ANY_PLANE(self, self_: Ped | int) -> bool: ...  # Returns true if the character is in a plane
+    def IS_CHAR_IN_ANY_POLICE_VEHICLE(self, self_: Ped | int) -> bool: ...  # Returns true if the character is driving a police vehicle
+    def IS_CHAR_IN_ANY_SEARCHLIGHT(self, self_: Ped | int) -> int | None: ...  # Returns the handle for the searchlight that's targeting the character
+    def IS_CHAR_IN_ANY_TRAIN(self, self_: Ped | int) -> bool: ...  # Returns true if the specified character is in a train
+    def IS_CHAR_IN_AREA_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 2D area
+    def IS_CHAR_IN_AREA_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 3D area
+    def IS_CHAR_IN_AREA_IN_CAR_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 2D area in a vehicle
+    def IS_CHAR_IN_AREA_IN_CAR_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 3D area in a vehicle
+    def IS_CHAR_IN_AREA_ON_FOOT_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 2D area on foot
+    def IS_CHAR_IN_AREA_ON_FOOT_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the specified 3D area on foot
+    def IS_CHAR_IN_CAR(self, self_: Ped | int, vehicle: Vehicle | int) -> bool: ...  # Returns true if the character is in the specified vehicle
+    def IS_CHAR_IN_FLYING_VEHICLE(self, self_: Ped | int) -> bool: ...  # Returns true if the character is in a flying vehicle
+    def IS_CHAR_IN_MODEL(self, self_: Ped | int, modelId: VEHICLE | int) -> bool: ...  # Returns true if the character is driving a vehicle with the specified model
+    def IS_CHAR_IN_SEARCHLIGHT(self, self_: int, handle: Ped | int) -> bool: ...  # Returns true if the searchlight has spotted the char
+    def IS_CHAR_IN_TAXI(self, self_: Ped | int) -> bool: ...  # Returns true if the character is driving a taxi
+    def IS_CHAR_IN_WATER(self, self_: Ped | int) -> bool: ...  # Returns true if the character is in water
+    def IS_CHAR_IN_ZONE(self, self_: Ped | int, zone: str) -> bool: ...  # Returns true if the character is in the specified map zone
+    def IS_CHAR_MALE(self, self_: Ped | int) -> bool: ...  # Returns true if the character is male
+    def IS_CHAR_MODEL(self, self_: Ped | int, modelId: PED | int) -> bool: ...  # Returns true if the character's model ID is equivalent to the model ID passed
+    def IS_CHAR_ON_ANY_BIKE(self, self_: Ped | int) -> bool: ...  # Returns true if the character is riding a bike
+    def IS_CHAR_ON_FOOT(self, self_: Ped | int) -> bool: ...  # Returns true if the character is on foot, and not occupying a vehicle
+    def IS_CHAR_ON_SCREEN(self, self_: Ped | int) -> bool: ...  # Returns true if the character is visible
+    def IS_CHAR_PLAYING_ANIM(self, self_: Ped | int, animationName: str) -> bool: ...  # Returns true if character is performing the specified animation
+    def IS_CHAR_RESPONDING_TO_EVENT(self, self_: Ped | int, event: int) -> bool: ...  # Returns true if the character is responding to the specified ped event
+    def IS_CHAR_SHOOTING(self, self_: Ped | int) -> bool: ...  # Returns true if the character is firing a weapon
+    def IS_CHAR_SHOOTING_IN_AREA(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, topRightX: float, topRightY: float, drawSphere: bool) -> bool: ...  # Returns true if the character fired a weapon within the specified 2D area
+    def IS_CHAR_SITTING_IN_ANY_CAR(self, self_: Ped | int) -> bool: ...  # Returns true if the character is sitting in any vehicle
+    def IS_CHAR_SITTING_IN_CAR(self, self_: Ped | int, vehicle: Vehicle | int) -> bool: ...  # Returns true if the character is sitting in the specified vehicle
+    def IS_CHAR_STOPPED(self, self_: Ped | int) -> bool: ...  # Returns true if the character is not moving
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 2D area and is motionless
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 3D area and is motionless
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_IN_CAR_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is in a motionless car within the angled 2D area
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_IN_CAR_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is in a motionless car within the angled 3D area
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_ON_FOOT_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is within the angled 2D area
+    def IS_CHAR_STOPPED_IN_ANGLED_AREA_ON_FOOT_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the character is on foot within the angled 3D area and is motionless
+    def IS_CHAR_STOPPED_IN_AREA_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 2D area
+    def IS_CHAR_STOPPED_IN_AREA_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 3D area
+    def IS_CHAR_STOPPED_IN_AREA_IN_CAR_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 2D area in a vehicle
+    def IS_CHAR_STOPPED_IN_AREA_IN_CAR_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 3D area in a vehicle
+    def IS_CHAR_STOPPED_IN_AREA_ON_FOOT_2D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 2D area on foot
+    def IS_CHAR_STOPPED_IN_AREA_ON_FOOT_3D(self, self_: Ped | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the specified 3D area on foot
+    def IS_CHAR_STUCK_UNDER_CAR(self, self_: Ped | int) -> bool: ...  # Returns true if the char is stuck under a car
+    def IS_CHAR_SWIMMING(self, self_: Ped | int) -> bool: ...
+    def IS_CHAR_TALKING(self, self_: Ped | int) -> bool: ...  # Returns true if the character is playing any speech
+    def IS_CHAR_TOUCHING_CHAR(self, self_: Ped | int, other: Ped | int) -> bool: ...  # Returns true if the character is touching the other character
+    def IS_CHAR_TOUCHING_OBJECT(self, self_: Ped | int, object: GameObject | int) -> bool: ...  # Returns true if the character is colliding with the specified object
+    def IS_CHAR_TOUCHING_OBJECT_ON_FOOT(self, self_: Ped | int, object: GameObject | int) -> bool: ...  # Returns true if the character is colliding with the specified object on foot
+    def IS_CHAR_TOUCHING_VEHICLE(self, self_: Ped | int, handle: Vehicle | int) -> bool: ...  # Returns true if the character is colliding with a car
+    def IS_CHAR_USING_MAP_ATTRACTOR(self, self_: Ped | int) -> bool: ...  # Returns true if the character is using a map attractor
+    def IS_CHAR_WAITING_FOR_WORLD_COLLISION(self, self_: Ped | int) -> bool: ...
+    def IS_CLOSEST_OBJECT_OF_TYPE_SMASHED_OR_DAMAGED(self, x: float, y: float, z: float, radius: float, modelId: int, smashed: bool, damaged: bool) -> bool: ...
+    def IS_CONSTANT_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the integer constant is equal to or greater than the value of the local variable
+    def IS_CONSTANT_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the integer constant is equal to or greater than the value of the global variable
+    def IS_CONSTANT_GREATER_THAN_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the integer constant is greater than the value of the local variable
+    def IS_CONSTANT_GREATER_THAN_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the integer constant is greater than the value of the global variable
+    def IS_CONVERSATION_AT_NODE(self, handle: Ped | int, speech: str) -> bool: ...  # Returns true if the conversation is at the specified node
     def IS_COP_VEHICLE_IN_AREA_3D_NO_SAVE(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> bool: ...  # Returns true if there's any kind of police vehicle in the specified 3D area
-    def IS_CURRENT_CHAR_WEAPON(self, self_: Any, weaponType: Any) -> bool: ...  # Returns true if the character is holding the given type of weapon
+    def IS_CURRENT_CHAR_WEAPON(self, self_: Ped | int, weaponType: WEAPON | int) -> bool: ...  # Returns true if the character is holding the given type of weapon
     def IS_DEBUG_CAMERA_ON(self) -> bool: ...
-    def IS_EMERGENCY_SERVICES_VEHICLE(self, self_: Any) -> bool: ...  # Returns true if the vehicle is an emergency vehicle
-    def IS_EXPLOSION_IN_AREA(self, explosionType: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> bool: ...  # Returns true if there is an explosion of the specified type in the 3D area
-    def IS_FLAME_IN_ANGLED_AREA_2D(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Returns true if there's any fire particles within the specified area
-    def IS_FLAME_IN_ANGLED_AREA_3D(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Returns true if there's any flames within the specified area
+    def IS_EMERGENCY_SERVICES_VEHICLE(self, self_: Vehicle | int) -> bool: ...  # Returns true if the vehicle is an emergency vehicle
+    def IS_EXPLOSION_IN_AREA(self, explosionType: EXPLOSION | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> bool: ...  # Returns true if there is an explosion of the specified type in the 3D area
+    def IS_FLAME_IN_ANGLED_AREA_2D(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Returns true if there's any fire particles within the specified area
+    def IS_FLAME_IN_ANGLED_AREA_3D(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Returns true if there's any flames within the specified area
     def IS_FLOAT_LVAR_EQUAL_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the float LVAR value is equal to the other float LVAR value
     def IS_FLOAT_LVAR_EQUAL_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the float value of the local variable is equivalent to the float value of the global
     def IS_FLOAT_LVAR_EQUAL_TO_NUMBER(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the float LVAR value is equal to the value
@@ -786,870 +792,870 @@ class _CommandNamespace:
     def IS_GARAGE_CLOSED(self, garageId: str) -> bool: ...  # Returns true if the garage's door is closed
     def IS_GARAGE_OPEN(self, garageId: str) -> bool: ...  # Returns true if the garage's door is open
     def IS_GERMAN_GAME(self) -> bool: ...  # Returns true if the game language is set to German
-    def IS_GLOBAL_VAR_BIT_SET_CONST(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
-    def IS_GLOBAL_VAR_BIT_SET_LVAR(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
-    def IS_GLOBAL_VAR_BIT_SET_VAR(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
-    def IS_GROUP_LEADER(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the character is the leader of the specified group
-    def IS_GROUP_MEMBER(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the character is a member of the specified group
+    def IS_GLOBAL_VAR_BIT_SET_CONST(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_GLOBAL_VAR_BIT_SET_LVAR(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_GLOBAL_VAR_BIT_SET_VAR(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_GROUP_LEADER(self, self_: Ped | int, handle: int) -> bool: ...  # Returns true if the character is the leader of the specified group
+    def IS_GROUP_MEMBER(self, self_: Ped | int, handle: int) -> bool: ...  # Returns true if the character is a member of the specified group
     def IS_HELP_MESSAGE_BEING_DISPLAYED(self) -> bool: ...  # Returns true if any help message is being displayed
-    def IS_INT_LVAR_EQUAL_TO_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the local variable is equal to the integer constant
-    def IS_INT_LVAR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is equal to the other int LVAR value
-    def IS_INT_LVAR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the integer value of the local variable is equivalent to the integer value of the gl
-    def IS_INT_LVAR_EQUAL_TO_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is equal to the value
-    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the local variable is greater than or equal to the integer constant 
-    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the other int LVAR value
-    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the int VAR value
-    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the value
-    def IS_INT_LVAR_GREATER_THAN_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the local variable is greater than the integer constant
-    def IS_INT_LVAR_GREATER_THAN_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater than the other int LVAR value
-    def IS_INT_LVAR_GREATER_THAN_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater than the int VAR value
-    def IS_INT_LVAR_GREATER_THAN_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int LVAR value is greater than the value
-    def IS_INT_VAR_EQUAL_TO_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the global variable is equal to the integer constant
-    def IS_INT_VAR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is equal to the int LVAR value
-    def IS_INT_VAR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is equal to the other int VAR value
-    def IS_INT_VAR_EQUAL_TO_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is equal to the value
-    def IS_INT_VAR_GREATER_OR_EQUAL_TO_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the global variable is equal to or greater than the integer constant 
-    def IS_INT_VAR_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater or equal to the int LVAR value
-    def IS_INT_VAR_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater or equal to the other int VAR value
-    def IS_INT_VAR_GREATER_OR_EQUAL_TO_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater or equal to the value
-    def IS_INT_VAR_GREATER_THAN_CONSTANT(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value of the global variable is greater than the integer constant
-    def IS_INT_VAR_GREATER_THAN_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater than the int LVAR value
-    def IS_INT_VAR_GREATER_THAN_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater than the other int VAR value
-    def IS_INT_VAR_GREATER_THAN_NUMBER(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the int VAR value is greater than the value
+    def IS_INT_LVAR_EQUAL_TO_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the local variable is equal to the integer constant
+    def IS_INT_LVAR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is equal to the other int LVAR value
+    def IS_INT_LVAR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the integer value of the local variable is equivalent to the integer value of the gl
+    def IS_INT_LVAR_EQUAL_TO_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is equal to the value
+    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the local variable is greater than or equal to the integer constant
+    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the other int LVAR value
+    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the int VAR value
+    def IS_INT_LVAR_GREATER_OR_EQUAL_TO_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater or equal to the value
+    def IS_INT_LVAR_GREATER_THAN_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the local variable is greater than the integer constant
+    def IS_INT_LVAR_GREATER_THAN_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater than the other int LVAR value
+    def IS_INT_LVAR_GREATER_THAN_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater than the int VAR value
+    def IS_INT_LVAR_GREATER_THAN_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int LVAR value is greater than the value
+    def IS_INT_VAR_EQUAL_TO_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the global variable is equal to the integer constant
+    def IS_INT_VAR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is equal to the int LVAR value
+    def IS_INT_VAR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is equal to the other int VAR value
+    def IS_INT_VAR_EQUAL_TO_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is equal to the value
+    def IS_INT_VAR_GREATER_OR_EQUAL_TO_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the global variable is equal to or greater than the integer constant
+    def IS_INT_VAR_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater or equal to the int LVAR value
+    def IS_INT_VAR_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater or equal to the other int VAR value
+    def IS_INT_VAR_GREATER_OR_EQUAL_TO_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater or equal to the value
+    def IS_INT_VAR_GREATER_THAN_CONSTANT(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value of the global variable is greater than the integer constant
+    def IS_INT_VAR_GREATER_THAN_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater than the int LVAR value
+    def IS_INT_VAR_GREATER_THAN_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater than the other int VAR value
+    def IS_INT_VAR_GREATER_THAN_NUMBER(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the int VAR value is greater than the value
     def IS_JAPANESE_VERSION(self) -> bool: ...  # Returns true for Japanese versions of the game
-    def IS_LAST_BUILDING_MODEL_SHOT_BY_PLAYER(self, self_: Any, modelId: Any) -> bool: ...  # Returns true if the player's last shot model is the model specified
-    def IS_LINE_OF_SIGHT_CLEAR(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, buildings: Any, cars: Any, chars: Any, objects: Any, particles: Any) -> bool: ...  # Checks if there is something in the range of the two specified points
-    def IS_LOCAL_VAR_BIT_SET_CONST(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
-    def IS_LOCAL_VAR_BIT_SET_LVAR(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
-    def IS_LOCAL_VAR_BIT_SET_VAR(self, number: Any, bitIndex: Any) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_LAST_BUILDING_MODEL_SHOT_BY_PLAYER(self, self_: int, modelId: int) -> bool: ...  # Returns true if the player's last shot model is the model specified
+    def IS_LINE_OF_SIGHT_CLEAR(self, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, buildings: bool, cars: bool, chars: bool, objects: bool, particles: bool) -> bool: ...  # Checks if there is something in the range of the two specified points
+    def IS_LOCAL_VAR_BIT_SET_CONST(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_LOCAL_VAR_BIT_SET_LVAR(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
+    def IS_LOCAL_VAR_BIT_SET_VAR(self, number: int, bitIndex: int) -> bool: ...  # Checks if the nth bit of the number is set
     def IS_LVAR_TEXT_LABEL16_EMPTY(self, text: str) -> bool: ...  # Returns true if the string is empty
     def IS_LVAR_TEXT_LABEL16_EQUAL_TO_TEXT_LABEL(self, arg0: str, arg1: str) -> bool: ...  # Returns true if the two strings are equivalent
     def IS_LVAR_TEXT_LABEL_EMPTY(self, text: str) -> bool: ...  # Returns true if the string is empty
     def IS_LVAR_TEXT_LABEL_EQUAL_TO_TEXT_LABEL(self, arg0: str, arg1: str) -> bool: ...  # Returns true if the two null-terminated strings are equivalent
     def IS_MESSAGE_BEING_DISPLAYED(self) -> bool: ...  # Returns true if a priority GXT string is displayed on screen
     def IS_MINIGAME_IN_PROGRESS(self) -> bool: ...  # Returns true if 09BD has been used in any script to disable help messages
-    def IS_MODEL_AVAILABLE(self, modelId: Any) -> bool: ...  # Returns true if the specified model exists in the loaded 
-    def IS_MODEL_IN_CDIMAGE(self, modelId: Any) -> bool: ...  # Returns true if a file for the model exists
+    def IS_MODEL_AVAILABLE(self, modelId: int) -> bool: ...  # Returns true if the specified model exists in the loaded
+    def IS_MODEL_IN_CDIMAGE(self, modelId: int) -> bool: ...  # Returns true if a file for the model exists
     def IS_MONEY_PICKUP_AT_COORDS(self, x: float, y: float, z: float) -> bool: ...  # Returns true if a money pickup exists near the specified coordinates
     def IS_MOUSE_USING_VERTICAL_INVERSION(self) -> bool: ...  # Returns true if the players settings are set to invert the mouse
-    def IS_NEXT_STATION_ALLOWED(self, self_: Any) -> bool: ...  # Returns true if the next station is accessible (at the start of the game, railroad blocks prevent th
+    def IS_NEXT_STATION_ALLOWED(self, self_: Vehicle | int) -> bool: ...  # Returns true if the next station is accessible (at the start of the game, railroad blocks prevent th
     def IS_NIGHT_VISION_ACTIVE(self) -> bool: ...  # Returns true if night vision is active
     def IS_NUMBER_GREATER_OR_EQUAL_TO_FLOAT_LVAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the value is greater or equal to the float LVAR value
     def IS_NUMBER_GREATER_OR_EQUAL_TO_FLOAT_VAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the value is greater or equal to the float VAR value
-    def IS_NUMBER_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value is greater or equal to the int LVAR value
-    def IS_NUMBER_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value is greater or equal to the int VAR value
+    def IS_NUMBER_GREATER_OR_EQUAL_TO_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value is greater or equal to the int LVAR value
+    def IS_NUMBER_GREATER_OR_EQUAL_TO_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value is greater or equal to the int VAR value
     def IS_NUMBER_GREATER_THAN_FLOAT_LVAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the float value is greater than the float LVAR value
     def IS_NUMBER_GREATER_THAN_FLOAT_VAR(self, arg0: float, arg1: float) -> bool: ...  # Returns true if the float value is greater than the float VAR value
-    def IS_NUMBER_GREATER_THAN_INT_LVAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value is greater than the int LVAR value
-    def IS_NUMBER_GREATER_THAN_INT_VAR(self, arg0: Any, arg1: Any) -> bool: ...  # Returns true if the value is greater than the int VAR value
-    def IS_OBJECT_ATTACHED(self, self_: Any) -> bool: ...
-    def IS_OBJECT_INTERSECTING_WORLD(self, self_: Any) -> bool: ...  # Appears to return true if something had entered the object's position since it was created or its po
-    def IS_OBJECT_IN_ANGLED_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the object is within the angled 2D area
-    def IS_OBJECT_IN_ANGLED_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: Any) -> bool: ...  # Checks if the object is within the angled 3D area
-    def IS_OBJECT_IN_AREA_2D(self, self_: Any, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: Any) -> bool: ...  # Returns true if object is in the specified area
-    def IS_OBJECT_IN_AREA_3D(self, self_: Any, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: Any) -> bool: ...  # Returns true if the object is in the specified area
-    def IS_OBJECT_IN_WATER(self, self_: Any) -> bool: ...  # Returns true if the object is in water
-    def IS_OBJECT_ON_SCREEN(self, self_: Any) -> bool: ...  # Returns true if the object is visible
-    def IS_OBJECT_PLAYING_ANIM(self, self_: Any, animationName: str) -> bool: ...  # Returns true if the object is playing the specified animation
-    def IS_OBJECT_STATIC(self, self_: Any) -> bool: ...  # Returns true if the object is not moving
-    def IS_OBJECT_WITHIN_BRAIN_ACTIVATION_RANGE(self, self_: Any) -> bool: ...  # Returns true if the object is within the external script trigger radius
+    def IS_NUMBER_GREATER_THAN_INT_LVAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value is greater than the int LVAR value
+    def IS_NUMBER_GREATER_THAN_INT_VAR(self, arg0: int, arg1: int) -> bool: ...  # Returns true if the value is greater than the int VAR value
+    def IS_OBJECT_ATTACHED(self, self_: GameObject | int) -> bool: ...
+    def IS_OBJECT_INTERSECTING_WORLD(self, self_: GameObject | int) -> bool: ...  # Appears to return true if something had entered the object's position since it was created or its po
+    def IS_OBJECT_IN_ANGLED_AREA_2D(self, self_: GameObject | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the object is within the angled 2D area
+    def IS_OBJECT_IN_ANGLED_AREA_3D(self, self_: GameObject | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, angle: float, drawSphere: bool) -> bool: ...  # Checks if the object is within the angled 3D area
+    def IS_OBJECT_IN_AREA_2D(self, self_: GameObject | int, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, drawSphere: bool) -> bool: ...  # Returns true if object is in the specified area
+    def IS_OBJECT_IN_AREA_3D(self, self_: GameObject | int, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float, drawSphere: bool) -> bool: ...  # Returns true if the object is in the specified area
+    def IS_OBJECT_IN_WATER(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is in water
+    def IS_OBJECT_ON_SCREEN(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is visible
+    def IS_OBJECT_PLAYING_ANIM(self, self_: GameObject | int, animationName: str) -> bool: ...  # Returns true if the object is playing the specified animation
+    def IS_OBJECT_STATIC(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is not moving
+    def IS_OBJECT_WITHIN_BRAIN_ACTIVATION_RANGE(self, self_: GameObject | int) -> bool: ...  # Returns true if the object is within the external script trigger radius
     def IS_PC_USING_JOYPAD(self) -> bool: ...  # Returns true if players controls are set to joystick and not mouse+keyboard
     def IS_PC_VERSION(self) -> bool: ...  # Returns true on PC versions of the game
-    def IS_PLAYBACK_GOING_ON_FOR_CAR(self, self_: Any) -> bool: ...  # Returns true if the car is assigned to a path
-    def IS_PLAYER_CLIMBING(self, self_: Any) -> bool: ...  # Returns true if the player is climbing
-    def IS_PLAYER_CONTROL_ON(self, self_: Any) -> bool: ...  # Returns true if the player control hasn't been disabled using 01B4
-    def IS_PLAYER_DEAD(self, self_: Any) -> bool: ...  # Returns true when player is dead (wasted)
-    def IS_PLAYER_IN_INFO_ZONE(self, self_: Any, infoZone: str) -> bool: ...  # Returns true if the player is in the specified zone
-    def IS_PLAYER_IN_POSITION_FOR_CONVERSATION(self, handle: Any) -> bool: ...  # Returns true if there is a conversation going on between the character and the player and both the c
-    def IS_PLAYER_IN_REMOTE_MODE(self, self_: Any) -> bool: ...  # Returns true if the player is controlling a remote-control vehicle
-    def IS_PLAYER_PERFORMING_STOPPIE(self, self_: Any) -> bool: ...  # Returns true if the player is performing a stoppie
-    def IS_PLAYER_PERFORMING_WHEELIE(self, self_: Any) -> bool: ...
-    def IS_PLAYER_PLAYING(self, self_: Any) -> bool: ...  # Returns true if the player is alive and not arrested by the police
-    def IS_PLAYER_PRESSING_HORN(self, self_: Any) -> bool: ...  # Returns true if the player is honking the horn in a car
-    def IS_PLAYER_TARGETTING_ANYTHING(self, self_: Any) -> bool: ...  # Returns true if the specified player is auto-aiming at a ped or object
-    def IS_PLAYER_TARGETTING_CHAR(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the player is aiming at the specified character
-    def IS_PLAYER_TARGETTING_OBJECT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the player is aiming at the specified object
-    def IS_PLAYER_USING_JETPACK(self, self_: Any) -> bool: ...  # Returns true if player is using a jetpack
-    def IS_PLAYER_WEARING(self, self_: Any, bodyPart: Any, modelName: str) -> bool: ...  # Returns true if the player's bodypart has the specified model (0784 or 087B) 
+    def IS_PLAYBACK_GOING_ON_FOR_CAR(self, self_: Vehicle | int) -> bool: ...  # Returns true if the car is assigned to a path
+    def IS_PLAYER_CLIMBING(self, self_: int) -> bool: ...  # Returns true if the player is climbing
+    def IS_PLAYER_CONTROL_ON(self, self_: int) -> bool: ...  # Returns true if the player control hasn't been disabled using 01B4
+    def IS_PLAYER_DEAD(self, self_: int) -> bool: ...  # Returns true when player is dead (wasted)
+    def IS_PLAYER_IN_INFO_ZONE(self, self_: int, infoZone: str) -> bool: ...  # Returns true if the player is in the specified zone
+    def IS_PLAYER_IN_POSITION_FOR_CONVERSATION(self, handle: Ped | int) -> bool: ...  # Returns true if there is a conversation going on between the character and the player and both the c
+    def IS_PLAYER_IN_REMOTE_MODE(self, self_: int) -> bool: ...  # Returns true if the player is controlling a remote-control vehicle
+    def IS_PLAYER_PERFORMING_STOPPIE(self, self_: int) -> bool: ...  # Returns true if the player is performing a stoppie
+    def IS_PLAYER_PERFORMING_WHEELIE(self, self_: int) -> bool: ...
+    def IS_PLAYER_PLAYING(self, self_: int) -> bool: ...  # Returns true if the player is alive and not arrested by the police
+    def IS_PLAYER_PRESSING_HORN(self, self_: int) -> bool: ...  # Returns true if the player is honking the horn in a car
+    def IS_PLAYER_TARGETTING_ANYTHING(self, self_: int) -> bool: ...  # Returns true if the specified player is auto-aiming at a ped or object
+    def IS_PLAYER_TARGETTING_CHAR(self, self_: int, handle: Ped | int) -> bool: ...  # Returns true if the player is aiming at the specified character
+    def IS_PLAYER_TARGETTING_OBJECT(self, self_: int, handle: GameObject | int) -> bool: ...  # Returns true if the player is aiming at the specified object
+    def IS_PLAYER_USING_JETPACK(self, self_: int) -> bool: ...  # Returns true if player is using a jetpack
+    def IS_PLAYER_WEARING(self, self_: int, bodyPart: int, modelName: str) -> bool: ...  # Returns true if the player's bodypart has the specified model (0784 or 087B)
     def IS_POINT_OBSCURED_BY_A_MISSION_ENTITY(self, x: float, y: float, z: float, radiusX: float, radiusY: float, radiusZ: float) -> bool: ...  # Returns true if there is a vehicle in the specified area
     def IS_POINT_ON_SCREEN(self, x: float, y: float, z: float, radius: float) -> bool: ...  # Returns true if any part of the radius of the specified point is visible on screen
-    def IS_PROCEDURAL_INTERIOR_ACTIVE(self, areaId: Any) -> bool: ...  # Returns true in interactive interiors
+    def IS_PROCEDURAL_INTERIOR_ACTIVE(self, areaId: int) -> bool: ...  # Returns true in interactive interiors
     def IS_PROJECTILE_IN_AREA(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> bool: ...  # Returns true if a projectile is in the specified 3D area
-    def IS_RELATIONSHIP_SET(self, relationshipType: Any, ofPedType: Any, toPedType: Any) -> bool: ...  # Returns true if the specified relationship between ped types is set
-    def IS_SCORE_GREATER(self, self_: Any, money: Any) -> bool: ...  # Returns true if the player's money is over the specified value
-    def IS_SCRIPT_FIRE_EXTINGUISHED(self, self_: Any) -> bool: ...  # Returns true if the script fire has been put out
+    def IS_RELATIONSHIP_SET(self, relationshipType: int, ofPedType: PED_TYPE | int, toPedType: PED_TYPE | int) -> bool: ...  # Returns true if the specified relationship between ped types is set
+    def IS_SCORE_GREATER(self, self_: int, money: int) -> bool: ...  # Returns true if the player's money is over the specified value
+    def IS_SCRIPT_FIRE_EXTINGUISHED(self, self_: int) -> bool: ...  # Returns true if the script fire has been put out
     def IS_SKIP_CUTSCENE_BUTTON_PRESSED(self) -> bool: ...  # Returns true if the player is pressing a key used to skip cutscenes or the game has been minimised
     def IS_SKIP_WAITING_FOR_SCRIPT_TO_FADE_IN(self) -> bool: ...  # Returns true if the trip skip created with 0A35 has finished teleporting the vehicle and is ready to
     def IS_THIS_HELP_MESSAGE_BEING_DISPLAYED(self, gxt: str) -> bool: ...  # Returns true if a help message with the specified GXT entry is being displayed
-    def IS_THIS_MODEL_A_BOAT(self, modelId: Any) -> bool: ...  # Returns true if the model is the model of a boat
-    def IS_THIS_MODEL_A_CAR(self, modelId: Any) -> bool: ...  # Returns true if a valid car model is passed
-    def IS_THIS_MODEL_A_HELI(self, modelId: Any) -> bool: ...  # Returns true if the model is the model of a helicopter
-    def IS_THIS_MODEL_A_PLANE(self, modelId: Any) -> bool: ...  # Returns true if the model is the model of a plane
-    def IS_TRAILER_ATTACHED_TO_CAB(self, self_: Any, cab: Any) -> bool: ...  # Returns true if CAR A has CAR B attached to it like a trailer
+    def IS_THIS_MODEL_A_BOAT(self, modelId: int) -> bool: ...  # Returns true if the model is the model of a boat
+    def IS_THIS_MODEL_A_CAR(self, modelId: int) -> bool: ...  # Returns true if a valid car model is passed
+    def IS_THIS_MODEL_A_HELI(self, modelId: int) -> bool: ...  # Returns true if the model is the model of a helicopter
+    def IS_THIS_MODEL_A_PLANE(self, modelId: int) -> bool: ...  # Returns true if the model is the model of a plane
+    def IS_TRAILER_ATTACHED_TO_CAB(self, self_: Vehicle | int, cab: Vehicle | int) -> bool: ...  # Returns true if CAR A has CAR B attached to it like a trailer
     def IS_VAR_TEXT_LABEL16_EMPTY(self, text: str) -> bool: ...  # Returns true if the string is empty
     def IS_VAR_TEXT_LABEL16_EQUAL_TO_TEXT_LABEL(self, arg0: str, arg1: str) -> bool: ...  # Returns true if the two strings are equivalent
     def IS_VAR_TEXT_LABEL_EMPTY(self, text: str) -> bool: ...  # Returns true if the string is empty
     def IS_VAR_TEXT_LABEL_EQUAL_TO_TEXT_LABEL(self, arg0: str, arg1: str) -> bool: ...  # Returns true if the two null-terminated strings are equivalent
-    def IS_VEHICLE_ATTACHED(self, self_: Any) -> bool: ...
-    def IS_VEHICLE_IN_SEARCHLIGHT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the searchlights light is on the vehicle
-    def IS_VEHICLE_ON_ALL_WHEELS(self, self_: Any) -> bool: ...  # Returns true if all the vehicle's wheels are touching the ground
-    def IS_VEHICLE_TOUCHING_OBJECT(self, self_: Any, handle: Any) -> bool: ...  # Returns true if the vehicle is in contact with the object
-    def IS_WANTED_LEVEL_GREATER(self, self_: Any, wantedLevel: Any) -> bool: ...  # Returns true if the player's wanted level is over the specified value
+    def IS_VEHICLE_ATTACHED(self, self_: Vehicle | int) -> bool: ...
+    def IS_VEHICLE_IN_SEARCHLIGHT(self, self_: int, handle: Vehicle | int) -> bool: ...  # Returns true if the searchlights light is on the vehicle
+    def IS_VEHICLE_ON_ALL_WHEELS(self, self_: Vehicle | int) -> bool: ...  # Returns true if all the vehicle's wheels are touching the ground
+    def IS_VEHICLE_TOUCHING_OBJECT(self, self_: Vehicle | int, handle: GameObject | int) -> bool: ...  # Returns true if the vehicle is in contact with the object
+    def IS_WANTED_LEVEL_GREATER(self, self_: int, wantedLevel: int) -> bool: ...  # Returns true if the player's wanted level is over the specified value
     def IS_WIDESCREEN_ON_IN_OPTIONS(self) -> bool: ...  # Returns true if widescreen is switched on in the display settings
     def IS_XBOX_VERSION(self) -> bool: ...  # Returns true for Xbox versions of the game
-    def KILL_FX_SYSTEM(self, self_: Any) -> None: ...  # Stops the particle and deletes it
-    def KILL_FX_SYSTEM_NOW(self, self_: Any) -> None: ...  # Destroys the specified particle
+    def KILL_FX_SYSTEM(self, self_: int) -> None: ...  # Stops the particle and deletes it
+    def KILL_FX_SYSTEM_NOW(self, self_: int) -> None: ...  # Destroys the specified particle
     def LIMIT_ANGLE(self, value: float) -> float: ...  # Gets the exact angle of an angle
     def LIMIT_TWO_PLAYER_DISTANCE(self, distance: float) -> None: ...  # Sets how far apart players can get on 2-player mode
-    def LISTEN_TO_PLAYER_GROUP_COMMANDS(self, self_: Any, state: Any) -> None: ...
+    def LISTEN_TO_PLAYER_GROUP_COMMANDS(self, self_: Ped | int, state: bool) -> None: ...
     def LOAD_ALL_MODELS_NOW(self) -> None: ...  # Loads any requested models (0247 or 0353) synchronously
-    def LOAD_AND_LAUNCH_MISSION_INTERNAL(self, index: Any) -> None: ...  # Loads a mission from the list defined in the main.scm header
-    def LOAD_CHAR_DECISION_MAKER(self, type: Any) -> int: ...  # Creates a decision maker with the specified type and adds it to mission cleanup list. Otherwise shou
+    def LOAD_AND_LAUNCH_MISSION_INTERNAL(self, index: int) -> None: ...  # Loads a mission from the list defined in the main.scm header
+    def LOAD_CHAR_DECISION_MAKER(self, type: int) -> int: ...  # Creates a decision maker with the specified type and adds it to mission cleanup list. Otherwise shou
     def LOAD_CUTSCENE(self, name: str) -> None: ...  # Loads the data for the specified cutscene
-    def LOAD_GROUP_DECISION_MAKER(self, type: Any) -> int: ...  # Creates a decision maker for use on groups of actors
-    def LOAD_MISSION_AUDIO(self, slotId: Any, audioId: Any) -> None: ...  # Loads the file from the audio directory
+    def LOAD_GROUP_DECISION_MAKER(self, type: int) -> int: ...  # Creates a decision maker for use on groups of actors
+    def LOAD_MISSION_AUDIO(self, slotId: int, audioId: int) -> None: ...  # Loads the file from the audio directory
     def LOAD_MISSION_TEXT(self, tableName: str) -> None: ...  # Makes the game use GXT Entries from the specified GXT Table
     def LOAD_PATH_NODES_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float) -> None: ...  # Adds an area where script created cars will avoid driving in
     def LOAD_PRICES(self, sectionName: str) -> None: ...
     def LOAD_SCENE(self, x: float, y: float, z: float) -> None: ...  # Starts loading a specific location, just like if the player was there, removing LOD textures
     def LOAD_SCENE_IN_DIRECTION(self, x: float, y: float, z: float, heading: float) -> None: ...
     def LOAD_SHOP(self, name: str) -> None: ...
-    def LOAD_SPECIAL_CHARACTER(self, slotId: Any, modelName: str) -> None: ...  # Requests a special character's model to be loaded into the specified slot
-    def LOAD_SPRITE(self, spriteSlot: Any, textureName: str) -> None: ...  # Loads a sprite from the most recently loaded texture dictionary (0390)
+    def LOAD_SPECIAL_CHARACTER(self, slotId: int, modelName: str) -> None: ...  # Requests a special character's model to be loaded into the specified slot
+    def LOAD_SPRITE(self, spriteSlot: int, textureName: str) -> None: ...  # Loads a sprite from the most recently loaded texture dictionary (0390)
     def LOAD_TEXTURE_DICTIONARY(self, name: str) -> None: ...  # Loads the texture dictionary for use in drawing sprites (038D) on the screen
-    def LOCATE_CAR_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the car is within the 2D radius of the point
-    def LOCATE_CAR_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the car is within the 3D radius of the point
-    def LOCATE_CHAR_ANY_MEANS_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point
-    def LOCATE_CHAR_ANY_MEANS_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point
-    def LOCATE_CHAR_ANY_MEANS_CAR_2D(self, self_: Any, vehicle: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle
-    def LOCATE_CHAR_ANY_MEANS_CAR_3D(self, self_: Any, vehicle: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle
-    def LOCATE_CHAR_ANY_MEANS_CHAR_2D(self, self_: Any, target: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the other character
-    def LOCATE_CHAR_ANY_MEANS_CHAR_3D(self, self_: Any, target: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the other character
-    def LOCATE_CHAR_ANY_MEANS_OBJECT_2D(self, self_: Any, object: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the object
-    def LOCATE_CHAR_ANY_MEANS_OBJECT_3D(self, self_: Any, object: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the object
-    def LOCATE_CHAR_IN_CAR_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point in a vehicle
-    def LOCATE_CHAR_IN_CAR_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point in a vehicle
-    def LOCATE_CHAR_IN_CAR_CAR_2D(self, self_: Any, handle: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle in a vehicle
-    def LOCATE_CHAR_IN_CAR_CAR_3D(self, self_: Any, vehicle: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle in a vehicle
-    def LOCATE_CHAR_IN_CAR_CHAR_2D(self, self_: Any, otherChar: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the other character in a vehicle
-    def LOCATE_CHAR_IN_CAR_CHAR_3D(self, self_: Any, target: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the other character in a vehicle
-    def LOCATE_CHAR_IN_CAR_OBJECT_2D(self, self_: Any, object: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the object in a vehicle
-    def LOCATE_CHAR_IN_CAR_OBJECT_3D(self, self_: Any, object: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the object in a vehicle
-    def LOCATE_CHAR_ON_FOOT_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point on foot
-    def LOCATE_CHAR_ON_FOOT_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point on foot
-    def LOCATE_CHAR_ON_FOOT_CAR_2D(self, self_: Any, vehicle: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle on foot
-    def LOCATE_CHAR_ON_FOOT_CAR_3D(self, self_: Any, vehicle: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle on foot
-    def LOCATE_CHAR_ON_FOOT_CHAR_2D(self, self_: Any, target: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the other character on foot
-    def LOCATE_CHAR_ON_FOOT_CHAR_3D(self, self_: Any, target: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the other character on foot
-    def LOCATE_CHAR_ON_FOOT_OBJECT_2D(self, self_: Any, object: Any, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 2D radius of the object on foot
-    def LOCATE_CHAR_ON_FOOT_OBJECT_3D(self, self_: Any, object: Any, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character is within the 3D radius of the object on foot
-    def LOCATE_OBJECT_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the object is near the specified coordinates
-    def LOCATE_OBJECT_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the object is near the specified point
-    def LOCATE_STOPPED_CAR_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the car is stopped within the 2D radius of the point
-    def LOCATE_STOPPED_CAR_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the car is stopped in the radius of the specified point
-    def LOCATE_STOPPED_CHAR_ANY_MEANS_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point
-    def LOCATE_STOPPED_CHAR_ANY_MEANS_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point
-    def LOCATE_STOPPED_CHAR_IN_CAR_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point in a vehicle
-    def LOCATE_STOPPED_CHAR_IN_CAR_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point in a vehicle
-    def LOCATE_STOPPED_CHAR_ON_FOOT_2D(self, self_: Any, x: float, y: float, xRadius: float, yRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point on foot
-    def LOCATE_STOPPED_CHAR_ON_FOOT_3D(self, self_: Any, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: Any) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point on foot
-    def LOCK_CAR_DOORS(self, self_: Any, lockStatus: Any) -> None: ...  # Sets the locked status of the car's doors
-    def LOCK_DOOR(self, self_: Any, state: Any) -> None: ...  # Sets whether the door object is locked at its current rotation and allows it to be pushed open by en
-    def MAKE_HELI_COME_CRASHING_DOWN(self, self_: Any) -> None: ...  # Makes helicopter simulate crash landing, exploding on the way if high up
-    def MAKE_OBJECT_TARGETTABLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the object can be targeted (auto-aimed) or not
-    def MAKE_PLAYER_FIRE_PROOF(self, self_: Any, state: Any) -> None: ...  # Makes the player immune to fire
+    def LOCATE_CAR_2D(self, self_: Vehicle | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the car is within the 2D radius of the point
+    def LOCATE_CAR_3D(self, self_: Vehicle | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the car is within the 3D radius of the point
+    def LOCATE_CHAR_ANY_MEANS_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point
+    def LOCATE_CHAR_ANY_MEANS_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point
+    def LOCATE_CHAR_ANY_MEANS_CAR_2D(self, self_: Ped | int, vehicle: Vehicle | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle
+    def LOCATE_CHAR_ANY_MEANS_CAR_3D(self, self_: Ped | int, vehicle: Vehicle | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle
+    def LOCATE_CHAR_ANY_MEANS_CHAR_2D(self, self_: Ped | int, target: Ped | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the other character
+    def LOCATE_CHAR_ANY_MEANS_CHAR_3D(self, self_: Ped | int, target: Ped | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the other character
+    def LOCATE_CHAR_ANY_MEANS_OBJECT_2D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the object
+    def LOCATE_CHAR_ANY_MEANS_OBJECT_3D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the object
+    def LOCATE_CHAR_IN_CAR_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point in a vehicle
+    def LOCATE_CHAR_IN_CAR_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point in a vehicle
+    def LOCATE_CHAR_IN_CAR_CAR_2D(self, self_: Ped | int, handle: Vehicle | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle in a vehicle
+    def LOCATE_CHAR_IN_CAR_CAR_3D(self, self_: Ped | int, vehicle: Vehicle | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle in a vehicle
+    def LOCATE_CHAR_IN_CAR_CHAR_2D(self, self_: Ped | int, otherChar: Ped | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the other character in a vehicle
+    def LOCATE_CHAR_IN_CAR_CHAR_3D(self, self_: Ped | int, target: Ped | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the other character in a vehicle
+    def LOCATE_CHAR_IN_CAR_OBJECT_2D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the object in a vehicle
+    def LOCATE_CHAR_IN_CAR_OBJECT_3D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the object in a vehicle
+    def LOCATE_CHAR_ON_FOOT_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the coordinates point on foot
+    def LOCATE_CHAR_ON_FOOT_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the coordinates point on foot
+    def LOCATE_CHAR_ON_FOOT_CAR_2D(self, self_: Ped | int, vehicle: Vehicle | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the vehicle on foot
+    def LOCATE_CHAR_ON_FOOT_CAR_3D(self, self_: Ped | int, vehicle: Vehicle | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the vehicle on foot
+    def LOCATE_CHAR_ON_FOOT_CHAR_2D(self, self_: Ped | int, target: Ped | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the other character on foot
+    def LOCATE_CHAR_ON_FOOT_CHAR_3D(self, self_: Ped | int, target: Ped | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the other character on foot
+    def LOCATE_CHAR_ON_FOOT_OBJECT_2D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 2D radius of the object on foot
+    def LOCATE_CHAR_ON_FOOT_OBJECT_3D(self, self_: Ped | int, object: GameObject | int, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character is within the 3D radius of the object on foot
+    def LOCATE_OBJECT_2D(self, self_: GameObject | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the object is near the specified coordinates
+    def LOCATE_OBJECT_3D(self, self_: GameObject | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the object is near the specified point
+    def LOCATE_STOPPED_CAR_2D(self, self_: Vehicle | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the car is stopped within the 2D radius of the point
+    def LOCATE_STOPPED_CAR_3D(self, self_: Vehicle | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the car is stopped in the radius of the specified point
+    def LOCATE_STOPPED_CHAR_ANY_MEANS_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point
+    def LOCATE_STOPPED_CHAR_ANY_MEANS_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point
+    def LOCATE_STOPPED_CHAR_IN_CAR_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point in a vehicle
+    def LOCATE_STOPPED_CHAR_IN_CAR_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point in a vehicle
+    def LOCATE_STOPPED_CHAR_ON_FOOT_2D(self, self_: Ped | int, x: float, y: float, xRadius: float, yRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 2D radius of the coordinates point on foot
+    def LOCATE_STOPPED_CHAR_ON_FOOT_3D(self, self_: Ped | int, x: float, y: float, z: float, xRadius: float, yRadius: float, zRadius: float, drawSphere: bool) -> bool: ...  # Returns true if the character stopped within the 3D radius of the coordinates point on foot
+    def LOCK_CAR_DOORS(self, self_: Vehicle | int, lockStatus: DOOR_LOCK | int) -> None: ...  # Sets the locked status of the car's doors
+    def LOCK_DOOR(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the door object is locked at its current rotation and allows it to be pushed open by en
+    def MAKE_HELI_COME_CRASHING_DOWN(self, self_: Vehicle | int) -> None: ...  # Makes helicopter simulate crash landing, exploding on the way if high up
+    def MAKE_OBJECT_TARGETTABLE(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object can be targeted (auto-aimed) or not
+    def MAKE_PLAYER_FIRE_PROOF(self, self_: int, state: bool) -> None: ...  # Makes the player immune to fire
     def MAKE_PLAYER_GANG_DISAPPEAR(self) -> None: ...
     def MAKE_PLAYER_GANG_REAPPEAR(self) -> None: ...
-    def MAKE_PLAYER_SAFE_FOR_CUTSCENE(self, self_: Any) -> None: ...  # Makes the player safe, putting the character in a safe location
-    def MAKE_ROOM_IN_PLAYER_GANG_FOR_MISSION_PEDS(self, _p1: Any) -> None: ...  # Ensures there is x amount of space for new members to be added to the players gang
+    def MAKE_PLAYER_SAFE_FOR_CUTSCENE(self, self_: int) -> None: ...  # Makes the player safe, putting the character in a safe location
+    def MAKE_ROOM_IN_PLAYER_GANG_FOR_MISSION_PEDS(self, _p1: int) -> None: ...  # Ensures there is x amount of space for new members to be added to the players gang
     def MANAGE_ALL_POPULATION(self) -> None: ...  # Deletes distant, no longer needed, objects and world dummy objects
-    def MARK_CAR_AS_CONVOY_CAR(self, self_: Any, state: Any) -> None: ...  # Marks the car as being part of a convoy, which seems to follow a path set by 0994
-    def MARK_CAR_AS_NO_LONGER_NEEDED(self, self_: Any) -> None: ...  # Allows the vehicle to be deleted by the game if necessary, and also removes it from the mission clea
-    def MARK_CHAR_AS_NO_LONGER_NEEDED(self, self_: Any) -> None: ...  # Allows the character to be deleted by the game if necessary, and also removes them from the mission 
+    def MARK_CAR_AS_CONVOY_CAR(self, self_: Vehicle | int, state: bool) -> None: ...  # Marks the car as being part of a convoy, which seems to follow a path set by 0994
+    def MARK_CAR_AS_NO_LONGER_NEEDED(self, self_: Vehicle | int) -> None: ...  # Allows the vehicle to be deleted by the game if necessary, and also removes it from the mission clea
+    def MARK_CHAR_AS_NO_LONGER_NEEDED(self, self_: Ped | int) -> None: ...  # Allows the character to be deleted by the game if necessary, and also removes them from the mission
     def MARK_MISSION_TRAINS_AS_NO_LONGER_NEEDED(self) -> None: ...  # Marks the train as no longer needed by the script, allowing it to be deleted by the game
-    def MARK_MISSION_TRAIN_AS_NO_LONGER_NEEDED(self, self_: Any) -> None: ...  # Removes the specified script created train from the list of trains that the game shouldn't delete
-    def MARK_MODEL_AS_NO_LONGER_NEEDED(self, modelId: Any) -> None: ...  # Releases the specified model, freeing game memory
-    def MARK_OBJECT_AS_NO_LONGER_NEEDED(self, self_: Any) -> None: ...  # Allows the object to be deleted by the game if necessary, and also removes it from the mission clean
+    def MARK_MISSION_TRAIN_AS_NO_LONGER_NEEDED(self, self_: Vehicle | int) -> None: ...  # Removes the specified script created train from the list of trains that the game shouldn't delete
+    def MARK_MODEL_AS_NO_LONGER_NEEDED(self, modelId: int) -> None: ...  # Releases the specified model, freeing game memory
+    def MARK_OBJECT_AS_NO_LONGER_NEEDED(self, self_: GameObject | int) -> None: ...  # Allows the object to be deleted by the game if necessary, and also removes it from the mission clean
     def MARK_ROAD_NODE_AS_DONT_WANDER(self, x: float, y: float, z: float) -> None: ...
-    def MARK_STREAMED_SCRIPT_AS_NO_LONGER_NEEDED(self, id: Any) -> None: ...  # Ends the specified script brain
-    def MARK_VEHICLE_MOD_AS_NO_LONGER_NEEDED(self, modelId: Any) -> None: ...  # Marks the vehicle upgrade model as no longer needed, allowing it to be unloaded by the streamer
+    def MARK_STREAMED_SCRIPT_AS_NO_LONGER_NEEDED(self, id: int) -> None: ...  # Ends the specified script brain
+    def MARK_VEHICLE_MOD_AS_NO_LONGER_NEEDED(self, modelId: int) -> None: ...  # Marks the vehicle upgrade model as no longer needed, allowing it to be unloaded by the streamer
     def MISSION_HAS_FINISHED(self) -> None: ...  # Resets multiple settings that are usually set during missions and in some scripts
-    def MOVE_SEARCHLIGHT_BETWEEN_COORDS(self, self_: Any, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, speed: float) -> None: ...  # Makes the specified searchlight travel between the two specified points with the specified speed
+    def MOVE_SEARCHLIGHT_BETWEEN_COORDS(self, self_: int, fromX: float, fromY: float, fromZ: float, toX: float, toY: float, toZ: float, speed: float) -> None: ...  # Makes the specified searchlight travel between the two specified points with the specified speed
     def MULT_FLOAT_LVAR_BY_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the int LVAR value by the int LVAR
     def MULT_FLOAT_LVAR_BY_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the float LVAR value by the float VAR
     def MULT_FLOAT_LVAR_BY_VAL(self, arg0: float, arg1: float) -> None: ...  # Multiplies the float LVAR by the value
     def MULT_FLOAT_VAR_BY_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the float VAR value by the float LVAR
     def MULT_FLOAT_VAR_BY_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the float VAR value by the float VAR
     def MULT_FLOAT_VAR_BY_VAL(self, arg0: float, arg1: float) -> None: ...  # Multiplies the float VAR by the value
-    def MULT_INT_LVAR_BY_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int LVAR value by the int LVAR
-    def MULT_INT_LVAR_BY_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int LVAR value by the int VAR
-    def MULT_INT_LVAR_BY_VAL(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int LVAR by the value
-    def MULT_INT_VAR_BY_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int VAR value by the int LVAR
-    def MULT_INT_VAR_BY_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int VAR value by the int VAR
-    def MULT_INT_VAR_BY_VAL(self, arg0: Any, arg1: Any) -> None: ...  # Multiplies the int VAR by the value
+    def MULT_INT_LVAR_BY_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int LVAR value by the int LVAR
+    def MULT_INT_LVAR_BY_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int LVAR value by the int VAR
+    def MULT_INT_LVAR_BY_VAL(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int LVAR by the value
+    def MULT_INT_VAR_BY_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int VAR value by the int LVAR
+    def MULT_INT_VAR_BY_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int VAR value by the int VAR
+    def MULT_INT_VAR_BY_VAL(self, arg0: int, arg1: int) -> None: ...  # Multiplies the int VAR by the value
     def NOP(self) -> None: ...  # Has no effect and is commonly used to pad CLEO scripts with extra space to avoid the jump-at-zero-of
-    def OPEN_CAR_DOOR(self, self_: Any, door: Any) -> None: ...  # Opens the specified car door
-    def OPEN_CAR_DOOR_A_BIT(self, self_: Any, door: Any, value: float) -> None: ...  # Sets the angle of a car door
+    def OPEN_CAR_DOOR(self, self_: Vehicle | int, door: VEHICLE_DOOR | int) -> None: ...  # Opens the specified car door
+    def OPEN_CAR_DOOR_A_BIT(self, self_: Vehicle | int, door: VEHICLE_DOOR | int, value: float) -> None: ...  # Sets the angle of a car door
     def OPEN_GARAGE(self, garageId: str) -> None: ...  # Opens the garage
     def OPEN_SEQUENCE_TASK(self) -> int: ...  # Begins a sequence of up to 8 tasks
     def OVERRIDE_NEXT_RESTART(self, x: float, y: float, z: float, heading: float) -> None: ...  # Forces this location to be the next respawn location
-    def PAUSE_CURRENT_BEAT_TRACK(self, state: Any) -> None: ...  # Sets whether the loaded soundtrack is paused
-    def PAUSE_PLAYBACK_RECORDED_CAR(self, self_: Any) -> None: ...  # Freezes the car on its path
-    def PERFORM_SEQUENCE_TASK(self, self_: Any, sequence: Any) -> None: ...  # Assigns the character to the specified action sequence
-    def PERFORM_SEQUENCE_TASK_FROM_PROGRESS(self, self_: Any, sequence: Any, startTaskIndex: Any, endTaskIndex: Any) -> None: ...
-    def PLACE_OBJECT_RELATIVE_TO_CAR(self, self_: Any, vehicle: Any, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Places the object at an offset from the car
-    def PLANE_ATTACK_PLAYER(self, self_: Any, handle: Any, radius: float) -> None: ...  # Sets the planes mission to attack the player
-    def PLANE_ATTACK_PLAYER_USING_DOG_FIGHT(self, self_: Any, player: Any, altitude: float) -> None: ...  # Sets the plane mission to attack the player while maintaining the minimum altitude
-    def PLANE_FLY_IN_DIRECTION(self, self_: Any, heading: float, minAltitude: float, maxAltitude: float) -> None: ...
-    def PLANE_FOLLOW_ENTITY(self, self_: Any, char: Any, vehicle: Any, altitude: float) -> None: ...
-    def PLANE_GOTO_COORDS(self, self_: Any, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...
-    def PLANE_STARTS_IN_AIR(self, self_: Any) -> None: ...  # Provides the aircraft with full power so it can start flying mid-air
+    def PAUSE_CURRENT_BEAT_TRACK(self, state: bool) -> None: ...  # Sets whether the loaded soundtrack is paused
+    def PAUSE_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int) -> None: ...  # Freezes the car on its path
+    def PERFORM_SEQUENCE_TASK(self, self_: Ped | int, sequence: int) -> None: ...  # Assigns the character to the specified action sequence
+    def PERFORM_SEQUENCE_TASK_FROM_PROGRESS(self, self_: Ped | int, sequence: int, startTaskIndex: int, endTaskIndex: int) -> None: ...
+    def PLACE_OBJECT_RELATIVE_TO_CAR(self, self_: GameObject | int, vehicle: Vehicle | int, xOffset: float, yOffset: float, zOffset: float) -> None: ...  # Places the object at an offset from the car
+    def PLANE_ATTACK_PLAYER(self, self_: Vehicle | int, handle: int, radius: float) -> None: ...  # Sets the planes mission to attack the player
+    def PLANE_ATTACK_PLAYER_USING_DOG_FIGHT(self, self_: Vehicle | int, player: int, altitude: float) -> None: ...  # Sets the plane mission to attack the player while maintaining the minimum altitude
+    def PLANE_FLY_IN_DIRECTION(self, self_: Vehicle | int, heading: float, minAltitude: float, maxAltitude: float) -> None: ...
+    def PLANE_FOLLOW_ENTITY(self, self_: Vehicle | int, char: Ped | int, vehicle: Vehicle | int, altitude: float) -> None: ...
+    def PLANE_GOTO_COORDS(self, self_: Vehicle | int, x: float, y: float, z: float, minAltitude: float, maxAltitude: float) -> None: ...
+    def PLANE_STARTS_IN_AIR(self, self_: Vehicle | int) -> None: ...  # Provides the aircraft with full power so it can start flying mid-air
     def PLAYER_ENTERED_BUILDINGSITE_CRANE(self) -> None: ...  # Puts the player in the San Fierro building site crane
     def PLAYER_ENTERED_DOCK_CRANE(self) -> None: ...  # Puts the player in the San Fierro dock crane
     def PLAYER_ENTERED_LAS_VEGAS_CRANE(self) -> None: ...  # Puts the player in the crane at the building site in Las Venturras
     def PLAYER_ENTERED_QUARRY_CRANE(self) -> None: ...  # Puts the player in the crane at the quarry near Las Venturras
     def PLAYER_LEFT_CRANE(self) -> None: ...  # Removes the player from the current crane
-    def PLAYER_MADE_PROGRESS(self, progress: Any) -> None: ...  # Increases the progress made stat by the specified amount
-    def PLAYER_TAKE_OFF_GOGGLES(self, self_: Any, animate: Any) -> None: ...  # Removes the players Goggles and disables night/heat vision
-    def PLAY_AND_KILL_FX_SYSTEM(self, self_: Any) -> None: ...  # Starts the particle effect and relinquishes script control over it
+    def PLAYER_MADE_PROGRESS(self, progress: int) -> None: ...  # Increases the progress made stat by the specified amount
+    def PLAYER_TAKE_OFF_GOGGLES(self, self_: int, animate: bool) -> None: ...  # Removes the players Goggles and disables night/heat vision
+    def PLAY_AND_KILL_FX_SYSTEM(self, self_: int) -> None: ...  # Starts the particle effect and relinquishes script control over it
     def PLAY_BEAT_TRACK(self) -> None: ...  # Plays the last soundtrack loaded by PRELOAD_BEAT_TRACK
-    def PLAY_FX_SYSTEM(self, self_: Any) -> None: ...  # Makes the specified particle visible
-    def PLAY_MISSION_AUDIO(self, slotId: Any) -> None: ...  # Plays the loaded sound (03CF)
-    def PLAY_MISSION_PASSED_TUNE(self, soundId: Any) -> None: ...  # Plays an audio file with the specified ID from the Audio directory
-    def PLAY_OBJECT_ANIM(self, self_: Any, animationName: str, animationFile: str, frameDelta: float, lockF: Any, loop: Any) -> None: ...  # Plays an object animation
-    def POINT_CAMERA_AT_CAR(self, vehicle: Any, mode: Any, switchStyle: Any) -> None: ...  # Attaches the camera to the specified vehicle
-    def POINT_CAMERA_AT_CHAR(self, char: Any, mode: Any, switchStyle: Any) -> None: ...  # Attaches the camera to the specified character
-    def POINT_CAMERA_AT_POINT(self, x: float, y: float, z: float, switchStyle: Any) -> None: ...  # Points the camera at the specified location and applies the position set by 0159
-    def POINT_SEARCHLIGHT_AT_CHAR(self, self_: Any, handle: Any, speed: float) -> None: ...  # Makes the searchlight follow the specified char
-    def POINT_SEARCHLIGHT_AT_COORD(self, self_: Any, x: float, y: float, z: float, speed: float) -> None: ...  # Makes the searchlight target move/travel to the specified coords
-    def POINT_SEARCHLIGHT_AT_VEHICLE(self, self_: Any, handle: Any, speed: float) -> None: ...
-    def POLICE_HELI_CHASE_ENTITY(self, self_: Any, char: Any, vehicle: Any, radius: float) -> None: ...  # Makes the helicopter hunt down the character or the vehicle within the specified radius
-    def POP_CAR_BOOT(self, self_: Any) -> None: ...  # Opens the car's trunk and keeps it open
-    def POP_CAR_DOOR(self, self_: Any, door: Any, visibility: Any) -> None: ...  # Removes the specified car door component from the car
-    def POP_CAR_PANEL(self, self_: Any, panelId: Any, drop: Any) -> None: ...  # Detatches or deletes car's body part
-    def PRELOAD_BEAT_TRACK(self, trackId: Any) -> None: ...  # Loads the soundtrack audio that is stored in the audio\streams\BEATS file
-    def PRINT(self, key: str, time: Any, flag: Any) -> None: ...  # Displays a message positioned on the bottom of the screen for the specified time
-    def PRINT_BIG(self, key: str, time: Any, style: Any) -> None: ...  # Displays a styled message for the specified time
-    def PRINT_BIG_Q(self, key: str, duration: Any, style: Any) -> None: ...  # Displays a low-priority styled message for the specified time
+    def PLAY_FX_SYSTEM(self, self_: int) -> None: ...  # Makes the specified particle visible
+    def PLAY_MISSION_AUDIO(self, slotId: int) -> None: ...  # Plays the loaded sound (03CF)
+    def PLAY_MISSION_PASSED_TUNE(self, soundId: int) -> None: ...  # Plays an audio file with the specified ID from the Audio directory
+    def PLAY_OBJECT_ANIM(self, self_: GameObject | int, animationName: str, animationFile: str, frameDelta: float, lockF: bool, loop: bool) -> None: ...  # Plays an object animation
+    def POINT_CAMERA_AT_CAR(self, vehicle: Vehicle | int, mode: CAMERA_MODE | int, switchStyle: int) -> None: ...  # Attaches the camera to the specified vehicle
+    def POINT_CAMERA_AT_CHAR(self, char: Ped | int, mode: CAMERA_MODE | int, switchStyle: int) -> None: ...  # Attaches the camera to the specified character
+    def POINT_CAMERA_AT_POINT(self, x: float, y: float, z: float, switchStyle: int) -> None: ...  # Points the camera at the specified location and applies the position set by 0159
+    def POINT_SEARCHLIGHT_AT_CHAR(self, self_: int, handle: Ped | int, speed: float) -> None: ...  # Makes the searchlight follow the specified char
+    def POINT_SEARCHLIGHT_AT_COORD(self, self_: int, x: float, y: float, z: float, speed: float) -> None: ...  # Makes the searchlight target move/travel to the specified coords
+    def POINT_SEARCHLIGHT_AT_VEHICLE(self, self_: int, handle: Vehicle | int, speed: float) -> None: ...
+    def POLICE_HELI_CHASE_ENTITY(self, self_: Vehicle | int, char: Ped | int, vehicle: Vehicle | int, radius: float) -> None: ...  # Makes the helicopter hunt down the character or the vehicle within the specified radius
+    def POP_CAR_BOOT(self, self_: Vehicle | int) -> None: ...  # Opens the car's trunk and keeps it open
+    def POP_CAR_DOOR(self, self_: Vehicle | int, door: VEHICLE_DOOR | int, visibility: bool) -> None: ...  # Removes the specified car door component from the car
+    def POP_CAR_PANEL(self, self_: Vehicle | int, panelId: int, drop: bool) -> None: ...  # Detatches or deletes car's body part
+    def PRELOAD_BEAT_TRACK(self, trackId: int) -> None: ...  # Loads the soundtrack audio that is stored in the audio\streams\BEATS file
+    def PRINT(self, key: str, time: int, flag: int) -> None: ...  # Displays a message positioned on the bottom of the screen for the specified time
+    def PRINT_BIG(self, key: str, time: int, style: int) -> None: ...  # Displays a styled message for the specified time
+    def PRINT_BIG_Q(self, key: str, duration: int, style: int) -> None: ...  # Displays a low-priority styled message for the specified time
     def PRINT_HELP(self, key: str) -> None: ...  # Displays a black text box for a few seconds
     def PRINT_HELP_FOREVER(self, key: str) -> None: ...  # Shows a text box which stays on screen until it is removed by another command
-    def PRINT_HELP_FOREVER_WITH_NUMBER(self, gxt: str, number: Any) -> None: ...  # Shows a text box with one number
-    def PRINT_NOW(self, key: str, time: Any, flag: Any) -> None: ...  # Displays a message positioned on the bottom of the screen for the specified time
-    def PRINT_STRING_IN_STRING_NOW(self, templateKey: str, replacementKey: str, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first string token ~a~ is substituted with the specified text
-    def PRINT_WITH_2_NUMBERS_BIG(self, key: str, num1: Any, num2: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first two ~1~ tokens are substituted with the specified numbe
-    def PRINT_WITH_2_NUMBERS_NOW(self, key: str, num1: Any, num2: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first two ~1~ tokens are substituted with the specified numbe
-    def PRINT_WITH_3_NUMBERS(self, key: str, num1: Any, num2: Any, num3: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first three ~1~ tokens are substituted with the specified num
-    def PRINT_WITH_4_NUMBERS(self, key: str, num1: Any, num2: Any, num3: Any, num4: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first four ~1~ tokens are substituted with the specified numb
-    def PRINT_WITH_4_NUMBERS_NOW(self, key: str, num1: Any, num2: Any, num3: Any, num4: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first four ~1~ tokens are substituted with the specified numb
-    def PRINT_WITH_6_NUMBERS(self, key: str, num1: Any, num2: Any, num3: Any, num4: Any, num5: Any, num6: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first six ~1~ tokens are substituted with the specified numbe
-    def PRINT_WITH_NUMBER(self, key: str, num: Any, duration: Any, flag: Any) -> None: ...  # Displays a styled message in which the first string token ~1~ is substituted with the specified numb
-    def PRINT_WITH_NUMBER_BIG(self, key: str, num: Any, duration: Any, style: Any) -> None: ...  # Displays a styled message in which the first string token~1~ is substituted with the specified numbe
-    def PRINT_WITH_NUMBER_NOW(self, key: str, num: Any, duration: Any, flag: Any) -> None: ...  # Displays a styled message in which the first string token ~1~ is substituted with the specified numb
-    def RANDOM_PASSENGER_SAY(self, self_: Any, phrase: Any) -> None: ...  # Makes a passenger in the vehicle speak from an ambient speech ID, if one exists for the character
+    def PRINT_HELP_FOREVER_WITH_NUMBER(self, gxt: str, number: int) -> None: ...  # Shows a text box with one number
+    def PRINT_NOW(self, key: str, time: int, flag: int) -> None: ...  # Displays a message positioned on the bottom of the screen for the specified time
+    def PRINT_STRING_IN_STRING_NOW(self, templateKey: str, replacementKey: str, duration: int, style: int) -> None: ...  # Displays a styled message in which the first string token ~a~ is substituted with the specified text
+    def PRINT_WITH_2_NUMBERS_BIG(self, key: str, num1: int, num2: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first two ~1~ tokens are substituted with the specified numbe
+    def PRINT_WITH_2_NUMBERS_NOW(self, key: str, num1: int, num2: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first two ~1~ tokens are substituted with the specified numbe
+    def PRINT_WITH_3_NUMBERS(self, key: str, num1: int, num2: int, num3: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first three ~1~ tokens are substituted with the specified num
+    def PRINT_WITH_4_NUMBERS(self, key: str, num1: int, num2: int, num3: int, num4: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first four ~1~ tokens are substituted with the specified numb
+    def PRINT_WITH_4_NUMBERS_NOW(self, key: str, num1: int, num2: int, num3: int, num4: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first four ~1~ tokens are substituted with the specified numb
+    def PRINT_WITH_6_NUMBERS(self, key: str, num1: int, num2: int, num3: int, num4: int, num5: int, num6: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first six ~1~ tokens are substituted with the specified numbe
+    def PRINT_WITH_NUMBER(self, key: str, num: int, duration: int, flag: int) -> None: ...  # Displays a styled message in which the first string token ~1~ is substituted with the specified numb
+    def PRINT_WITH_NUMBER_BIG(self, key: str, num: int, duration: int, style: int) -> None: ...  # Displays a styled message in which the first string token~1~ is substituted with the specified numbe
+    def PRINT_WITH_NUMBER_NOW(self, key: str, num: int, duration: int, flag: int) -> None: ...  # Displays a styled message in which the first string token ~1~ is substituted with the specified numb
+    def RANDOM_PASSENGER_SAY(self, self_: Vehicle | int, phrase: int) -> None: ...  # Makes a passenger in the vehicle speak from an ambient speech ID, if one exists for the character
     def READ_KILL_FRENZY_STATUS(self) -> int: ...  # Returns the status of the current rampage
-    def REGISTER_ATTRACTOR_SCRIPT_BRAIN_FOR_CODE_USE(self, id: Any, scriptName: str) -> None: ...  # Allows the game to start a new ambient script for the ped using the map attractor, e.g. shoppers
-    def REGISTER_BEST_POSITION(self, id: Any, position: Any) -> None: ...  # Updates the race best position
-    def REGISTER_FASTEST_TIME(self, id: Any, value: Any) -> None: ...  # Updates the stat if the value is lower than the current stat value
-    def REGISTER_FLOAT_STAT(self, id: Any, value: float) -> None: ...  # Sets the specified stat to the specified value, if the specified value is greater than the current s
-    def REGISTER_INT_STAT(self, id: Any, value: Any) -> None: ...  # Updates the specified integer stat
+    def REGISTER_ATTRACTOR_SCRIPT_BRAIN_FOR_CODE_USE(self, id: int, scriptName: str) -> None: ...  # Allows the game to start a new ambient script for the ped using the map attractor, e.g. shoppers
+    def REGISTER_BEST_POSITION(self, id: int, position: int) -> None: ...  # Updates the race best position
+    def REGISTER_FASTEST_TIME(self, id: int, value: int) -> None: ...  # Updates the stat if the value is lower than the current stat value
+    def REGISTER_FLOAT_STAT(self, id: int, value: float) -> None: ...  # Sets the specified stat to the specified value, if the specified value is greater than the current s
+    def REGISTER_INT_STAT(self, id: int, value: int) -> None: ...  # Updates the specified integer stat
     def REGISTER_MISSION_GIVEN(self) -> None: ...  # Increments the number of mission attempts stat by one
     def REGISTER_MISSION_PASSED(self, key: str) -> None: ...  # Sets the GXT of the last mission passed
     def REGISTER_ODDJOB_MISSION_PASSED(self) -> None: ...  # Sets the latest odd job mission passed
-    def REGISTER_SCRIPT_BRAIN_FOR_CODE_USE(self, id: Any, scriptName: str) -> None: ...  # Allows the game to start a new ambient script by name, e.g. to control behavior of peds in interiors
-    def RELEASE_ENTITY_FROM_ROPE_FOR_OBJECT(self, self_: Any) -> None: ...
-    def RELEASE_ENTITY_FROM_WINCH(self, self_: Any) -> None: ...
+    def REGISTER_SCRIPT_BRAIN_FOR_CODE_USE(self, id: int, scriptName: str) -> None: ...  # Allows the game to start a new ambient script by name, e.g. to control behavior of peds in interiors
+    def RELEASE_ENTITY_FROM_ROPE_FOR_OBJECT(self, self_: GameObject | int) -> None: ...
+    def RELEASE_ENTITY_FROM_WINCH(self, self_: Vehicle | int) -> None: ...
     def RELEASE_PATH_NODES(self) -> None: ...  # Removes areas forbidden for scripted cars set up by 0606
     def RELEASE_TWO_PLAYER_DISTANCE(self) -> None: ...  # Releases the distance limit set by LIMIT_TWO_PLAYER_DISTANCE
     def RELEASE_WEATHER(self) -> None: ...  # Allows the game to continue its usual weather pattern after using 01B5
-    def REMOVE_ALL_CHAR_WEAPONS(self, self_: Any) -> None: ...  # Removes the characters weapons
+    def REMOVE_ALL_CHAR_WEAPONS(self, self_: Ped | int) -> None: ...  # Removes the characters weapons
     def REMOVE_ALL_SCRIPT_FIRES(self) -> None: ...  # Removes all script fires (02CF)
     def REMOVE_ANIMATION(self, animationFile: str) -> None: ...  # Releases the specified IFP file, freeing game memory
-    def REMOVE_BLIP(self, self_: Any) -> None: ...  # Removes the blip
-    def REMOVE_CAR_RECORDING(self, pathId: Any) -> None: ...  # Unloads the car recording
-    def REMOVE_CHAR_ELEGANTLY(self, self_: Any) -> None: ...  # Removes the character with a fade, freeing game memory
-    def REMOVE_CHAR_FROM_CAR_MAINTAIN_POSITION(self, self_: Any, vehicle: Any) -> None: ...  # Removes the character from the vehicle
-    def REMOVE_CHAR_FROM_GROUP(self, self_: Any) -> None: ...  # Removes the character from their current group
-    def REMOVE_DECISION_MAKER(self, self_: Any) -> None: ...  # Removes the decision maker
-    def REMOVE_GROUP(self, self_: Any) -> None: ...  # Releases the group
+    def REMOVE_BLIP(self, self_: int) -> None: ...  # Removes the blip
+    def REMOVE_CAR_RECORDING(self, pathId: int) -> None: ...  # Unloads the car recording
+    def REMOVE_CHAR_ELEGANTLY(self, self_: Ped | int) -> None: ...  # Removes the character with a fade, freeing game memory
+    def REMOVE_CHAR_FROM_CAR_MAINTAIN_POSITION(self, self_: Ped | int, vehicle: Vehicle | int) -> None: ...  # Removes the character from the vehicle
+    def REMOVE_CHAR_FROM_GROUP(self, self_: Ped | int) -> None: ...  # Removes the character from their current group
+    def REMOVE_DECISION_MAKER(self, self_: int) -> None: ...  # Removes the decision maker
+    def REMOVE_GROUP(self, self_: int) -> None: ...  # Releases the group
     def REMOVE_IPL(self, iplName: str) -> None: ...
     def REMOVE_IPL_DISCREETLY(self, iplName: str) -> None: ...
-    def REMOVE_OBJECT_ELEGANTLY(self, self_: Any) -> None: ...  # Fades the object out of existence, freeing game memory
+    def REMOVE_OBJECT_ELEGANTLY(self, self_: GameObject | int) -> None: ...  # Fades the object out of existence, freeing game memory
     def REMOVE_OIL_PUDDLES_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float) -> None: ...
-    def REMOVE_PICKUP(self, self_: Any) -> None: ...  # Destroys the specified pickup, freeing game memory
-    def REMOVE_PRICE_MODIFIER(self, itemId: Any) -> None: ...  # Restores the base price for a shopping.dat item altered by ADD_PRICE_MODIFIER
+    def REMOVE_PICKUP(self, self_: int) -> None: ...  # Destroys the specified pickup, freeing game memory
+    def REMOVE_PRICE_MODIFIER(self, itemId: int) -> None: ...  # Restores the base price for a shopping.dat item altered by ADD_PRICE_MODIFIER
     def REMOVE_RC_BUGGY(self) -> None: ...  # Exits remote-control mode
-    def REMOVE_SCRIPT_FIRE(self, self_: Any) -> None: ...  # Removes the script fire
-    def REMOVE_SPHERE(self, self_: Any) -> None: ...  # Destroys a static sphere
-    def REMOVE_STREAMED_SCRIPT(self, id: Any) -> None: ...  # Releases the ambient script with the specified ID, freeing game memory
-    def REMOVE_STUCK_CAR_CHECK(self, vehicle: Any) -> None: ...  # Removes the vehicle from the stuck cars array
+    def REMOVE_SCRIPT_FIRE(self, self_: int) -> None: ...  # Removes the script fire
+    def REMOVE_SPHERE(self, self_: int) -> None: ...  # Destroys a static sphere
+    def REMOVE_STREAMED_SCRIPT(self, id: int) -> None: ...  # Releases the ambient script with the specified ID, freeing game memory
+    def REMOVE_STUCK_CAR_CHECK(self, vehicle: Vehicle | int) -> None: ...  # Removes the vehicle from the stuck cars array
     def REMOVE_TEXTURE_DICTIONARY(self) -> None: ...  # Unloads all currently loaded textures (038F), as well as texture dictionaries (0390), freeing game m
-    def REMOVE_UPSIDEDOWN_CAR_CHECK(self, self_: Any) -> None: ...  # Deactivates upside-down car check (0190) for the car
-    def REMOVE_USER_3D_MARKER(self, self_: Any) -> None: ...  # Destroys a marker created with 0A40
-    def REMOVE_VEHICLE_MOD(self, self_: Any, modelId: Any) -> None: ...  # Removes the vehicle's mod with the specified model
-    def REMOVE_WEAPON_FROM_CHAR(self, self_: Any, weaponType: Any) -> None: ...  # Removes the weapon from the character
-    def REPORT_MISSION_AUDIO_EVENT_AT_CAR(self, handle: Any, soundId: Any) -> None: ...  # Plays the audio event at the car's position
-    def REPORT_MISSION_AUDIO_EVENT_AT_CHAR(self, handle: Any, soundId: Any) -> None: ...
-    def REPORT_MISSION_AUDIO_EVENT_AT_OBJECT(self, handle: Any, soundId: Any) -> None: ...
-    def REPORT_MISSION_AUDIO_EVENT_AT_POSITION(self, x: float, y: float, z: float, soundId: Any) -> None: ...
+    def REMOVE_UPSIDEDOWN_CAR_CHECK(self, self_: Vehicle | int) -> None: ...  # Deactivates upside-down car check (0190) for the car
+    def REMOVE_USER_3D_MARKER(self, self_: int) -> None: ...  # Destroys a marker created with 0A40
+    def REMOVE_VEHICLE_MOD(self, self_: Vehicle | int, modelId: int) -> None: ...  # Removes the vehicle's mod with the specified model
+    def REMOVE_WEAPON_FROM_CHAR(self, self_: Ped | int, weaponType: WEAPON | int) -> None: ...  # Removes the weapon from the character
+    def REPORT_MISSION_AUDIO_EVENT_AT_CAR(self, handle: Vehicle | int, soundId: int) -> None: ...  # Plays the audio event at the car's position
+    def REPORT_MISSION_AUDIO_EVENT_AT_CHAR(self, handle: Ped | int, soundId: int) -> None: ...
+    def REPORT_MISSION_AUDIO_EVENT_AT_OBJECT(self, handle: GameObject | int, soundId: int) -> None: ...
+    def REPORT_MISSION_AUDIO_EVENT_AT_POSITION(self, x: float, y: float, z: float, soundId: int) -> None: ...
     def REQUEST_ANIMATION(self, animationFile: str) -> None: ...  # Loads the specified IFP File
-    def REQUEST_CAR_RECORDING(self, pathId: Any) -> None: ...  # Loads the specified car recording
+    def REQUEST_CAR_RECORDING(self, pathId: int) -> None: ...  # Loads the specified car recording
     def REQUEST_COLLISION(self, x: float, y: float) -> None: ...  # Reloads the area at the specified coordinates
     def REQUEST_IPL(self, iplName: str) -> None: ...
-    def REQUEST_MODEL(self, modelId: Any) -> None: ...  # Requests a new model to load
-    def REQUEST_VEHICLE_MOD(self, modelId: Any) -> None: ...  # Loads the upgrade model and any associated models
-    def RESET_NUM_OF_MODELS_KILLED_BY_PLAYER(self, self_: Any) -> None: ...  # Resets the count of how many times the player has destroyed a certain model
+    def REQUEST_MODEL(self, modelId: int) -> None: ...  # Requests a new model to load
+    def REQUEST_VEHICLE_MOD(self, modelId: int) -> None: ...  # Loads the upgrade model and any associated models
+    def RESET_NUM_OF_MODELS_KILLED_BY_PLAYER(self, self_: int) -> None: ...  # Resets the count of how many times the player has destroyed a certain model
     def RESET_STUFF_UPON_RESURRECTION(self) -> None: ...  # Emulates the shared effects of being wasted or busted
     def RESET_VEHICLE_CAMERA_TWEAK(self) -> None: ...  # Resets any changes made with 09EF
-    def RESET_VEHICLE_HYDRAULICS(self, self_: Any) -> None: ...  # This resets all the hydraulics on the car, making it "sit"
+    def RESET_VEHICLE_HYDRAULICS(self, self_: Vehicle | int) -> None: ...  # This resets all the hydraulics on the car, making it "sit"
     def RESTORE_CAMERA(self) -> None: ...  # Restores the camera to its usual position
     def RESTORE_CAMERA_JUMPCUT(self) -> None: ...  # Restores the camera, putting it back behind the player
     def RESTORE_CAR_MOD_STATE(self) -> None: ...
     def RESTORE_CLOCK(self) -> None: ...  # Restores the game time to the time when it was saved with 0253
     def RESTORE_CLOTHES_STATE(self) -> None: ...  # Restores the players clothes stored with 0793
     def RETURN(self) -> None: ...  # Returns from the current subroutine (0050)
-    def ROTATE_OBJECT(self, self_: Any, fromAngle: float, toAngle: float, collisionCheck: Any) -> bool: ...  # Rotates the object from one angle to another, optionally accounting for a collision during the rotat
+    def ROTATE_OBJECT(self, self_: GameObject | int, fromAngle: float, toAngle: float, collisionCheck: bool) -> bool: ...  # Rotates the object from one angle to another, optionally accounting for a collision during the rotat
     def SCRIPT_NAME(self, name: str) -> None: ...  # Assigns a new name to the current script
-    def SELECT_WEAPONS_FOR_VEHICLE(self, self_: Any, weapon: Any) -> None: ...  # Sets the vehicle to use its secondary guns
-    def SET_ACTIVE_MENU_ITEM(self, self_: Any, row: Any) -> None: ...
-    def SET_AIRCRAFT_CARRIER_SAM_SITE(self, state: Any) -> None: ...  # Enables missiles to be fired from the aircraft carrier by Easter Bay Naval Station, San Fierro
-    def SET_ALL_CARS_CAN_BE_DAMAGED(self, state: Any) -> None: ...  # Sets whether all cars receive damage
-    def SET_ALL_TAXIS_HAVE_NITRO(self, state: Any) -> None: ...  # Toggles whether all taxis have nitrous
-    def SET_ALWAYS_DRAW_3D_MARKERS(self, state: Any) -> None: ...  # Enables an increase in the distance that markers hovering above entities can be seen from
-    def SET_ANIM_GROUP_FOR_CHAR(self, self_: Any, animGroup: str) -> None: ...  # Sets the animation group for the character
-    def SET_AREA51_SAM_SITE(self, state: Any) -> None: ...  # Enables or disables the SAM site at the Area 51
+    def SELECT_WEAPONS_FOR_VEHICLE(self, self_: Vehicle | int, weapon: int) -> None: ...  # Sets the vehicle to use its secondary guns
+    def SET_ACTIVE_MENU_ITEM(self, self_: int, row: int) -> None: ...
+    def SET_AIRCRAFT_CARRIER_SAM_SITE(self, state: bool) -> None: ...  # Enables missiles to be fired from the aircraft carrier by Easter Bay Naval Station, San Fierro
+    def SET_ALL_CARS_CAN_BE_DAMAGED(self, state: bool) -> None: ...  # Sets whether all cars receive damage
+    def SET_ALL_TAXIS_HAVE_NITRO(self, state: bool) -> None: ...  # Toggles whether all taxis have nitrous
+    def SET_ALWAYS_DRAW_3D_MARKERS(self, state: bool) -> None: ...  # Enables an increase in the distance that markers hovering above entities can be seen from
+    def SET_ANIM_GROUP_FOR_CHAR(self, self_: Ped | int, animGroup: str) -> None: ...  # Sets the animation group for the character
+    def SET_AREA51_SAM_SITE(self, state: bool) -> None: ...  # Enables or disables the SAM site at the Area 51
     def SET_AREA_NAME(self, name: str) -> None: ...  # Displays the text of the specified GXT entry using San Andreas' area name text style
-    def SET_AREA_VISIBLE(self, areaId: Any) -> None: ...  # Sets the visibility of an interior area
-    def SET_BLIP_ALWAYS_DISPLAY_ON_ZOOMED_RADAR(self, self_: Any, state: Any) -> None: ...  # Sets whether the tracking blip will remain regardless of the entities existance
-    def SET_BLIP_AS_FRIENDLY(self, self_: Any, state: Any) -> None: ...
-    def SET_BLIP_ENTRY_EXIT(self, self_: Any, x: float, y: float, radius: float) -> None: ...  # Assigns the blip to the specified entrance/exit marker
-    def SET_BOAT_CRUISE_SPEED(self, self_: Any, maxSpeed: float) -> None: ...  # Sets the boat's max speed
+    def SET_AREA_VISIBLE(self, areaId: int) -> None: ...  # Sets the visibility of an interior area
+    def SET_BLIP_ALWAYS_DISPLAY_ON_ZOOMED_RADAR(self, self_: int, state: bool) -> None: ...  # Sets whether the tracking blip will remain regardless of the entities existance
+    def SET_BLIP_AS_FRIENDLY(self, self_: int, state: bool) -> None: ...
+    def SET_BLIP_ENTRY_EXIT(self, self_: int, x: float, y: float, radius: float) -> None: ...  # Assigns the blip to the specified entrance/exit marker
+    def SET_BOAT_CRUISE_SPEED(self, self_: Vehicle | int, maxSpeed: float) -> None: ...  # Sets the boat's max speed
     def SET_CAMERA_BEHIND_PLAYER(self) -> None: ...  # Puts the camera behind the player
-    def SET_CAMERA_IN_FRONT_OF_CHAR(self, handle: Any) -> None: ...  # Puts the camera in front of the specified character
+    def SET_CAMERA_IN_FRONT_OF_CHAR(self, handle: Ped | int) -> None: ...  # Puts the camera in front of the specified character
     def SET_CAMERA_IN_FRONT_OF_PLAYER(self) -> None: ...  # Puts the camera in front of the player, pointing towards the player
     def SET_CAMERA_POSITION_UNFIXED(self, xOffset: float, yOffset: float) -> None: ...  # Sets the position of the camera to an offset of the targeted entity
-    def SET_CAMERA_ZOOM(self, zoom: Any) -> None: ...  # Sets how far behind the camera is from the player
-    def SET_CAN_BURST_CAR_TYRES(self, self_: Any, state: Any) -> None: ...  # Sets whether the car's tires can be deflated
-    def SET_CAN_RESPRAY_CAR(self, self_: Any, changeColors: Any) -> None: ...  # Makes car keep current colors when Pay'n'Spray is used
-    def SET_CAR_ALWAYS_CREATE_SKIDS(self, self_: Any, state: Any) -> None: ...
-    def SET_CAR_AS_MISSION_CAR(self, self_: Any) -> None: ...  # Sets the script as the owner of the vehicle and adds it to the mission cleanup list
-    def SET_CAR_AVOID_LEVEL_TRANSITIONS(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle will avoid paths between levels (0426)
-    def SET_CAR_CAN_BE_DAMAGED(self, self_: Any, state: Any) -> None: ...  # Sets whether the car receives damage
-    def SET_CAR_CAN_BE_VISIBLY_DAMAGED(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle can be visibly damaged
-    def SET_CAR_CAN_GO_AGAINST_TRAFFIC(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle will drive the wrong way on roads
-    def SET_CAR_COLLISION(self, self_: Any, state: Any) -> None: ...
-    def SET_CAR_COORDINATES(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Puts the vehicle at the specified location
-    def SET_CAR_COORDINATES_NO_OFFSET(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the vehicle coordinates without applying offsets to account for the height of the vehicle
-    def SET_CAR_CRUISE_SPEED(self, self_: Any, maxSpeed: float) -> None: ...  # Sets the vehicle's max speed
+    def SET_CAMERA_ZOOM(self, zoom: int) -> None: ...  # Sets how far behind the camera is from the player
+    def SET_CAN_BURST_CAR_TYRES(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car's tires can be deflated
+    def SET_CAN_RESPRAY_CAR(self, self_: Vehicle | int, changeColors: bool) -> None: ...  # Makes car keep current colors when Pay'n'Spray is used
+    def SET_CAR_ALWAYS_CREATE_SKIDS(self, self_: Vehicle | int, state: bool) -> None: ...
+    def SET_CAR_AS_MISSION_CAR(self, self_: Vehicle | int) -> None: ...  # Sets the script as the owner of the vehicle and adds it to the mission cleanup list
+    def SET_CAR_AVOID_LEVEL_TRANSITIONS(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle will avoid paths between levels (0426)
+    def SET_CAR_CAN_BE_DAMAGED(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car receives damage
+    def SET_CAR_CAN_BE_VISIBLY_DAMAGED(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle can be visibly damaged
+    def SET_CAR_CAN_GO_AGAINST_TRAFFIC(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle will drive the wrong way on roads
+    def SET_CAR_COLLISION(self, self_: Vehicle | int, state: bool) -> None: ...
+    def SET_CAR_COORDINATES(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Puts the vehicle at the specified location
+    def SET_CAR_COORDINATES_NO_OFFSET(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Sets the vehicle coordinates without applying offsets to account for the height of the vehicle
+    def SET_CAR_CRUISE_SPEED(self, self_: Vehicle | int, maxSpeed: float) -> None: ...  # Sets the vehicle's max speed
     def SET_CAR_DENSITY_MULTIPLIER(self, multiplier: float) -> None: ...  # Sets the quantity of traffic that will spawn in the game
-    def SET_CAR_DRIVING_STYLE(self, self_: Any, drivingStyle: Any) -> None: ...  # Sets the behavior of the vehicle's AI driver
-    def SET_CAR_ENGINE_BROKEN(self, self_: Any, state: Any) -> None: ...  # Sets whether the car's engine is broken
-    def SET_CAR_ENGINE_ON(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle's engine is turned on or off
-    def SET_CAR_ESCORT_CAR_FRONT(self, self_: Any, handle: Any) -> None: ...  # Makes the vehicle stay in front of the other, keeping parallel
-    def SET_CAR_ESCORT_CAR_LEFT(self, self_: Any, handle: Any) -> None: ...  # Makes the vehicle stay on the other vehicle's left side, keeping parallel
-    def SET_CAR_ESCORT_CAR_REAR(self, self_: Any, handle: Any) -> None: ...  # Makes the vehicle stay behind the other car, keeping parallel
-    def SET_CAR_ESCORT_CAR_RIGHT(self, self_: Any, handle: Any) -> None: ...  # Makes the vehicle stay by the right side of the other vehicle, keeping parallel
-    def SET_CAR_FOLLOW_CAR(self, self_: Any, handle: Any, radius: float) -> None: ...
-    def SET_CAR_FORWARD_SPEED(self, self_: Any, forwardSpeed: float) -> None: ...  # Sets the speed of the car
-    def SET_CAR_HEADING(self, self_: Any, heading: float) -> None: ...  # Sets the vehicle's heading (z-angle)
-    def SET_CAR_HEALTH(self, self_: Any, health: Any) -> None: ...  # Sets the vehicle's health
-    def SET_CAR_HEAVY(self, self_: Any, state: Any) -> None: ...  # Sets whether the car is heavy
-    def SET_CAR_HYDRAULICS(self, self_: Any, state: Any) -> None: ...  # Enables hydraulic suspension on the car
-    def SET_CAR_LIGHTS_ON(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle's lights are on
-    def SET_CAR_MISSION(self, self_: Any, carMission: Any) -> None: ...  # Sets the mission of the vehicle's AI driver
-    def SET_CAR_MODEL_COMPONENTS(self, _unused: Any, component1: Any, component2: Any) -> None: ...  # Sets the variation of the next car to be created
-    def SET_CAR_ONLY_DAMAGED_BY_PLAYER(self, self_: Any, state: Any) -> None: ...  # Makes a vehicle immune to everything except the player
-    def SET_CAR_PROOFS(self, self_: Any, bulletProof: Any, fireProof: Any, explosionProof: Any, collisionProof: Any, meleeProof: Any) -> None: ...  # Sets the vehicle's immunities
-    def SET_CAR_RANDOM_ROUTE_SEED(self, self_: Any, routeSeed: Any) -> None: ...  # Sets the car on a specific route
-    def SET_CAR_ROLL(self, self_: Any, yAngle: float) -> None: ...  # Sets the Y Angle of the vehicle to the specified value
-    def SET_CAR_ROTATION_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...
-    def SET_CAR_STATUS(self, self_: Any, status: Any) -> None: ...  # Sets the car's status
-    def SET_CAR_STAY_IN_FAST_LANE(self, self_: Any, state: Any) -> None: ...
-    def SET_CAR_STAY_IN_SLOW_LANE(self, self_: Any, state: Any) -> None: ...
-    def SET_CAR_STRAIGHT_LINE_DISTANCE(self, self_: Any, distance: Any) -> None: ...  # Sets the minimum distance for the AI driver to start ignoring car paths and go straight to the targe
-    def SET_CAR_STRONG(self, self_: Any, state: Any) -> None: ...  # Defines whether the car is more resistant to collisions than normal
-    def SET_CAR_TEMP_ACTION(self, self_: Any, actionId: Any, time: Any) -> None: ...  # Makes the AI driver perform the action in the vehicle for the specified period of time
-    def SET_CAR_TRACTION(self, self_: Any, traction: float) -> None: ...  # Overrides the default AI controlled vehicle traction value of 1.0
-    def SET_CAR_VISIBLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle is visible or not
-    def SET_CAR_WATERTIGHT(self, self_: Any, state: Any) -> None: ...  # Makes the vehicle watertight, meaning characters inside will not be harmed if the vehicle is submerg
-    def SET_CHAR_ACCURACY(self, self_: Any, accuracy: Any) -> None: ...  # Affects how often the character will hit the target when attacking with a weapon
-    def SET_CHAR_ALLOWED_TO_DUCK(self, self_: Any, state: Any) -> None: ...  # Sets whether the character can crouch
-    def SET_CHAR_AMMO(self, self_: Any, weaponType: Any, ammo: Any) -> None: ...  # Sets the amount of ammo the character has in the specified weapon
-    def SET_CHAR_ANIM_CURRENT_TIME(self, self_: Any, animationName: str, time: float) -> None: ...  # Sets how far through the animation the character is, with 1
-    def SET_CHAR_ANIM_PLAYING_FLAG(self, self_: Any, animationName: str, flag: Any) -> None: ...  # Sets whether the animation is playing
-    def SET_CHAR_ANIM_SPEED(self, self_: Any, animName: str, animSpeed: float) -> None: ...  # Makes an char perform an animation at the specified speed
-    def SET_CHAR_AREA_VISIBLE(self, self_: Any, areaId: Any) -> None: ...  # Sets the interior that the char is in
-    def SET_CHAR_BLEEDING(self, self_: Any, state: Any) -> None: ...  # Makes a character bleed
-    def SET_CHAR_BULLETPROOF_VEST(self, self_: Any, state: Any) -> None: ...  # Specifies that the character should only use upper-body damage animations, meaning they can still ru
-    def SET_CHAR_CANT_BE_DRAGGED_OUT(self, self_: Any, state: Any) -> None: ...  # Locks the character while in a car
-    def SET_CHAR_CAN_BE_KNOCKED_OFF_BIKE(self, self_: Any, stayOnBike: Any) -> None: ...  # Sets whether the character always stays on bike in collisions
-    def SET_CHAR_CAN_BE_SHOT_IN_VEHICLE(self, self_: Any, state: Any) -> None: ...  # Makes the character immune to a damage while in a vehicle
-    def SET_CHAR_COLLISION(self, self_: Any, state: Any) -> None: ...  # Sets whether collision detection is enabled for the character
-    def SET_CHAR_COORDINATES(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Puts the character at the specified location
-    def SET_CHAR_COORDINATES_DONT_WARP_GANG(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the character's coordinates without warping the rest of their group
-    def SET_CHAR_COORDINATES_DONT_WARP_GANG_NO_OFFSET(self, self_: Any, x: float, y: float, z: float) -> None: ...  # This command is a combination of 0972 and 08C7
-    def SET_CHAR_COORDINATES_NO_OFFSET(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Puts the characters at the coordinates by the center of body instead of the feet
-    def SET_CHAR_DECISION_MAKER(self, self_: Any, handleOrTemplate: Any) -> None: ...  # Sets the decision maker for the character
-    def SET_CHAR_DROPS_WEAPONS_WHEN_DEAD(self, self_: Any, state: Any) -> None: ...  # Sets whether the character will drop any of their weapons when they die
-    def SET_CHAR_DROWNS_IN_WATER(self, self_: Any, state: Any) -> None: ...  # Controls whether the character can drown in water
-    def SET_CHAR_DRUGGED_UP(self, self_: Any, state: Any) -> None: ...
-    def SET_CHAR_FORCE_DIE_IN_CAR(self, self_: Any, state: Any) -> None: ...  # Makes a character remain in the car upon death
-    def SET_CHAR_GET_OUT_UPSIDE_DOWN_CAR(self, self_: Any, state: Any) -> None: ...  # Controls whether the character will try to exit an upside-down car until it is on fire
-    def SET_CHAR_HAS_USED_ENTRY_EXIT(self, self_: Any, x: float, y: float, radius: float) -> None: ...  # Locates the entry/exit marker in the specified radius of the specified coordinates and links it to t
-    def SET_CHAR_HEADING(self, self_: Any, heading: float) -> None: ...  # Sets the character's heading (z-angle)
-    def SET_CHAR_HEALTH(self, self_: Any, health: Any) -> None: ...  # Sets the character's health
-    def SET_CHAR_IS_CHRIS_CRIMINAL(self, self_: Any, state: Any) -> None: ...  # Sets whether the character is a psychotic killer or not
-    def SET_CHAR_IS_TARGET_PRIORITY(self, self_: Any, state: Any) -> None: ...  # Causes the auto aim to be more likely to target the specified char than actors without this flag
-    def SET_CHAR_KEEP_TASK(self, self_: Any, state: Any) -> None: ...  # Sets whether the character should keep their tasks after mission cleanup (basically cleanup will be 
-    def SET_CHAR_KINDA_STAY_IN_SAME_PLACE(self, self_: Any, state: Any) -> None: ...  # Sets whether the character shouldn't chase their victim far (to attempt a melee attack or get in wea
-    def SET_CHAR_MAX_HEALTH(self, self_: Any, maxHealth: Any) -> None: ...  # Sets the characters max health
-    def SET_CHAR_MONEY(self, self_: Any, amount: Any) -> None: ...  # Sets the character's cash sum, setting how much cash they will drop when dead
-    def SET_CHAR_NEVER_LEAVES_GROUP(self, self_: Any, state: Any) -> None: ...  # Prevents the character from leaving their group
-    def SET_CHAR_NEVER_TARGETTED(self, self_: Any, state: Any) -> None: ...  # Sets whether the character won't be targeted by the autoaim system
-    def SET_CHAR_ONLY_DAMAGED_BY_PLAYER(self, self_: Any, state: Any) -> None: ...  # Makes a character immune to everything except the player
-    def SET_CHAR_PROOFS(self, self_: Any, bulletProof: Any, fireProof: Any, explosionProof: Any, collisionProof: Any, meleeProof: Any) -> None: ...  # Sets the character's immunities
-    def SET_CHAR_RELATIONSHIP(self, self_: Any, relationshipType: Any, pedType: Any) -> None: ...
-    def SET_CHAR_ROTATION(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the characters rotation
-    def SET_CHAR_SAY_CONTEXT(self, self_: Any, phrase: Any) -> int: ...  # Works similar to 05C1, but returns which phrase was spoken and is not run as a task
-    def SET_CHAR_SAY_CONTEXT_IMPORTANT(self, self_: Any, phrase: Any, overrideSilence: Any, ignoreMute: Any, frontEnd: Any) -> int: ...
-    def SET_CHAR_SAY_SCRIPT(self, self_: Any, _p2: Any, _p3: Any, _p4: Any, _p5: Any) -> None: ...
-    def SET_CHAR_SHOOT_RATE(self, self_: Any, rate: Any) -> None: ...  # Sets the attack rate of the char
-    def SET_CHAR_SIGNAL_AFTER_KILL(self, self_: Any, state: Any) -> None: ...  # Sets whether the character signals after killing
-    def SET_CHAR_STAY_IN_CAR_WHEN_JACKED(self, self_: Any, state: Any) -> None: ...  # Makes the character stay in the vehicle when it is jacked (characters let themselves get "kidnapped"
-    def SET_CHAR_STAY_IN_SAME_PLACE(self, self_: Any, state: Any) -> None: ...  # Makes the character maintain their position when attacked
-    def SET_CHAR_SUFFERS_CRITICAL_HITS(self, self_: Any, state: Any) -> None: ...  # Sets whether the specified character is immune to headshots
-    def SET_CHAR_USES_COLLISION_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: Any, state: Any, target: Any) -> None: ...  # Sets whether collision of the object closest to the given coordinates and matching the model applies
-    def SET_CHAR_USES_UPPERBODY_DAMAGE_ANIMS_ONLY(self, self_: Any, state: Any) -> None: ...
-    def SET_CHAR_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the characters velocity
-    def SET_CHAR_VISIBLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the character is visible or not
-    def SET_CHAR_WANTED_BY_POLICE(self, self_: Any, state: Any) -> None: ...  # Sets whether police should chase the character
-    def SET_CHAR_WEAPON_SKILL(self, self_: Any, skill: Any) -> None: ...  # Sets the character's fire arms wielding style
-    def SET_CHECKPOINT_COORDS(self, self_: Any, x: float, y: float, z: float) -> None: ...
-    def SET_CHECKPOINT_HEADING(self, self_: Any, heading: float) -> None: ...
-    def SET_CINEMA_CAMERA(self, state: Any) -> None: ...  # Locks the camera on cinematic vehicle mode
-    def SET_CLOSEST_ENTRY_EXIT_FLAG(self, x: float, y: float, radius: float, flag: Any, state: Any) -> None: ...  # This command is like 098E, except it finds the appropriate enex marker via its position instead of i
-    def SET_COLLECTABLE1_TOTAL(self, amount: Any) -> None: ...  # Sets the total number of hidden packages to collect
-    def SET_COORD_BLIP_APPEARANCE(self, self_: Any, color: Any) -> None: ...  # Works similar to 0165, except this command does not work on tracking blips, has different colors and
-    def SET_CREATE_RANDOM_COPS(self, state: Any) -> None: ...
-    def SET_CREATE_RANDOM_GANG_MEMBERS(self, state: Any) -> None: ...  # Sets whether gang members will spawn
-    def SET_CURRENT_CHAR_WEAPON(self, self_: Any, weaponType: Any) -> None: ...  # Sets the character's currently held weapon
+    def SET_CAR_DRIVING_STYLE(self, self_: Vehicle | int, drivingStyle: int) -> None: ...  # Sets the behavior of the vehicle's AI driver
+    def SET_CAR_ENGINE_BROKEN(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car's engine is broken
+    def SET_CAR_ENGINE_ON(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle's engine is turned on or off
+    def SET_CAR_ESCORT_CAR_FRONT(self, self_: Vehicle | int, handle: Vehicle | int) -> None: ...  # Makes the vehicle stay in front of the other, keeping parallel
+    def SET_CAR_ESCORT_CAR_LEFT(self, self_: Vehicle | int, handle: Vehicle | int) -> None: ...  # Makes the vehicle stay on the other vehicle's left side, keeping parallel
+    def SET_CAR_ESCORT_CAR_REAR(self, self_: Vehicle | int, handle: Vehicle | int) -> None: ...  # Makes the vehicle stay behind the other car, keeping parallel
+    def SET_CAR_ESCORT_CAR_RIGHT(self, self_: Vehicle | int, handle: Vehicle | int) -> None: ...  # Makes the vehicle stay by the right side of the other vehicle, keeping parallel
+    def SET_CAR_FOLLOW_CAR(self, self_: Vehicle | int, handle: Vehicle | int, radius: float) -> None: ...
+    def SET_CAR_FORWARD_SPEED(self, self_: Vehicle | int, forwardSpeed: float) -> None: ...  # Sets the speed of the car
+    def SET_CAR_HEADING(self, self_: Vehicle | int, heading: float) -> None: ...  # Sets the vehicle's heading (z-angle)
+    def SET_CAR_HEALTH(self, self_: Vehicle | int, health: int) -> None: ...  # Sets the vehicle's health
+    def SET_CAR_HEAVY(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car is heavy
+    def SET_CAR_HYDRAULICS(self, self_: Vehicle | int, state: bool) -> None: ...  # Enables hydraulic suspension on the car
+    def SET_CAR_LIGHTS_ON(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle's lights are on
+    def SET_CAR_MISSION(self, self_: Vehicle | int, carMission: CAR_MISSION | int) -> None: ...  # Sets the mission of the vehicle's AI driver
+    def SET_CAR_MODEL_COMPONENTS(self, _unused: VEHICLE | int, component1: int, component2: int) -> None: ...  # Sets the variation of the next car to be created
+    def SET_CAR_ONLY_DAMAGED_BY_PLAYER(self, self_: Vehicle | int, state: bool) -> None: ...  # Makes a vehicle immune to everything except the player
+    def SET_CAR_PROOFS(self, self_: Vehicle | int, bulletProof: bool, fireProof: bool, explosionProof: bool, collisionProof: bool, meleeProof: bool) -> None: ...  # Sets the vehicle's immunities
+    def SET_CAR_RANDOM_ROUTE_SEED(self, self_: Vehicle | int, routeSeed: int) -> None: ...  # Sets the car on a specific route
+    def SET_CAR_ROLL(self, self_: Vehicle | int, yAngle: float) -> None: ...  # Sets the Y Angle of the vehicle to the specified value
+    def SET_CAR_ROTATION_VELOCITY(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...
+    def SET_CAR_STATUS(self, self_: Vehicle | int, status: ENTITY_STATUS | int) -> None: ...  # Sets the car's status
+    def SET_CAR_STAY_IN_FAST_LANE(self, self_: Vehicle | int, state: bool) -> None: ...
+    def SET_CAR_STAY_IN_SLOW_LANE(self, self_: Vehicle | int, state: bool) -> None: ...
+    def SET_CAR_STRAIGHT_LINE_DISTANCE(self, self_: Vehicle | int, distance: int) -> None: ...  # Sets the minimum distance for the AI driver to start ignoring car paths and go straight to the targe
+    def SET_CAR_STRONG(self, self_: Vehicle | int, state: bool) -> None: ...  # Defines whether the car is more resistant to collisions than normal
+    def SET_CAR_TEMP_ACTION(self, self_: Vehicle | int, actionId: int, time: int) -> None: ...  # Makes the AI driver perform the action in the vehicle for the specified period of time
+    def SET_CAR_TRACTION(self, self_: Vehicle | int, traction: float) -> None: ...  # Overrides the default AI controlled vehicle traction value of 1.0
+    def SET_CAR_VISIBLE(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle is visible or not
+    def SET_CAR_WATERTIGHT(self, self_: Vehicle | int, state: bool) -> None: ...  # Makes the vehicle watertight, meaning characters inside will not be harmed if the vehicle is submerg
+    def SET_CHAR_ACCURACY(self, self_: Ped | int, accuracy: int) -> None: ...  # Affects how often the character will hit the target when attacking with a weapon
+    def SET_CHAR_ALLOWED_TO_DUCK(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character can crouch
+    def SET_CHAR_AMMO(self, self_: Ped | int, weaponType: WEAPON | int, ammo: int) -> None: ...  # Sets the amount of ammo the character has in the specified weapon
+    def SET_CHAR_ANIM_CURRENT_TIME(self, self_: Ped | int, animationName: str, time: float) -> None: ...  # Sets how far through the animation the character is, with 1
+    def SET_CHAR_ANIM_PLAYING_FLAG(self, self_: Ped | int, animationName: str, flag: bool) -> None: ...  # Sets whether the animation is playing
+    def SET_CHAR_ANIM_SPEED(self, self_: Ped | int, animName: str, animSpeed: float) -> None: ...  # Makes an char perform an animation at the specified speed
+    def SET_CHAR_AREA_VISIBLE(self, self_: Ped | int, areaId: int) -> None: ...  # Sets the interior that the char is in
+    def SET_CHAR_BLEEDING(self, self_: Ped | int, state: bool) -> None: ...  # Makes a character bleed
+    def SET_CHAR_BULLETPROOF_VEST(self, self_: Ped | int, state: bool) -> None: ...  # Specifies that the character should only use upper-body damage animations, meaning they can still ru
+    def SET_CHAR_CANT_BE_DRAGGED_OUT(self, self_: Ped | int, state: bool) -> None: ...  # Locks the character while in a car
+    def SET_CHAR_CAN_BE_KNOCKED_OFF_BIKE(self, self_: Ped | int, stayOnBike: bool) -> None: ...  # Sets whether the character always stays on bike in collisions
+    def SET_CHAR_CAN_BE_SHOT_IN_VEHICLE(self, self_: Ped | int, state: bool) -> None: ...  # Makes the character immune to a damage while in a vehicle
+    def SET_CHAR_COLLISION(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether collision detection is enabled for the character
+    def SET_CHAR_COORDINATES(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Puts the character at the specified location
+    def SET_CHAR_COORDINATES_DONT_WARP_GANG(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Sets the character's coordinates without warping the rest of their group
+    def SET_CHAR_COORDINATES_DONT_WARP_GANG_NO_OFFSET(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # This command is a combination of 0972 and 08C7
+    def SET_CHAR_COORDINATES_NO_OFFSET(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Puts the characters at the coordinates by the center of body instead of the feet
+    def SET_CHAR_DECISION_MAKER(self, self_: Ped | int, handleOrTemplate: int) -> None: ...  # Sets the decision maker for the character
+    def SET_CHAR_DROPS_WEAPONS_WHEN_DEAD(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character will drop any of their weapons when they die
+    def SET_CHAR_DROWNS_IN_WATER(self, self_: Ped | int, state: bool) -> None: ...  # Controls whether the character can drown in water
+    def SET_CHAR_DRUGGED_UP(self, self_: Ped | int, state: bool) -> None: ...
+    def SET_CHAR_FORCE_DIE_IN_CAR(self, self_: Ped | int, state: bool) -> None: ...  # Makes a character remain in the car upon death
+    def SET_CHAR_GET_OUT_UPSIDE_DOWN_CAR(self, self_: Ped | int, state: bool) -> None: ...  # Controls whether the character will try to exit an upside-down car until it is on fire
+    def SET_CHAR_HAS_USED_ENTRY_EXIT(self, self_: Ped | int, x: float, y: float, radius: float) -> None: ...  # Locates the entry/exit marker in the specified radius of the specified coordinates and links it to t
+    def SET_CHAR_HEADING(self, self_: Ped | int, heading: float) -> None: ...  # Sets the character's heading (z-angle)
+    def SET_CHAR_HEALTH(self, self_: Ped | int, health: int) -> None: ...  # Sets the character's health
+    def SET_CHAR_IS_CHRIS_CRIMINAL(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character is a psychotic killer or not
+    def SET_CHAR_IS_TARGET_PRIORITY(self, self_: Ped | int, state: bool) -> None: ...  # Causes the auto aim to be more likely to target the specified char than actors without this flag
+    def SET_CHAR_KEEP_TASK(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character should keep their tasks after mission cleanup (basically cleanup will be
+    def SET_CHAR_KINDA_STAY_IN_SAME_PLACE(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character shouldn't chase their victim far (to attempt a melee attack or get in wea
+    def SET_CHAR_MAX_HEALTH(self, self_: Ped | int, maxHealth: int) -> None: ...  # Sets the characters max health
+    def SET_CHAR_MONEY(self, self_: Ped | int, amount: int) -> None: ...  # Sets the character's cash sum, setting how much cash they will drop when dead
+    def SET_CHAR_NEVER_LEAVES_GROUP(self, self_: Ped | int, state: bool) -> None: ...  # Prevents the character from leaving their group
+    def SET_CHAR_NEVER_TARGETTED(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character won't be targeted by the autoaim system
+    def SET_CHAR_ONLY_DAMAGED_BY_PLAYER(self, self_: Ped | int, state: bool) -> None: ...  # Makes a character immune to everything except the player
+    def SET_CHAR_PROOFS(self, self_: Ped | int, bulletProof: bool, fireProof: bool, explosionProof: bool, collisionProof: bool, meleeProof: bool) -> None: ...  # Sets the character's immunities
+    def SET_CHAR_RELATIONSHIP(self, self_: Ped | int, relationshipType: int, pedType: PED_TYPE | int) -> None: ...
+    def SET_CHAR_ROTATION(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Sets the characters rotation
+    def SET_CHAR_SAY_CONTEXT(self, self_: Ped | int, phrase: int) -> int: ...  # Works similar to 05C1, but returns which phrase was spoken and is not run as a task
+    def SET_CHAR_SAY_CONTEXT_IMPORTANT(self, self_: Ped | int, phrase: int, overrideSilence: bool, ignoreMute: bool, frontEnd: bool) -> int: ...
+    def SET_CHAR_SAY_SCRIPT(self, self_: Ped | int, _p2: int, _p3: bool, _p4: bool, _p5: bool) -> None: ...
+    def SET_CHAR_SHOOT_RATE(self, self_: Ped | int, rate: int) -> None: ...  # Sets the attack rate of the char
+    def SET_CHAR_SIGNAL_AFTER_KILL(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character signals after killing
+    def SET_CHAR_STAY_IN_CAR_WHEN_JACKED(self, self_: Ped | int, state: bool) -> None: ...  # Makes the character stay in the vehicle when it is jacked (characters let themselves get "kidnapped"
+    def SET_CHAR_STAY_IN_SAME_PLACE(self, self_: Ped | int, state: bool) -> None: ...  # Makes the character maintain their position when attacked
+    def SET_CHAR_SUFFERS_CRITICAL_HITS(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the specified character is immune to headshots
+    def SET_CHAR_USES_COLLISION_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: int, state: bool, target: Ped | int) -> None: ...  # Sets whether collision of the object closest to the given coordinates and matching the model applies
+    def SET_CHAR_USES_UPPERBODY_DAMAGE_ANIMS_ONLY(self, self_: Ped | int, state: bool) -> None: ...
+    def SET_CHAR_VELOCITY(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Sets the characters velocity
+    def SET_CHAR_VISIBLE(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether the character is visible or not
+    def SET_CHAR_WANTED_BY_POLICE(self, self_: Ped | int, state: bool) -> None: ...  # Sets whether police should chase the character
+    def SET_CHAR_WEAPON_SKILL(self, self_: Ped | int, skill: int) -> None: ...  # Sets the character's fire arms wielding style
+    def SET_CHECKPOINT_COORDS(self, self_: int, x: float, y: float, z: float) -> None: ...
+    def SET_CHECKPOINT_HEADING(self, self_: int, heading: float) -> None: ...
+    def SET_CINEMA_CAMERA(self, state: bool) -> None: ...  # Locks the camera on cinematic vehicle mode
+    def SET_CLOSEST_ENTRY_EXIT_FLAG(self, x: float, y: float, radius: float, flag: int, state: bool) -> None: ...  # This command is like 098E, except it finds the appropriate enex marker via its position instead of i
+    def SET_COLLECTABLE1_TOTAL(self, amount: int) -> None: ...  # Sets the total number of hidden packages to collect
+    def SET_COORD_BLIP_APPEARANCE(self, self_: int, color: int) -> None: ...  # Works similar to 0165, except this command does not work on tracking blips, has different colors and
+    def SET_CREATE_RANDOM_COPS(self, state: bool) -> None: ...
+    def SET_CREATE_RANDOM_GANG_MEMBERS(self, state: bool) -> None: ...  # Sets whether gang members will spawn
+    def SET_CURRENT_CHAR_WEAPON(self, self_: Ped | int, weaponType: WEAPON | int) -> None: ...  # Sets the character's currently held weapon
     def SET_CUTSCENE_OFFSET(self, x: float, y: float, z: float) -> None: ...  # Sets the position for a cutscene
-    def SET_DARKNESS_EFFECT(self, enable: Any, pitchBlack: Any) -> None: ...  # Darkens the game
-    def SET_DEATHARREST_STATE(self, state: Any) -> None: ...  # Sets the detection of death and arrest during a mission (0112)
-    def SET_DEATH_WEAPONS_PERSIST(self, self_: Any, state: Any) -> None: ...  # Prevents pickups, which are created when this character dies, from disappearing until picked up by t
-    def SET_DISABLE_MILITARY_ZONES(self, state: Any) -> None: ...  # Causes the players wanted level to be set at 4 when in restricted areas
-    def SET_DRUNK_INPUT_DELAY(self, pad: Any, delay: Any) -> None: ...  # Affects the delay to the left and right steering while driving
-    def SET_ENABLE_RC_DETONATE(self, state: Any) -> None: ...  # Enables a remote-control vehicle detonation
-    def SET_ENABLE_RC_DETONATE_ON_CONTACT(self, state: Any) -> None: ...  # Sets whether RC Bandits detonate on contact with the wheels of any four-wheeled vehicles
-    def SET_EVERYONE_IGNORE_PLAYER(self, player: Any, state: Any) -> None: ...  # Makes pedestrians pay no attention to the player
-    def SET_EXTRA_CAR_COLOURS(self, self_: Any, color3: Any, color4: Any) -> None: ...  # Sets the car's ternary and quaternary colors. See also 0229
-    def SET_EXTRA_COLOURS(self, color: Any, fade: Any) -> None: ...  # Sets the extra color of the sky
+    def SET_DARKNESS_EFFECT(self, enable: bool, pitchBlack: int) -> None: ...  # Darkens the game
+    def SET_DEATHARREST_STATE(self, state: bool) -> None: ...  # Sets the detection of death and arrest during a mission (0112)
+    def SET_DEATH_WEAPONS_PERSIST(self, self_: Ped | int, state: bool) -> None: ...  # Prevents pickups, which are created when this character dies, from disappearing until picked up by t
+    def SET_DISABLE_MILITARY_ZONES(self, state: bool) -> None: ...  # Causes the players wanted level to be set at 4 when in restricted areas
+    def SET_DRUNK_INPUT_DELAY(self, pad: int, delay: int) -> None: ...  # Affects the delay to the left and right steering while driving
+    def SET_ENABLE_RC_DETONATE(self, state: bool) -> None: ...  # Enables a remote-control vehicle detonation
+    def SET_ENABLE_RC_DETONATE_ON_CONTACT(self, state: bool) -> None: ...  # Sets whether RC Bandits detonate on contact with the wheels of any four-wheeled vehicles
+    def SET_EVERYONE_IGNORE_PLAYER(self, player: int, state: bool) -> None: ...  # Makes pedestrians pay no attention to the player
+    def SET_EXTRA_CAR_COLOURS(self, self_: Vehicle | int, color3: int, color4: int) -> None: ...  # Sets the car's ternary and quaternary colors. See also 0229
+    def SET_EXTRA_COLOURS(self, color: int, fade: bool) -> None: ...  # Sets the extra color of the sky
     def SET_EXTRA_HOSPITAL_RESTART_POINT(self, x: float, y: float, z: float, radius: float, heading: float) -> None: ...
     def SET_EXTRA_POLICE_STATION_RESTART_POINT(self, x: float, y: float, z: float, radius: float, heading: float) -> None: ...
-    def SET_FADING_COLOUR(self, r: Any, g: Any, b: Any) -> None: ...  # Sets the RGB color of the fade command (016A)
-    def SET_FIRST_PERSON_IN_CAR_CAMERA_MODE(self, state: Any) -> None: ...  # Enables vehicle bumper view for the camera
+    def SET_FADING_COLOUR(self, r: int, g: int, b: int) -> None: ...  # Sets the RGB color of the fade command (016A)
+    def SET_FIRST_PERSON_IN_CAR_CAMERA_MODE(self, state: bool) -> None: ...  # Enables vehicle bumper view for the camera
     def SET_FIXED_CAMERA_POSITION(self, x: float, y: float, z: float, upVecOffsetX: float, upVecOffsetY: float, upVecOffsetZ: float) -> None: ...  # Sets the fixed camera's position and up vector offset
-    def SET_FLOAT_STAT(self, id: Any, value: float) -> None: ...  # Sets the float stat to the specified value
-    def SET_FOLLOW_NODE_THRESHOLD_DISTANCE(self, self_: Any, range: float) -> None: ...  # Sets the range within which the char responds to events
-    def SET_FORCE_RANDOM_CAR_MODEL(self, modelId: Any) -> None: ...  # Forces all cars spawned to be of the specified model
-    def SET_FREEBIES_IN_VEHICLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the player can receive items from this vehicle, such as shotgun ammo from a police car 
-    def SET_FREE_HEALTH_CARE(self, self_: Any, state: Any) -> None: ...  # Sets whether the player loses the cash when gets wasted (works once)
-    def SET_FREE_RESPRAYS(self, state: Any) -> None: ...  # Defines whether the player can respray their car for free
-    def SET_GANG_WARS_ACTIVE(self, state: Any) -> None: ...  # Sets whether gang wars can be started by the player or enemy gangs
-    def SET_GANG_WARS_TRAINING_MISSION(self, state: Any) -> None: ...  # Disables highlighting of gang territory on the map and radar
-    def SET_GANG_WEAPONS(self, gangId: Any, weaponType1: Any, weaponType2: Any, weaponType3: Any) -> None: ...  # Sets the weapons that the specified gang can use
-    def SET_GARAGE_RESPRAY_FREE(self, garageId: str, state: Any) -> None: ...
-    def SET_GLOBAL_VAR_BIT_CONST(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
-    def SET_GLOBAL_VAR_BIT_LVAR(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
-    def SET_GLOBAL_VAR_BIT_VAR(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
-    def SET_GROUP_DECISION_MAKER(self, self_: Any, handleOrTemplate: Any) -> None: ...  # Sets the decision maker for a group of characters
-    def SET_GROUP_DEFAULT_TASK_ALLOCATOR(self, self_: Any, defaultTaskAllocator: Any) -> None: ...
-    def SET_GROUP_FOLLOW_STATUS(self, self_: Any, state: Any) -> None: ...  # Sets whether the group members enter a car when the leader does
-    def SET_GROUP_LEADER(self, self_: Any, handle: Any) -> None: ...  # Puts the specified character into the group as the leader
-    def SET_GROUP_MEMBER(self, self_: Any, handle: Any) -> None: ...  # Puts the specified character into the group as a member
-    def SET_GROUP_SEPARATION_RANGE(self, self_: Any, range: float) -> None: ...  # Sets how far members of the group can be from the leader before they are removed from the group
-    def SET_GROUP_SEQUENCE(self, self_: Any, sequence: Any) -> None: ...  # Sets the default task sequence for members of the group
+    def SET_FLOAT_STAT(self, id: int, value: float) -> None: ...  # Sets the float stat to the specified value
+    def SET_FOLLOW_NODE_THRESHOLD_DISTANCE(self, self_: Ped | int, range: float) -> None: ...  # Sets the range within which the char responds to events
+    def SET_FORCE_RANDOM_CAR_MODEL(self, modelId: VEHICLE | int) -> None: ...  # Forces all cars spawned to be of the specified model
+    def SET_FREEBIES_IN_VEHICLE(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the player can receive items from this vehicle, such as shotgun ammo from a police car
+    def SET_FREE_HEALTH_CARE(self, self_: int, state: bool) -> None: ...  # Sets whether the player loses the cash when gets wasted (works once)
+    def SET_FREE_RESPRAYS(self, state: bool) -> None: ...  # Defines whether the player can respray their car for free
+    def SET_GANG_WARS_ACTIVE(self, state: bool) -> None: ...  # Sets whether gang wars can be started by the player or enemy gangs
+    def SET_GANG_WARS_TRAINING_MISSION(self, state: bool) -> None: ...  # Disables highlighting of gang territory on the map and radar
+    def SET_GANG_WEAPONS(self, gangId: GANG | int, weaponType1: WEAPON | int, weaponType2: WEAPON | int, weaponType3: WEAPON | int) -> None: ...  # Sets the weapons that the specified gang can use
+    def SET_GARAGE_RESPRAY_FREE(self, garageId: str, state: bool) -> None: ...
+    def SET_GLOBAL_VAR_BIT_CONST(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
+    def SET_GLOBAL_VAR_BIT_LVAR(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
+    def SET_GLOBAL_VAR_BIT_VAR(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
+    def SET_GROUP_DECISION_MAKER(self, self_: int, handleOrTemplate: int) -> None: ...  # Sets the decision maker for a group of characters
+    def SET_GROUP_DEFAULT_TASK_ALLOCATOR(self, self_: int, defaultTaskAllocator: int) -> None: ...
+    def SET_GROUP_FOLLOW_STATUS(self, self_: int, state: bool) -> None: ...  # Sets whether the group members enter a car when the leader does
+    def SET_GROUP_LEADER(self, self_: int, handle: Ped | int) -> None: ...  # Puts the specified character into the group as the leader
+    def SET_GROUP_MEMBER(self, self_: int, handle: Ped | int) -> None: ...  # Puts the specified character into the group as a member
+    def SET_GROUP_SEPARATION_RANGE(self, self_: int, range: float) -> None: ...  # Sets how far members of the group can be from the leader before they are removed from the group
+    def SET_GROUP_SEQUENCE(self, self_: int, sequence: int) -> None: ...  # Sets the default task sequence for members of the group
     def SET_GUNSHOT_SENSE_RANGE_FOR_RIOT2(self, range: float) -> None: ...
-    def SET_HAS_BEEN_OWNED_FOR_CAR_GENERATOR(self, self_: Any, state: Any) -> None: ...  # Sets whether the player will not receive a wanted level when entering a vehicle from this generator 
-    def SET_HEADING_FOR_ATTACHED_PLAYER(self, self_: Any, heading: float, headingRange: float) -> None: ...  # Sets the view angle for the player attached to an object or vehicle
-    def SET_HEADING_LIMIT_FOR_ATTACHED_CHAR(self, self_: Any, heading: Any, headingRange: float) -> None: ...  # Sets the heading limit for a character attached to an object or vehicle
-    def SET_HEATHAZE_EFFECT(self, state: Any) -> None: ...  # Specifies whether the heat haze effect should be enabled in sunny conditions
-    def SET_HELI_BLADES_FULL_SPEED(self, self_: Any) -> None: ...  # Makes the helicopter rotor spin at full speed instantly
-    def SET_HELI_ORIENTATION(self, self_: Any, angle: float) -> None: ...  # Forces the heli rotation relative to the north
-    def SET_HELI_REACHED_TARGET_DISTANCE(self, self_: Any, distance: Any) -> None: ...
-    def SET_HELI_STABILISER(self, self_: Any, state: Any) -> None: ...  # Limits the amount a helicopter can tilt
-    def SET_HELP_MESSAGE_BOX_SIZE(self, size: Any) -> None: ...  # Sets the global width of text boxes displayed on screen
-    def SET_INFORM_RESPECTED_FRIENDS(self, self_: Any, radius: float, _p3: Any) -> None: ...
-    def SET_INFRARED_VISION(self, state: Any) -> None: ...  # Enables thermal vision effects
-    def SET_INTERPOLATION_PARAMETERS(self, interpolationToStopMoving: float, time: Any) -> None: ...  # Sets how long the camera transition will last
-    def SET_INT_STAT(self, id: Any, value: Any) -> None: ...  # Sets the integer stat to the specified value
-    def SET_LA_RIOTS(self, state: Any) -> None: ...  # Enables the LS Riots, making smoke appear on houses, random car fires occur, peds stealing things an
-    def SET_LOAD_COLLISION_FOR_CAR_FLAG(self, self_: Any, state: Any) -> None: ...
-    def SET_LOAD_COLLISION_FOR_CHAR_FLAG(self, self_: Any, state: Any) -> None: ...
-    def SET_LOCAL_VAR_BIT_CONST(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
-    def SET_LOCAL_VAR_BIT_LVAR(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
-    def SET_LOCAL_VAR_BIT_VAR(self, number: Any, bitIndex: Any) -> None: ...  # Sets the nth bit of the number
+    def SET_HAS_BEEN_OWNED_FOR_CAR_GENERATOR(self, self_: int, state: bool) -> None: ...  # Sets whether the player will not receive a wanted level when entering a vehicle from this generator
+    def SET_HEADING_FOR_ATTACHED_PLAYER(self, self_: int, heading: float, headingRange: float) -> None: ...  # Sets the view angle for the player attached to an object or vehicle
+    def SET_HEADING_LIMIT_FOR_ATTACHED_CHAR(self, self_: Ped | int, heading: int, headingRange: float) -> None: ...  # Sets the heading limit for a character attached to an object or vehicle
+    def SET_HEATHAZE_EFFECT(self, state: bool) -> None: ...  # Specifies whether the heat haze effect should be enabled in sunny conditions
+    def SET_HELI_BLADES_FULL_SPEED(self, self_: Vehicle | int) -> None: ...  # Makes the helicopter rotor spin at full speed instantly
+    def SET_HELI_ORIENTATION(self, self_: Vehicle | int, angle: float) -> None: ...  # Forces the heli rotation relative to the north
+    def SET_HELI_REACHED_TARGET_DISTANCE(self, self_: Vehicle | int, distance: int) -> None: ...
+    def SET_HELI_STABILISER(self, self_: Vehicle | int, state: bool) -> None: ...  # Limits the amount a helicopter can tilt
+    def SET_HELP_MESSAGE_BOX_SIZE(self, size: int) -> None: ...  # Sets the global width of text boxes displayed on screen
+    def SET_INFORM_RESPECTED_FRIENDS(self, self_: Ped | int, radius: float, _p3: int) -> None: ...
+    def SET_INFRARED_VISION(self, state: bool) -> None: ...  # Enables thermal vision effects
+    def SET_INTERPOLATION_PARAMETERS(self, interpolationToStopMoving: float, time: int) -> None: ...  # Sets how long the camera transition will last
+    def SET_INT_STAT(self, id: int, value: int) -> None: ...  # Sets the integer stat to the specified value
+    def SET_LA_RIOTS(self, state: bool) -> None: ...  # Enables the LS Riots, making smoke appear on houses, random car fires occur, peds stealing things an
+    def SET_LOAD_COLLISION_FOR_CAR_FLAG(self, self_: Vehicle | int, state: bool) -> None: ...
+    def SET_LOAD_COLLISION_FOR_CHAR_FLAG(self, self_: Ped | int, state: bool) -> None: ...
+    def SET_LOCAL_VAR_BIT_CONST(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
+    def SET_LOCAL_VAR_BIT_LVAR(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
+    def SET_LOCAL_VAR_BIT_VAR(self, number: int, bitIndex: int) -> None: ...  # Sets the nth bit of the number
     def SET_LVAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float value of the LVAR
     def SET_LVAR_FLOAT_TO_LVAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float LVAR to the LVAR value
     def SET_LVAR_FLOAT_TO_VAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float LVAR to the VAR value
-    def SET_LVAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the integer value of the LVAR
-    def SET_LVAR_INT_TO_CONSTANT(self, arg0: Any, arg1: Any) -> None: ...  # Assigns the local variable to the integer constant
-    def SET_LVAR_INT_TO_LVAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the int LVAR to the LVAR value
-    def SET_LVAR_INT_TO_VAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the int LVAR to the VAR value
+    def SET_LVAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the integer value of the LVAR
+    def SET_LVAR_INT_TO_CONSTANT(self, arg0: int, arg1: int) -> None: ...  # Assigns the local variable to the integer constant
+    def SET_LVAR_INT_TO_LVAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the int LVAR to the LVAR value
+    def SET_LVAR_INT_TO_VAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the int LVAR to the VAR value
     def SET_LVAR_TEXT_LABEL(self, dest: str, src: str) -> None: ...  # Copies up to 8 characters from src to dest
     def SET_LVAR_TEXT_LABEL16(self, dest: str, src: str) -> None: ...  # Copies up to 16 characters from src to dest
-    def SET_MAX_FIRE_GENERATIONS(self, limit: Any) -> None: ...  # Sets the limit on how many fires can be created from other fires when "propagation" was enabled on 0
-    def SET_MAX_WANTED_LEVEL(self, wantedLevel: Any) -> None: ...  # Sets the maximum wanted level the player can receive
-    def SET_MENU_COLUMN(self, self_: Any, column: Any, title: str, row0: str, row1: str, row2: str, row3: str, row4: str, row5: str, row6: str, row7: str, row8: str, row9: str, row10: str, row11: str) -> None: ...
-    def SET_MENU_COLUMN_ORIENTATION(self, self_: Any, column: Any, alignment: Any) -> None: ...
-    def SET_MENU_COLUMN_WIDTH(self, self_: Any, column: Any, width: Any) -> None: ...  # Sets the width of the specified menu column
-    def SET_MENU_ITEM_WITH_2_NUMBERS(self, self_: Any, column: Any, row: Any, gxt: str, number1: Any, number2: Any) -> None: ...
-    def SET_MENU_ITEM_WITH_NUMBER(self, self_: Any, column: Any, row: Any, gxt: str, number: Any) -> None: ...  # Sets the numbered GXT of the specified panel row
-    def SET_MESSAGE_FORMATTING(self, customPosition: Any, margin: Any, width: Any) -> None: ...  # Overrides the position of the text on screen
-    def SET_MINIGAME_IN_PROGRESS(self, state: Any) -> None: ...  # Disables displaying help messages in other scripts
-    def SET_MISSION_AUDIO_POSITION(self, slotId: Any, x: float, y: float, z: float) -> None: ...  # Sets the location of the mission audio (03CF) where it can be heard
-    def SET_MISSION_RESPECT_TOTAL(self, value: Any) -> None: ...  # Sets the total value of mission respect points (stat 228)
-    def SET_MISSION_TRAIN_COORDINATES(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Puts the train on the rails nearest to the specified coordinates
-    def SET_MUSIC_DOES_FADE(self, state: Any) -> None: ...  # Sets whether sounds should fade along with the screen
-    def SET_NAMED_ENTRY_EXIT_FLAG(self, name: str, flag: Any, state: Any) -> None: ...  # Sets the specified enex flag
+    def SET_MAX_FIRE_GENERATIONS(self, limit: int) -> None: ...  # Sets the limit on how many fires can be created from other fires when "propagation" was enabled on 0
+    def SET_MAX_WANTED_LEVEL(self, wantedLevel: int) -> None: ...  # Sets the maximum wanted level the player can receive
+    def SET_MENU_COLUMN(self, self_: int, column: int, title: str, row0: str, row1: str, row2: str, row3: str, row4: str, row5: str, row6: str, row7: str, row8: str, row9: str, row10: str, row11: str) -> None: ...
+    def SET_MENU_COLUMN_ORIENTATION(self, self_: int, column: int, alignment: int) -> None: ...
+    def SET_MENU_COLUMN_WIDTH(self, self_: int, column: int, width: int) -> None: ...  # Sets the width of the specified menu column
+    def SET_MENU_ITEM_WITH_2_NUMBERS(self, self_: int, column: int, row: int, gxt: str, number1: int, number2: int) -> None: ...
+    def SET_MENU_ITEM_WITH_NUMBER(self, self_: int, column: int, row: int, gxt: str, number: int) -> None: ...  # Sets the numbered GXT of the specified panel row
+    def SET_MESSAGE_FORMATTING(self, customPosition: bool, margin: int, width: int) -> None: ...  # Overrides the position of the text on screen
+    def SET_MINIGAME_IN_PROGRESS(self, state: bool) -> None: ...  # Disables displaying help messages in other scripts
+    def SET_MISSION_AUDIO_POSITION(self, slotId: int, x: float, y: float, z: float) -> None: ...  # Sets the location of the mission audio (03CF) where it can be heard
+    def SET_MISSION_RESPECT_TOTAL(self, value: int) -> None: ...  # Sets the total value of mission respect points (stat 228)
+    def SET_MISSION_TRAIN_COORDINATES(self, self_: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Puts the train on the rails nearest to the specified coordinates
+    def SET_MUSIC_DOES_FADE(self, state: bool) -> None: ...  # Sets whether sounds should fade along with the screen
+    def SET_NAMED_ENTRY_EXIT_FLAG(self, name: str, flag: int, state: bool) -> None: ...  # Sets the specified enex flag
     def SET_NEAR_CLIP(self, distance: float) -> None: ...  # Sets camera minimum drawing distance
-    def SET_NEXT_DESIRED_MOVE_STATE(self, moveState: Any) -> None: ...  # Sets how the character chooses to go to their destination in the next task without a parameter speci
-    def SET_NIGHT_VISION(self, state: Any) -> None: ...  # Enables night vision effects
-    def SET_NO_RESPRAYS(self, state: Any) -> None: ...  # Disables respray garages from opening for the player
-    def SET_OBJECT_ANIM_CURRENT_TIME(self, self_: Any, animationName: str, time: float) -> None: ...  # Sets the progress of an animation, with 0
-    def SET_OBJECT_ANIM_SPEED(self, self_: Any, animationName: str, speed: float) -> None: ...  # Sets the object's animation speed
-    def SET_OBJECT_AREA_VISIBLE(self, self_: Any, areaId: Any) -> None: ...  # Sets the visibility of the object to the specified interior
-    def SET_OBJECT_AS_STEALABLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the object can be picked up and carried
-    def SET_OBJECT_COLLISION(self, self_: Any, state: Any) -> None: ...  # Sets the object's collision detection
-    def SET_OBJECT_COLLISION_DAMAGE_EFFECT(self, self_: Any, state: Any) -> None: ...  # Sets whether the object can be destroyed or not
-    def SET_OBJECT_COORDINATES(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Puts the object at the specified location
-    def SET_OBJECT_COORDINATES_AND_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the object's coordinates without affecting the rotation
-    def SET_OBJECT_DRAW_LAST(self, self_: Any, state: Any) -> None: ...  # Sets the specified object to always draw on top of other objects
-    def SET_OBJECT_DYNAMIC(self, self_: Any, state: Any) -> None: ...  # Defines whether or not the object is moveable
-    def SET_OBJECT_HEADING(self, self_: Any, heading: float) -> None: ...  # Sets the object's heading (z-angle)
-    def SET_OBJECT_HEALTH(self, self_: Any, health: Any) -> None: ...
-    def SET_OBJECT_MASS(self, self_: Any, mass: float) -> None: ...  # Sets the object's mass
-    def SET_OBJECT_ONLY_DAMAGED_BY_PLAYER(self, self_: Any, state: Any) -> None: ...  # Makes the object damageable only by the player
-    def SET_OBJECT_PROOFS(self, self_: Any, bulletProof: Any, fireProof: Any, explosionProof: Any, collisionProof: Any, meleeProof: Any) -> None: ...  # Sets what immunities the object has
-    def SET_OBJECT_QUATERNION(self, self_: Any, x: float, y: float, z: float, w: float) -> None: ...  # Sets the object's quaternion
-    def SET_OBJECT_RECORDS_COLLISIONS(self, self_: Any, state: Any) -> None: ...  # Enables the use of collision checking for the object
-    def SET_OBJECT_RENDER_SCORCHED(self, self_: Any, state: Any) -> None: ...  # Makes the object look like it has been burnt
-    def SET_OBJECT_ROTATION(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the object rotation along X, Y and Z axis
-    def SET_OBJECT_ROTATION_VELOCITY(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Sets the object's rotation velocity with frame sync applied?
-    def SET_OBJECT_SCALE(self, self_: Any, scale: float) -> None: ...  # Sets the scale of the object
-    def SET_OBJECT_TURN_MASS(self, self_: Any, turnMass: float) -> None: ...  # Sets the object's turn mass
-    def SET_OBJECT_VELOCITY(self, self_: Any, xSpeed: float, ySpeed: float, zSpeed: float) -> None: ...  # Sets the object's velocity
-    def SET_OBJECT_VISIBLE(self, self_: Any, state: Any) -> None: ...  # Sets whether the object is visible
-    def SET_ONLY_CREATE_GANG_MEMBERS(self, state: Any) -> None: ...  # Sets whether gangs appear everywhere, like when "Gangs control the streets" cheat is activated
-    def SET_ONSCREEN_COUNTER_FLASH_WHEN_FIRST_DISPLAYED(self, counter: Any, state: Any) -> None: ...
+    def SET_NEXT_DESIRED_MOVE_STATE(self, moveState: MOVE_STATE | int) -> None: ...  # Sets how the character chooses to go to their destination in the next task without a parameter speci
+    def SET_NIGHT_VISION(self, state: bool) -> None: ...  # Enables night vision effects
+    def SET_NO_RESPRAYS(self, state: bool) -> None: ...  # Disables respray garages from opening for the player
+    def SET_OBJECT_ANIM_CURRENT_TIME(self, self_: GameObject | int, animationName: str, time: float) -> None: ...  # Sets the progress of an animation, with 0
+    def SET_OBJECT_ANIM_SPEED(self, self_: GameObject | int, animationName: str, speed: float) -> None: ...  # Sets the object's animation speed
+    def SET_OBJECT_AREA_VISIBLE(self, self_: GameObject | int, areaId: int) -> None: ...  # Sets the visibility of the object to the specified interior
+    def SET_OBJECT_AS_STEALABLE(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object can be picked up and carried
+    def SET_OBJECT_COLLISION(self, self_: GameObject | int, state: bool) -> None: ...  # Sets the object's collision detection
+    def SET_OBJECT_COLLISION_DAMAGE_EFFECT(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object can be destroyed or not
+    def SET_OBJECT_COORDINATES(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Puts the object at the specified location
+    def SET_OBJECT_COORDINATES_AND_VELOCITY(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Sets the object's coordinates without affecting the rotation
+    def SET_OBJECT_DRAW_LAST(self, self_: GameObject | int, state: bool) -> None: ...  # Sets the specified object to always draw on top of other objects
+    def SET_OBJECT_DYNAMIC(self, self_: GameObject | int, state: bool) -> None: ...  # Defines whether or not the object is moveable
+    def SET_OBJECT_HEADING(self, self_: GameObject | int, heading: float) -> None: ...  # Sets the object's heading (z-angle)
+    def SET_OBJECT_HEALTH(self, self_: GameObject | int, health: int) -> None: ...
+    def SET_OBJECT_MASS(self, self_: GameObject | int, mass: float) -> None: ...  # Sets the object's mass
+    def SET_OBJECT_ONLY_DAMAGED_BY_PLAYER(self, self_: GameObject | int, state: bool) -> None: ...  # Makes the object damageable only by the player
+    def SET_OBJECT_PROOFS(self, self_: GameObject | int, bulletProof: bool, fireProof: bool, explosionProof: bool, collisionProof: bool, meleeProof: bool) -> None: ...  # Sets what immunities the object has
+    def SET_OBJECT_QUATERNION(self, self_: GameObject | int, x: float, y: float, z: float, w: float) -> None: ...  # Sets the object's quaternion
+    def SET_OBJECT_RECORDS_COLLISIONS(self, self_: GameObject | int, state: bool) -> None: ...  # Enables the use of collision checking for the object
+    def SET_OBJECT_RENDER_SCORCHED(self, self_: GameObject | int, state: bool) -> None: ...  # Makes the object look like it has been burnt
+    def SET_OBJECT_ROTATION(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Sets the object rotation along X, Y and Z axis
+    def SET_OBJECT_ROTATION_VELOCITY(self, self_: GameObject | int, x: float, y: float, z: float) -> None: ...  # Sets the object's rotation velocity with frame sync applied?
+    def SET_OBJECT_SCALE(self, self_: GameObject | int, scale: float) -> None: ...  # Sets the scale of the object
+    def SET_OBJECT_TURN_MASS(self, self_: GameObject | int, turnMass: float) -> None: ...  # Sets the object's turn mass
+    def SET_OBJECT_VELOCITY(self, self_: GameObject | int, xSpeed: float, ySpeed: float, zSpeed: float) -> None: ...  # Sets the object's velocity
+    def SET_OBJECT_VISIBLE(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object is visible
+    def SET_ONLY_CREATE_GANG_MEMBERS(self, state: bool) -> None: ...  # Sets whether gangs appear everywhere, like when "Gangs control the streets" cheat is activated
+    def SET_ONSCREEN_COUNTER_FLASH_WHEN_FIRST_DISPLAYED(self, counter: int, state: bool) -> None: ...
     def SET_PED_DENSITY_MULTIPLIER(self, multiplier: float) -> None: ...  # Sets the quantity of pedestrians to spawn in the game
-    def SET_PETROL_TANK_WEAKPOINT(self, self_: Any, state: Any) -> None: ...  # Sets whether the car can be blown up by shooting at the petrol tank
-    def SET_PHOTO_CAMERA_EFFECT(self, state: Any) -> None: ...  # Puts the camera in first-person mode if the player is holding a weapon with a first-person shooting 
-    def SET_PLANE_THROTTLE(self, self_: Any, throttle: float) -> None: ...
-    def SET_PLANE_UNDERCARRIAGE_UP(self, self_: Any, state: Any) -> None: ...  # Sets whether the plane's landing wheels are up
-    def SET_PLAYBACK_SPEED(self, self_: Any, speed: float) -> None: ...  # Sets the playback speed of the car playing a car recording
-    def SET_PLAYERS_CAN_BE_IN_SEPARATE_CARS(self, state: Any) -> None: ...  # Sets whether the players can be in separate cars during a 2-player mission
-    def SET_PLAYER_CAN_DO_DRIVE_BY(self, self_: Any, state: Any) -> None: ...  # Sets the players driveby mode
-    def SET_PLAYER_CONTROL(self, self_: Any, state: Any) -> None: ...  # Sets whether player's control is enabled
-    def SET_PLAYER_CYCLE_WEAPON_BUTTON(self, playerId: Any, enabled: Any) -> None: ...
-    def SET_PLAYER_DISPLAY_VITAL_STATS_BUTTON(self, playerId: Any, enabled: Any) -> None: ...  # Sets whether a player can use the ACTION key to display their stats
-    def SET_PLAYER_DRUNKENNESS(self, self_: Any, intensity: Any) -> None: ...  # Makes the camera start moving around in a swirling motion with the specified intensity as if drunk
-    def SET_PLAYER_DUCK_BUTTON(self, playerId: Any, enabled: Any) -> None: ...  # Sets whether the player can use the crouch button
-    def SET_PLAYER_ENTER_CAR_BUTTON(self, playerId: Any, enabled: Any) -> None: ...  # Sets whether the player can enter and exit vehicles
-    def SET_PLAYER_FAST_RELOAD(self, self_: Any, state: Any) -> None: ...  # Defines whether the player can reload their gun 4x times faster
-    def SET_PLAYER_FIRE_BUTTON(self, playerId: Any, enabled: Any) -> None: ...  # Sets whether the player is able to use weapons
-    def SET_PLAYER_GROUP_RECRUITMENT(self, self_: Any, state: Any) -> None: ...  # Sets the player's ability to recruit new members to the group
-    def SET_PLAYER_GROUP_TO_FOLLOW_ALWAYS(self, self_: Any, state: Any) -> None: ...  # Controls the players ability to tell their group to wait and automatically orders any group members 
-    def SET_PLAYER_GROUP_TO_FOLLOW_NEVER(self, self_: Any, state: Any) -> None: ...  # Sets whether the player's group stops following the player, even if the player uses the "group follo
-    def SET_PLAYER_IN_CAR_CAMERA_MODE(self, mode: Any) -> None: ...  # Changes the camera mode on the current vehicle, just like when the user presses the 'change view' ke
-    def SET_PLAYER_IS_IN_STADIUM(self, state: Any) -> None: ...  # Greys out the radar
-    def SET_PLAYER_JUMP_BUTTON(self, playerId: Any, enabled: Any) -> None: ...  # Sets whether the player can jump
-    def SET_PLAYER_MODEL(self, self_: Any, modelId: Any) -> None: ...  # Changes the player to use the specified model
-    def SET_PLAYER_MOOD(self, self_: Any, mood: Any, time: Any) -> None: ...  # Sets the players mood, affecting the dialogue spoken by the player
-    def SET_PLAYER_NEVER_GETS_TIRED(self, self_: Any, state: Any) -> None: ...  # Defines whether the player can run fast forever
-    def SET_PLAYER_PLAYER_TARGETTING(self, state: Any) -> None: ...  # Enables each player to target the other player
-    def SET_POLICE_IGNORE_PLAYER(self, player: Any, state: Any) -> None: ...  # Sets whether cops should ignore the player regardless of wanted level
+    def SET_PETROL_TANK_WEAKPOINT(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car can be blown up by shooting at the petrol tank
+    def SET_PHOTO_CAMERA_EFFECT(self, state: bool) -> None: ...  # Puts the camera in first-person mode if the player is holding a weapon with a first-person shooting
+    def SET_PLANE_THROTTLE(self, self_: Vehicle | int, throttle: float) -> None: ...
+    def SET_PLANE_UNDERCARRIAGE_UP(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the plane's landing wheels are up
+    def SET_PLAYBACK_SPEED(self, self_: Vehicle | int, speed: float) -> None: ...  # Sets the playback speed of the car playing a car recording
+    def SET_PLAYERS_CAN_BE_IN_SEPARATE_CARS(self, state: bool) -> None: ...  # Sets whether the players can be in separate cars during a 2-player mission
+    def SET_PLAYER_CAN_DO_DRIVE_BY(self, self_: int, state: bool) -> None: ...  # Sets the players driveby mode
+    def SET_PLAYER_CONTROL(self, self_: int, state: bool) -> None: ...  # Sets whether player's control is enabled
+    def SET_PLAYER_CYCLE_WEAPON_BUTTON(self, playerId: int, enabled: bool) -> None: ...
+    def SET_PLAYER_DISPLAY_VITAL_STATS_BUTTON(self, playerId: int, enabled: bool) -> None: ...  # Sets whether a player can use the ACTION key to display their stats
+    def SET_PLAYER_DRUNKENNESS(self, self_: int, intensity: int) -> None: ...  # Makes the camera start moving around in a swirling motion with the specified intensity as if drunk
+    def SET_PLAYER_DUCK_BUTTON(self, playerId: int, enabled: bool) -> None: ...  # Sets whether the player can use the crouch button
+    def SET_PLAYER_ENTER_CAR_BUTTON(self, playerId: int, enabled: bool) -> None: ...  # Sets whether the player can enter and exit vehicles
+    def SET_PLAYER_FAST_RELOAD(self, self_: int, state: bool) -> None: ...  # Defines whether the player can reload their gun 4x times faster
+    def SET_PLAYER_FIRE_BUTTON(self, playerId: int, enabled: bool) -> None: ...  # Sets whether the player is able to use weapons
+    def SET_PLAYER_GROUP_RECRUITMENT(self, self_: int, state: bool) -> None: ...  # Sets the player's ability to recruit new members to the group
+    def SET_PLAYER_GROUP_TO_FOLLOW_ALWAYS(self, self_: int, state: bool) -> None: ...  # Controls the players ability to tell their group to wait and automatically orders any group members
+    def SET_PLAYER_GROUP_TO_FOLLOW_NEVER(self, self_: int, state: bool) -> None: ...  # Sets whether the player's group stops following the player, even if the player uses the "group follo
+    def SET_PLAYER_IN_CAR_CAMERA_MODE(self, mode: int) -> None: ...  # Changes the camera mode on the current vehicle, just like when the user presses the 'change view' ke
+    def SET_PLAYER_IS_IN_STADIUM(self, state: bool) -> None: ...  # Greys out the radar
+    def SET_PLAYER_JUMP_BUTTON(self, playerId: int, enabled: bool) -> None: ...  # Sets whether the player can jump
+    def SET_PLAYER_MODEL(self, self_: int, modelId: int) -> None: ...  # Changes the player to use the specified model
+    def SET_PLAYER_MOOD(self, self_: int, mood: int, time: int) -> None: ...  # Sets the players mood, affecting the dialogue spoken by the player
+    def SET_PLAYER_NEVER_GETS_TIRED(self, self_: int, state: bool) -> None: ...  # Defines whether the player can run fast forever
+    def SET_PLAYER_PLAYER_TARGETTING(self, state: bool) -> None: ...  # Enables each player to target the other player
+    def SET_POLICE_IGNORE_PLAYER(self, player: int, state: bool) -> None: ...  # Sets whether cops should ignore the player regardless of wanted level
     def SET_POOL_TABLE_COORDS(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Creates a pool collision object
-    def SET_PROGRESS_TOTAL(self, maxProgress: Any) -> None: ...  # Sets the maximum progress the player can reach
-    def SET_RADAR_ZOOM(self, zoom: Any) -> None: ...
-    def SET_RADIO_CHANNEL(self, channel: Any) -> None: ...  # Sets the current radio station that is playing, if the player is in a vehicle
+    def SET_PROGRESS_TOTAL(self, maxProgress: int) -> None: ...  # Sets the maximum progress the player can reach
+    def SET_RADAR_ZOOM(self, zoom: int) -> None: ...
+    def SET_RADIO_CHANNEL(self, channel: int) -> None: ...  # Sets the current radio station that is playing, if the player is in a vehicle
     def SET_RADIO_TO_PLAYERS_FAVOURITE_STATION(self) -> None: ...  # Sets the radio station of the vehicle the player is currently in to the favourite station, retrieved
     def SET_RAILTRACK_RESISTANCE_MULT(self, mult: float) -> None: ...  # Sets the friction/slowdown rate on all rail tracks
-    def SET_RELATIONSHIP(self, relationshipType: Any, ofPedType: Any, toPedType: Any) -> None: ...  # Sets the attitude of peds with one pedtype towards peds of another pedtype
+    def SET_RELATIONSHIP(self, relationshipType: int, ofPedType: PED_TYPE | int, toPedType: PED_TYPE | int) -> None: ...  # Sets the attitude of peds with one pedtype towards peds of another pedtype
     def SET_RESPAWN_POINT_FOR_DURATION_OF_MISSION(self, x: float, y: float, z: float) -> None: ...  # Overrides the respawn point
-    def SET_ROPE_HEIGHT_FOR_OBJECT(self, self_: Any, height: float) -> None: ...
-    def SET_SCRIPT_COOP_GAME(self, state: Any) -> None: ...  # Sets an unused flag at address 0x96A8A8
-    def SET_SCRIPT_LIMIT_TO_GANG_SIZE(self, maxSize: Any) -> None: ...  # Sets the maximum number of members that the player can recruit
-    def SET_SEARCHLIGHT_CLIP_IF_COLLIDING(self, self_: Any, state: Any) -> None: ...
-    def SET_SENSE_RANGE(self, handle: Any, range: float) -> None: ...  # Sets the seeing and hearing range for the specified character or for all mission characters when han
-    def SET_SEQUENCE_TO_REPEAT(self, self_: Any, state: Any) -> None: ...  # Sets whether the task sequence repeats continuously
+    def SET_ROPE_HEIGHT_FOR_OBJECT(self, self_: GameObject | int, height: float) -> None: ...
+    def SET_SCRIPT_COOP_GAME(self, state: bool) -> None: ...  # Sets an unused flag at address 0x96A8A8
+    def SET_SCRIPT_LIMIT_TO_GANG_SIZE(self, maxSize: int) -> None: ...  # Sets the maximum number of members that the player can recruit
+    def SET_SEARCHLIGHT_CLIP_IF_COLLIDING(self, self_: int, state: bool) -> None: ...
+    def SET_SENSE_RANGE(self, handle: Ped | int, range: float) -> None: ...  # Sets the seeing and hearing range for the specified character or for all mission characters when han
+    def SET_SEQUENCE_TO_REPEAT(self, self_: int, state: bool) -> None: ...  # Sets whether the task sequence repeats continuously
     def SET_SPECIFIC_ZONE_TO_TRIGGER_GANG_WAR(self, zone: str) -> None: ...
-    def SET_SPRITES_DRAW_BEFORE_FADE(self, state: Any) -> None: ...  # Causes the next texture to be drawn (038D) before the fade is drawn
-    def SET_SWIM_SPEED(self, self_: Any, speed: float) -> None: ...  # Sets the speed that the character swims at, changing their swimming animation speed
-    def SET_TAG_STATUS_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, percent: Any) -> None: ...  # Sets whether all tags in the area are sprayed
-    def SET_TARGET_CAR_FOR_MISSION_GARAGE(self, garageName: str, vehicle: Any) -> None: ...  # Sets the specified garage to only accept the specified vehicle
-    def SET_TAXI_LIGHTS(self, self_: Any, state: Any) -> None: ...  # Sets whether the taxi's roof light is on
-    def SET_TEXT_BACKGROUND(self, state: Any) -> None: ...  # Gives the text a background (0346)
-    def SET_TEXT_CENTRE(self, state: Any) -> None: ...  # Centers the text
+    def SET_SPRITES_DRAW_BEFORE_FADE(self, state: bool) -> None: ...  # Causes the next texture to be drawn (038D) before the fade is drawn
+    def SET_SWIM_SPEED(self, self_: Ped | int, speed: float) -> None: ...  # Sets the speed that the character swims at, changing their swimming animation speed
+    def SET_TAG_STATUS_IN_AREA(self, leftBottomX: float, leftBottomY: float, rightTopX: float, rightTopY: float, percent: int) -> None: ...  # Sets whether all tags in the area are sprayed
+    def SET_TARGET_CAR_FOR_MISSION_GARAGE(self, garageName: str, vehicle: Vehicle | int) -> None: ...  # Sets the specified garage to only accept the specified vehicle
+    def SET_TAXI_LIGHTS(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the taxi's roof light is on
+    def SET_TEXT_BACKGROUND(self, state: bool) -> None: ...  # Gives the text a background (0346)
+    def SET_TEXT_CENTRE(self, state: bool) -> None: ...  # Centers the text
     def SET_TEXT_CENTRE_SIZE(self, width: float) -> None: ...  # Sets the line width of the centered text
-    def SET_TEXT_COLOUR(self, red: Any, green: Any, blue: Any, alpha: Any) -> None: ...  # Sets the color of the text letters
-    def SET_TEXT_DRAW_BEFORE_FADE(self, state: Any) -> None: ...  # Causes the next text to be drawn before the fade is drawn
-    def SET_TEXT_DROPSHADOW(self, intensity: Any, red: Any, green: Any, blue: Any, alpha: Any) -> None: ...  # Sets shadow for the current text draw
-    def SET_TEXT_EDGE(self, size: Any, red: Any, green: Any, blue: Any, alpha: Any) -> None: ...  # Adds an outline to the next text drawn using a text draw command
-    def SET_TEXT_FONT(self, font: Any) -> None: ...  # Sets the text draw font
-    def SET_TEXT_JUSTIFY(self, state: Any) -> None: ...  # Sets the text to be drawn justified, which means the text will wrap in order to fill an even rectang
-    def SET_TEXT_PROPORTIONAL(self, state: Any) -> None: ...  # Makes the text size proportionate
-    def SET_TEXT_RIGHT_JUSTIFY(self, state: Any) -> None: ...  # Sets the text draw to be aligned to the right
+    def SET_TEXT_COLOUR(self, red: int, green: int, blue: int, alpha: int) -> None: ...  # Sets the color of the text letters
+    def SET_TEXT_DRAW_BEFORE_FADE(self, state: bool) -> None: ...  # Causes the next text to be drawn before the fade is drawn
+    def SET_TEXT_DROPSHADOW(self, intensity: int, red: int, green: int, blue: int, alpha: int) -> None: ...  # Sets shadow for the current text draw
+    def SET_TEXT_EDGE(self, size: int, red: int, green: int, blue: int, alpha: int) -> None: ...  # Adds an outline to the next text drawn using a text draw command
+    def SET_TEXT_FONT(self, font: int) -> None: ...  # Sets the text draw font
+    def SET_TEXT_JUSTIFY(self, state: bool) -> None: ...  # Sets the text to be drawn justified, which means the text will wrap in order to fill an even rectang
+    def SET_TEXT_PROPORTIONAL(self, state: bool) -> None: ...  # Makes the text size proportionate
+    def SET_TEXT_RIGHT_JUSTIFY(self, state: bool) -> None: ...  # Sets the text draw to be aligned to the right
     def SET_TEXT_SCALE(self, widthScale: float, heightScale: float) -> None: ...  # Scales the width and height of the text letters
     def SET_TEXT_WRAPX(self, width: float) -> None: ...  # Sets the line width of the text
-    def SET_TIMER_BEEP_COUNTDOWN_TIME(self, timer: Any, timeInSec: Any) -> None: ...  # Starts a sound when the countdown timer reaches the specified number of seconds
-    def SET_TIME_OF_DAY(self, hours: Any, minutes: Any) -> None: ...  # Sets the current in-game time
+    def SET_TIMER_BEEP_COUNTDOWN_TIME(self, timer: int, timeInSec: int) -> None: ...  # Starts a sound when the countdown timer reaches the specified number of seconds
+    def SET_TIME_OF_DAY(self, hours: int, minutes: int) -> None: ...  # Sets the current in-game time
     def SET_TIME_ONE_DAY_FORWARD(self) -> None: ...  # Progresses the game to the next day
     def SET_TIME_SCALE(self, scale: float) -> None: ...  # Sets the game to run at the specified speed
-    def SET_TOTAL_NUMBER_OF_MISSIONS(self, numMissions: Any) -> None: ...  # Sets the total number of missions that can be completed
-    def SET_TRAIN_CRUISE_SPEED(self, self_: Any, speed: float) -> None: ...  # Sets the trains speed
-    def SET_TRAIN_FORCED_TO_SLOW_DOWN(self, self_: Any, state: Any) -> None: ...  # Sets whether the train should stop at each station it encounters
-    def SET_TRAIN_SPEED(self, self_: Any, speed: float) -> None: ...  # Sets the trains acceleration
-    def SET_TWO_PLAYER_CAMERA_MODE(self, state: Any) -> None: ...  # Enables the cooperative camera mode
-    def SET_UPSIDEDOWN_CAR_NOT_DAMAGED(self, self_: Any, state: Any) -> None: ...  # Disables the car from exploding when it is upside down, as long as the player is not in the vehicle
-    def SET_UP_CONVERSATION_END_NODE_WITH_SCRIPTED_SPEECH(self, speech: str, speechSoundId: Any) -> None: ...  # Sets the script audio ID (see 03CF) for the specified conversation response node
-    def SET_UP_CONVERSATION_END_NODE_WITH_SPEECH(self, text: str, phrase: Any) -> None: ...  # Sets the speech sound for the specified conversation response node
-    def SET_UP_CONVERSATION_NODE_WITH_SCRIPTED_SPEECH(self, question: str, positiveAnswer: str, negativeAnswer: str, questionSoundId: Any, positiveAnswerSoundId: Any, negativeAnswerSoundId: Any) -> None: ...  # Adds a new line to the scripted conversation
-    def SET_UP_CONVERSATION_NODE_WITH_SPEECH(self, question: str, positiveAnswer: str, negativeAnswer: str, questionPhrase: Any, positiveAnswerPhrase: Any, negativeAnswerPhrase: Any) -> None: ...  # Specifies the dialogue GXT's and audio ID's
+    def SET_TOTAL_NUMBER_OF_MISSIONS(self, numMissions: int) -> None: ...  # Sets the total number of missions that can be completed
+    def SET_TRAIN_CRUISE_SPEED(self, self_: Vehicle | int, speed: float) -> None: ...  # Sets the trains speed
+    def SET_TRAIN_FORCED_TO_SLOW_DOWN(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the train should stop at each station it encounters
+    def SET_TRAIN_SPEED(self, self_: Vehicle | int, speed: float) -> None: ...  # Sets the trains acceleration
+    def SET_TWO_PLAYER_CAMERA_MODE(self, state: bool) -> None: ...  # Enables the cooperative camera mode
+    def SET_UPSIDEDOWN_CAR_NOT_DAMAGED(self, self_: Vehicle | int, state: bool) -> None: ...  # Disables the car from exploding when it is upside down, as long as the player is not in the vehicle
+    def SET_UP_CONVERSATION_END_NODE_WITH_SCRIPTED_SPEECH(self, speech: str, speechSoundId: int) -> None: ...  # Sets the script audio ID (see 03CF) for the specified conversation response node
+    def SET_UP_CONVERSATION_END_NODE_WITH_SPEECH(self, text: str, phrase: int) -> None: ...  # Sets the speech sound for the specified conversation response node
+    def SET_UP_CONVERSATION_NODE_WITH_SCRIPTED_SPEECH(self, question: str, positiveAnswer: str, negativeAnswer: str, questionSoundId: int, positiveAnswerSoundId: int, negativeAnswerSoundId: int) -> None: ...  # Adds a new line to the scripted conversation
+    def SET_UP_CONVERSATION_NODE_WITH_SPEECH(self, question: str, positiveAnswer: str, negativeAnswer: str, questionPhrase: int, positiveAnswerPhrase: int, negativeAnswerPhrase: int) -> None: ...  # Specifies the dialogue GXT's and audio ID's
     def SET_UP_SKIP(self, x: float, y: float, z: float, heading: float) -> None: ...  # Fades out the screen and teleports the player to the specified coordinates and angle
     def SET_UP_SKIP_AFTER_MISSION(self, x: float, y: float, z: float, heading: float) -> None: ...  # Fades the screen out and teleports the player to the specified coordinates and angle
-    def SET_UP_SKIP_FOR_SPECIFIC_VEHICLE(self, x: float, y: float, z: float, heading: float, handle: Any) -> None: ...  # Teleports the player to the specified coordinates and sets the specified angle when in the specified
-    def SET_UP_SKIP_FOR_VEHICLE_FINISHED_BY_SCRIPT(self, x: float, y: float, z: float, heading: float, vehicle: Any) -> None: ...  # Teleports the player to the specified coordinates and sets the specified angle with the screen fadin
-    def SET_USES_COLLISION_OF_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: Any, state: Any) -> None: ...  # Toggles collision of the object closest to the given coordinates and matching the model
+    def SET_UP_SKIP_FOR_SPECIFIC_VEHICLE(self, x: float, y: float, z: float, heading: float, handle: Vehicle | int) -> None: ...  # Teleports the player to the specified coordinates and sets the specified angle when in the specified
+    def SET_UP_SKIP_FOR_VEHICLE_FINISHED_BY_SCRIPT(self, x: float, y: float, z: float, heading: float, vehicle: Vehicle | int) -> None: ...  # Teleports the player to the specified coordinates and sets the specified angle with the screen fadin
+    def SET_USES_COLLISION_OF_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: int, state: bool) -> None: ...  # Toggles collision of the object closest to the given coordinates and matching the model
     def SET_VAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float value of the VAR
     def SET_VAR_FLOAT_TO_LVAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float VAR to the LVAR value
     def SET_VAR_FLOAT_TO_VAR_FLOAT(self, arg0: float, arg1: float) -> None: ...  # Sets the float VAR to the VAR value
-    def SET_VAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the integer value of the VAR
-    def SET_VAR_INT_TO_CONSTANT(self, arg0: Any, arg1: Any) -> None: ...  # Assigns the global variable to the integer constant
-    def SET_VAR_INT_TO_LVAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the int VAR to the LVAR value
-    def SET_VAR_INT_TO_VAR_INT(self, arg0: Any, arg1: Any) -> None: ...  # Sets the int VAR to the VAR value
+    def SET_VAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the integer value of the VAR
+    def SET_VAR_INT_TO_CONSTANT(self, arg0: int, arg1: int) -> None: ...  # Assigns the global variable to the integer constant
+    def SET_VAR_INT_TO_LVAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the int VAR to the LVAR value
+    def SET_VAR_INT_TO_VAR_INT(self, arg0: int, arg1: int) -> None: ...  # Sets the int VAR to the VAR value
     def SET_VAR_TEXT_LABEL(self, dest: str, src: str) -> None: ...  # Copies up to 8 characters from src to dest
     def SET_VAR_TEXT_LABEL16(self, dest: str, src: str) -> None: ...  # Copies up to 16 characters from src to dest
-    def SET_VEHICLE_AIR_RESISTANCE_MULTIPLIER(self, self_: Any, multiplier: float) -> None: ...  # Sets the air resistance for the vehicle
-    def SET_VEHICLE_AREA_VISIBLE(self, self_: Any, interiorId: Any) -> None: ...
-    def SET_VEHICLE_CAMERA_TWEAK(self, modelId: Any, distance: float, altitude: float, angle: float) -> None: ...  # Sets the position the camera automatically moves to while driving a vehicle of the specified type
-    def SET_VEHICLE_CAN_BE_TARGETTED(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle can be targeted
-    def SET_VEHICLE_DIRT_LEVEL(self, self_: Any, level: float) -> None: ...  # Sets the dirt level of the car
-    def SET_VEHICLE_IS_CONSIDERED_BY_PLAYER(self, self_: Any, state: Any) -> None: ...  # Makes player character ignore the car when enter vehicle key is used
-    def SET_VEHICLE_QUATERNION(self, self_: Any, x: float, y: float, z: float, w: float) -> None: ...  # Sets the rotation of a vehicle using quaternion values
-    def SET_VEHICLE_TO_FADE_IN(self, self_: Any, alpha: Any) -> None: ...  # Sets the alpha transparency of a distant vehicle
-    def SET_VISIBILITY_OF_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: Any, state: Any) -> None: ...  # Sets the visibility of the object closest to the specified coordinates, matching the specified model
+    def SET_VEHICLE_AIR_RESISTANCE_MULTIPLIER(self, self_: Vehicle | int, multiplier: float) -> None: ...  # Sets the air resistance for the vehicle
+    def SET_VEHICLE_AREA_VISIBLE(self, self_: Vehicle | int, interiorId: int) -> None: ...
+    def SET_VEHICLE_CAMERA_TWEAK(self, modelId: VEHICLE | int, distance: float, altitude: float, angle: float) -> None: ...  # Sets the position the camera automatically moves to while driving a vehicle of the specified type
+    def SET_VEHICLE_CAN_BE_TARGETTED(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle can be targeted
+    def SET_VEHICLE_DIRT_LEVEL(self, self_: Vehicle | int, level: float) -> None: ...  # Sets the dirt level of the car
+    def SET_VEHICLE_IS_CONSIDERED_BY_PLAYER(self, self_: Vehicle | int, state: bool) -> None: ...  # Makes player character ignore the car when enter vehicle key is used
+    def SET_VEHICLE_QUATERNION(self, self_: Vehicle | int, x: float, y: float, z: float, w: float) -> None: ...  # Sets the rotation of a vehicle using quaternion values
+    def SET_VEHICLE_TO_FADE_IN(self, self_: Vehicle | int, alpha: int) -> None: ...  # Sets the alpha transparency of a distant vehicle
+    def SET_VISIBILITY_OF_CLOSEST_OBJECT_OF_TYPE(self, x: float, y: float, z: float, radius: float, modelId: int, state: bool) -> None: ...  # Sets the visibility of the object closest to the specified coordinates, matching the specified model
     def SET_WANTED_MULTIPLIER(self, multiplier: float) -> None: ...  # Sets sensitivity to crime, changing how many crimes a player can commit before police begin to pursu
     def SET_WEATHER_TO_APPROPRIATE_TYPE_NOW(self) -> None: ...  # Sets the weather appropriate to the weather region the player is currently in
-    def SET_ZONE_DEALER_STRENGTH(self, zone: str, strength: Any) -> None: ...  # Sets the total number of drug dealers in the zone
+    def SET_ZONE_DEALER_STRENGTH(self, zone: str, strength: int) -> None: ...  # Sets the total number of drug dealers in the zone
     def SET_ZONE_FOR_GANG_WARS_TRAINING(self, zone: str) -> None: ...  # Sets the zone as the only zone where a turf war can be provoked
-    def SET_ZONE_GANG_STRENGTH(self, zoneId: str, gangId: Any, density: Any) -> None: ...  # Sets the density of the gang members in the specified zone
-    def SET_ZONE_NO_COPS(self, zone: str, state: Any) -> None: ...  # Sets whether cops should be prevented from spawning in the specified area
-    def SET_ZONE_POPULATION_RACE(self, zone: str, races: Any) -> None: ...  # Sets which races will inhabit this zone
-    def SET_ZONE_POPULATION_TYPE(self, zone: str, type: Any) -> None: ...  # Sets which population type from popcycle.dat will inhabit this zone
-    def SHAKE_CAM(self, intensity: Any) -> None: ...  # Shakes the camera with the given intensity
-    def SHAKE_PAD(self, pad: Any, time: Any, intensity: Any) -> None: ...  # Shakes the player's joypad at the specified intensity for the specified time
-    def SHOW_BLIPS_ON_ALL_LEVELS(self, state: Any) -> None: ...  # Enables entity blips showing on the radar and map while in interiors
-    def SHOW_UPDATE_STATS(self, state: Any) -> None: ...  # Displays help boxes indicating that the players stats have been updated
-    def SHUFFLE_CARD_DECKS(self, type: Any) -> None: ...
-    def SHUT_ALL_CHARS_UP(self, state: Any) -> None: ...  # Prevents all peds from attempting to start conversations with the player
-    def SHUT_CHAR_UP(self, self_: Any, state: Any) -> None: ...  # Sets the character's ability to talk
-    def SHUT_CHAR_UP_FOR_SCRIPTED_SPEECH(self, self_: Any, state: Any) -> None: ...  # Works similar to 0489, but mutes more things, including ambient speeches (needs confirming)
+    def SET_ZONE_GANG_STRENGTH(self, zoneId: str, gangId: GANG | int, density: int) -> None: ...  # Sets the density of the gang members in the specified zone
+    def SET_ZONE_NO_COPS(self, zone: str, state: bool) -> None: ...  # Sets whether cops should be prevented from spawning in the specified area
+    def SET_ZONE_POPULATION_RACE(self, zone: str, races: int) -> None: ...  # Sets which races will inhabit this zone
+    def SET_ZONE_POPULATION_TYPE(self, zone: str, type: int) -> None: ...  # Sets which population type from popcycle.dat will inhabit this zone
+    def SHAKE_CAM(self, intensity: int) -> None: ...  # Shakes the camera with the given intensity
+    def SHAKE_PAD(self, pad: int, time: int, intensity: int) -> None: ...  # Shakes the player's joypad at the specified intensity for the specified time
+    def SHOW_BLIPS_ON_ALL_LEVELS(self, state: bool) -> None: ...  # Enables entity blips showing on the radar and map while in interiors
+    def SHOW_UPDATE_STATS(self, state: bool) -> None: ...  # Displays help boxes indicating that the players stats have been updated
+    def SHUFFLE_CARD_DECKS(self, type: int) -> None: ...
+    def SHUT_ALL_CHARS_UP(self, state: bool) -> None: ...  # Prevents all peds from attempting to start conversations with the player
+    def SHUT_CHAR_UP(self, self_: Ped | int, state: bool) -> None: ...  # Sets the character's ability to talk
+    def SHUT_CHAR_UP_FOR_SCRIPTED_SPEECH(self, self_: Ped | int, state: bool) -> None: ...  # Works similar to 0489, but mutes more things, including ambient speeches (needs confirming)
     def SIN(self, angle: float) -> float: ...  # Returns the sine of the angle
     def SKIP_CUTSCENE_END(self) -> None: ...
-    def SKIP_IN_PLAYBACK_RECORDED_CAR(self, self_: Any, amount: float) -> None: ...  # Advances the recorded car playback by the specified amount
-    def SKIP_TO_END_AND_STOP_PLAYBACK_RECORDED_CAR(self, self_: Any) -> None: ...
-    def SKIP_TO_NEXT_ALLOWED_STATION(self, self_: Any) -> None: ...  # Puts the script created train at the next allowed station
-    def SLIDE_OBJECT(self, self_: Any, posX: float, posY: float, posZ: float, speedX: float, speedY: float, speedZ: float, collisionCheck: Any) -> bool: ...  # Animates object movement toward specified coordinates. Returns true if the object has finished movin
-    def SORT_OUT_OBJECT_COLLISION_WITH_CAR(self, self_: Any, handle: Any) -> None: ...  # Makes the specified car have no collision with the specified object
+    def SKIP_IN_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int, amount: float) -> None: ...  # Advances the recorded car playback by the specified amount
+    def SKIP_TO_END_AND_STOP_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int) -> None: ...
+    def SKIP_TO_NEXT_ALLOWED_STATION(self, self_: Vehicle | int) -> None: ...  # Puts the script created train at the next allowed station
+    def SLIDE_OBJECT(self, self_: GameObject | int, posX: float, posY: float, posZ: float, speedX: float, speedY: float, speedZ: float, collisionCheck: bool) -> bool: ...  # Animates object movement toward specified coordinates. Returns true if the object has finished movin
+    def SORT_OUT_OBJECT_COLLISION_WITH_CAR(self, self_: GameObject | int, handle: Vehicle | int) -> None: ...  # Makes the specified car have no collision with the specified object
     def SQRT(self, num: float) -> float: ...  # Returns the square root of a number
-    def START_CAR_FIRE(self, vehicle: Any) -> int: ...  # Creates a script fire on the vehicle
-    def START_CHAR_FACIAL_TALK(self, self_: Any, duration: Any) -> None: ...  # Makes a character move their mouth as if they were talking
-    def START_CHAR_FIRE(self, char: Any) -> int: ...  # Creates a script fire on the character
+    def START_CAR_FIRE(self, vehicle: Vehicle | int) -> int: ...  # Creates a script fire on the vehicle
+    def START_CHAR_FACIAL_TALK(self, self_: Ped | int, duration: int) -> None: ...  # Makes a character move their mouth as if they were talking
+    def START_CHAR_FIRE(self, char: Ped | int) -> int: ...  # Creates a script fire on the character
     def START_CREDITS(self) -> None: ...  # Makes the credits scroll up the screen
     def START_CUTSCENE(self) -> None: ...  # Starts the loaded cutscene (02E4)
-    def START_KILL_FRENZY(self, text: str, weaponType: Any, timeInMs: Any, targetsNum: Any, targetModel1: Any, targetModel2: Any, targetModel3: Any, targetModel4: Any, betaSoundsAndMessages: Any) -> None: ...  # Starts a rampage
-    def START_NEW_STREAMED_SCRIPT(self, id: Any, *args: Any) -> None: ...  # Runs the ambient script with the specified ID
-    def START_PLAYBACK_RECORDED_CAR(self, self_: Any, path: Any) -> None: ...  # Assigns a car to a path
-    def START_PLAYBACK_RECORDED_CAR_LOOPED(self, self_: Any, pathId: Any) -> None: ...  # Starts looped playback of a recorded car path
-    def START_PLAYBACK_RECORDED_CAR_USING_AI(self, self_: Any, pathId: Any) -> None: ...  # Starts the playback of a recorded car with driver AI enabled
-    def START_SCRIPT_FIRE(self, x: float, y: float, z: float, propagation: Any, size: Any) -> int: ...  # Creates a fire at the specified coordinates
-    def START_SETTING_UP_CONVERSATION(self, handle: Any) -> None: ...  # Starts a conversation between the character and the player and clears the conversation lines
+    def START_KILL_FRENZY(self, text: str, weaponType: WEAPON | int, timeInMs: int, targetsNum: int, targetModel1: int, targetModel2: int, targetModel3: int, targetModel4: int, betaSoundsAndMessages: bool) -> None: ...  # Starts a rampage
+    def START_NEW_STREAMED_SCRIPT(self, id: int, *args: Any) -> None: ...  # Runs the ambient script with the specified ID
+    def START_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int, path: int) -> None: ...  # Assigns a car to a path
+    def START_PLAYBACK_RECORDED_CAR_LOOPED(self, self_: Vehicle | int, pathId: int) -> None: ...  # Starts looped playback of a recorded car path
+    def START_PLAYBACK_RECORDED_CAR_USING_AI(self, self_: Vehicle | int, pathId: int) -> None: ...  # Starts the playback of a recorded car with driver AI enabled
+    def START_SCRIPT_FIRE(self, x: float, y: float, z: float, propagation: int, size: int) -> int: ...  # Creates a fire at the specified coordinates
+    def START_SETTING_UP_CONVERSATION(self, handle: Ped | int) -> None: ...  # Starts a conversation between the character and the player and clears the conversation lines
     def STOP_BEAT_TRACK(self) -> None: ...  # Stops any currently active beat track
-    def STOP_CHAR_FACIAL_TALK(self, self_: Any) -> None: ...  # Stops the character moving their mouth as if they were talking
+    def STOP_CHAR_FACIAL_TALK(self, self_: Ped | int) -> None: ...  # Stops the character moving their mouth as if they were talking
     def STOP_CREDITS(self) -> None: ...  # Stops the credits text from showing
-    def STOP_FX_SYSTEM(self, self_: Any) -> None: ...  # Stops the specified particle at the source
-    def STOP_PLAYBACK_RECORDED_CAR(self, self_: Any) -> None: ...  # Stops car from following path
-    def STORE_CAR_CHAR_IS_ATTACHED_TO_NO_SAVE(self, self_: Any) -> Vehicle | None: ...  # Returns the vehicle the character is attached to
-    def STORE_CAR_CHAR_IS_IN(self, self_: Any) -> Vehicle | None: ...  # Returns the current vehicle of the character and adds it to the mission cleanup list (alts:03C0,0811
-    def STORE_CAR_CHAR_IS_IN_NO_SAVE(self, self_: Any) -> Vehicle | None: ...  # Returns the character's vehicle handle without marking it as used by the script, therefore allowing 
+    def STOP_FX_SYSTEM(self, self_: int) -> None: ...  # Stops the specified particle at the source
+    def STOP_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int) -> None: ...  # Stops car from following path
+    def STORE_CAR_CHAR_IS_ATTACHED_TO_NO_SAVE(self, self_: Ped | int) -> Vehicle | None: ...  # Returns the vehicle the character is attached to
+    def STORE_CAR_CHAR_IS_IN(self, self_: Ped | int) -> Vehicle | None: ...  # Returns the current vehicle of the character and adds it to the mission cleanup list (alts:03C0,0811
+    def STORE_CAR_CHAR_IS_IN_NO_SAVE(self, self_: Ped | int) -> Vehicle | None: ...  # Returns the character's vehicle handle without marking it as used by the script, therefore allowing
     def STORE_CAR_MOD_STATE(self) -> None: ...
     def STORE_CLOCK(self) -> None: ...  # Saves the current time in game
     def STORE_CLOTHES_STATE(self) -> None: ...  # Stores the players current clothes to later be restored with 0794
-    def STORE_SCORE(self, self_: Any) -> int: ...  # Returns the player's money
-    def STORE_WANTED_LEVEL(self, self_: Any) -> int: ...  # Returns the player's current wanted level
-    def STREAM_SCRIPT(self, id: Any) -> None: ...  # Loads the ambient script with the specified ID from the script.img file
+    def STORE_SCORE(self, self_: int) -> int: ...  # Returns the player's money
+    def STORE_WANTED_LEVEL(self, self_: int) -> int: ...  # Returns the player's current wanted level
+    def STREAM_SCRIPT(self, id: int) -> None: ...  # Loads the ambient script with the specified ID from the script.img file
     def STRING_CAT16(self, str1: str, str2: str) -> str: ...  # Combines two null-terminated strings and stores the result to a string variable. The final string ca
     def STRING_CAT8(self, str1: str, str2: str) -> str: ...  # Combines two null-terminated strings and stores the result to a string variable. The final string ca
     def SUB_FLOAT_LVAR_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the float LVAR value from the float LVAR
     def SUB_FLOAT_LVAR_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the float LVAR value from the float VAR
     def SUB_FLOAT_VAR_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the float VAR value from the float LVAR
     def SUB_FLOAT_VAR_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the float VAR value from the float VAR
-    def SUB_INT_LVAR_FROM_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the int LVAR value from the int LVAR
-    def SUB_INT_LVAR_FROM_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the float LVAR value from the float VAR
-    def SUB_INT_VAR_FROM_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the int VAR value from the int LVAR
-    def SUB_INT_VAR_FROM_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the int VAR value from the int VAR
+    def SUB_INT_LVAR_FROM_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the int LVAR value from the int LVAR
+    def SUB_INT_LVAR_FROM_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the float LVAR value from the float VAR
+    def SUB_INT_VAR_FROM_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the int VAR value from the int LVAR
+    def SUB_INT_VAR_FROM_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the int VAR value from the int VAR
     def SUB_TIMED_FLOAT_LVAR_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the value of the specified local variable and adds
     def SUB_TIMED_FLOAT_LVAR_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the frame delta time (the time in milliseconds that has passed since the last frame) by f
     def SUB_TIMED_FLOAT_VAR_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the value of the specified global variable and sub
     def SUB_TIMED_FLOAT_VAR_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the value of the specified global variable and sub
-    def SUB_TIMED_VAL_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the specified value and subtracts the result from 
+    def SUB_TIMED_VAL_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the specified value and subtracts the result from
     def SUB_TIMED_VAL_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Multiplies the delta time since the last frame by the specified float value and subtracts the result
     def SUB_VAL_FROM_FLOAT_LVAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the value from the value of the float LVAR
     def SUB_VAL_FROM_FLOAT_VAR(self, arg0: float, arg1: float) -> None: ...  # Subtracts the value from the value of the float VAR
-    def SUB_VAL_FROM_INT_LVAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the value from the value of the int LVAR
-    def SUB_VAL_FROM_INT_VAR(self, arg0: Any, arg1: Any) -> None: ...  # Subtracts the value from the value of the integer VAR
-    def SUPPRESS_CAR_MODEL(self, model: Any) -> None: ...  # Prevents the specified car model from spawning for car generators
-    def SWAP_NEAREST_BUILDING_MODEL(self, x: float, y: float, z: float, radius: float, fromModelId: Any, toModelId: Any) -> None: ...  # Swaps a map model with another map model nearest to the center of the search area
-    def SWITCH_AMBIENT_PLANES(self, state: Any) -> None: ...  # Enables or disables planes
-    def SWITCH_ARREST_PENALTIES(self, state: Any) -> None: ...  # Sets whether or not the player loses their weapons and inventory when busted
-    def SWITCH_AUDIO_ZONE(self, zone: str, state: Any) -> None: ...  # Sets whether the IPL defined audio for the specified area should play
-    def SWITCH_CAR_GENERATOR(self, self_: Any, amount: Any) -> None: ...  # Specifies the number of times the car generator spawns a car (101 - infinite)
-    def SWITCH_CAR_SIREN(self, self_: Any, state: Any) -> None: ...  # Sets whether the car's alarm can be activated
-    def SWITCH_COPS_ON_BIKES(self, state: Any) -> None: ...  # Disables the game from creating police bikes and their riders on the roads
-    def SWITCH_DEATH_PENALTIES(self, state: Any) -> None: ...  # Sets whether or not the player loses their weapons and inventory when taken to hospital
-    def SWITCH_EMERGENCY_SERVICES(self, state: Any) -> None: ...  # Sets whether emergency traffic spawns
-    def SWITCH_ENTRY_EXIT(self, interiorName: str, state: Any) -> None: ...  # Locates the enex marker via the specified name and sets whether it is visible and usable
-    def SWITCH_OBJECT_BRAINS(self, groupingId: Any, state: Any) -> None: ...  # Enables or disables all object triggers with the specified grouping id (set with 0929)
-    def SWITCH_ON_GROUND_SEARCHLIGHT(self, self_: Any, state: Any) -> None: ...  # Sets whether the searchlight shows a shadow effect on the surface it hits
+    def SUB_VAL_FROM_INT_LVAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the value from the value of the int LVAR
+    def SUB_VAL_FROM_INT_VAR(self, arg0: int, arg1: int) -> None: ...  # Subtracts the value from the value of the integer VAR
+    def SUPPRESS_CAR_MODEL(self, model: VEHICLE | int) -> None: ...  # Prevents the specified car model from spawning for car generators
+    def SWAP_NEAREST_BUILDING_MODEL(self, x: float, y: float, z: float, radius: float, fromModelId: int, toModelId: int) -> None: ...  # Swaps a map model with another map model nearest to the center of the search area
+    def SWITCH_AMBIENT_PLANES(self, state: bool) -> None: ...  # Enables or disables planes
+    def SWITCH_ARREST_PENALTIES(self, state: bool) -> None: ...  # Sets whether or not the player loses their weapons and inventory when busted
+    def SWITCH_AUDIO_ZONE(self, zone: str, state: bool) -> None: ...  # Sets whether the IPL defined audio for the specified area should play
+    def SWITCH_CAR_GENERATOR(self, self_: int, amount: int) -> None: ...  # Specifies the number of times the car generator spawns a car (101 - infinite)
+    def SWITCH_CAR_SIREN(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the car's alarm can be activated
+    def SWITCH_COPS_ON_BIKES(self, state: bool) -> None: ...  # Disables the game from creating police bikes and their riders on the roads
+    def SWITCH_DEATH_PENALTIES(self, state: bool) -> None: ...  # Sets whether or not the player loses their weapons and inventory when taken to hospital
+    def SWITCH_EMERGENCY_SERVICES(self, state: bool) -> None: ...  # Sets whether emergency traffic spawns
+    def SWITCH_ENTRY_EXIT(self, interiorName: str, state: bool) -> None: ...  # Locates the enex marker via the specified name and sets whether it is visible and usable
+    def SWITCH_OBJECT_BRAINS(self, groupingId: int, state: bool) -> None: ...  # Enables or disables all object triggers with the specified grouping id (set with 0929)
+    def SWITCH_ON_GROUND_SEARCHLIGHT(self, self_: int, state: bool) -> None: ...  # Sets whether the searchlight shows a shadow effect on the surface it hits
     def SWITCH_PED_ROADS_BACK_TO_ORIGINAL(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Reverts all changes to ped paths done with SWITCH_PED_ROADS_ON and SWITCH_PED_ROADS_OFF
     def SWITCH_PED_ROADS_OFF(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Disables all ped paths in the given area
     def SWITCH_PED_ROADS_ON(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Enables all ped paths in the given area
-    def SWITCH_POLICE_HELIS(self, state: Any) -> None: ...  # Sets whether ghetto birds spawn
-    def SWITCH_RANDOM_TRAINS(self, state: Any) -> None: ...  # Sets whether trains are generated
+    def SWITCH_POLICE_HELIS(self, state: bool) -> None: ...  # Sets whether ghetto birds spawn
+    def SWITCH_RANDOM_TRAINS(self, state: bool) -> None: ...  # Sets whether trains are generated
     def SWITCH_ROADS_BACK_TO_ORIGINAL(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Reverts all changes to car paths done with SWITCH_ROADS_ON and SWITCH_ROADS_OFF
     def SWITCH_ROADS_OFF(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Disables all car paths in the given area
     def SWITCH_ROADS_ON(self, leftBottomX: float, leftBottomY: float, leftBottomZ: float, rightTopX: float, rightTopY: float, rightTopZ: float) -> None: ...  # Enables all car paths in the given area
-    def SWITCH_STREAMING(self, state: Any) -> None: ...  # Sets the streaming of additional models like peds, cars, and maps
-    def SWITCH_WIDESCREEN(self, state: Any) -> None: ...  # Enables widescreen
-    def SWITCH_WORLD_PROCESSING(self, state: Any) -> None: ...  # Sets whether the game should render the world or only the cutscene objects
+    def SWITCH_STREAMING(self, state: bool) -> None: ...  # Sets the streaming of additional models like peds, cars, and maps
+    def SWITCH_WIDESCREEN(self, state: bool) -> None: ...  # Enables widescreen
+    def SWITCH_WORLD_PROCESSING(self, state: bool) -> None: ...  # Sets whether the game should render the world or only the cutscene objects
     def SYNC_WATER(self) -> None: ...  # Flattens water waves
-    def TAKE_PHOTO(self, _p1: Any) -> None: ...  # Takes a screenshot of the screen without any HUD elements and stores the file in the "GTA San Andrea
-    def TAKE_REMOTE_CONTROL_OF_CAR(self, player: Any, vehicle: Any) -> None: ...  # Puts the specified player in control of a remote-control vehicle
-    def TASK_ACHIEVE_HEADING(self, handle: Any, heading: float) -> None: ...  # Rotates a character to the specified angle
-    def TASK_AIM_GUN_AT_CHAR(self, char: Any, target: Any, time: Any) -> None: ...  # Makes a character aim at another character
-    def TASK_AIM_GUN_AT_COORD(self, handle: Any, x: float, y: float, z: float, time: Any) -> None: ...  # Makes the character aim at the specified coordinates
-    def TASK_CAR_DRIVE_TO_COORD(self, driver: Any, vehicle: Any, x: float, y: float, z: float, speed: float, driveStyle: Any, modelId: Any, drivingStyle: Any) -> None: ...
-    def TASK_CAR_DRIVE_WANDER(self, char: Any, vehicle: Any, speed: float, drivingMode: Any) -> None: ...  # Makes the character drive around aimlessly in a vehicle
-    def TASK_CAR_MISSION(self, char: Any, vehicle: Any, targetVehicle: Any, missionId: Any, cruiseSpeed: float, drivingStyle: Any) -> None: ...  # Sets the car's current mission with various parameters
-    def TASK_CAR_TEMP_ACTION(self, char: Any, vehicle: Any, actionId: Any, time: Any) -> None: ...  # Makes the AI driver perform the action in the vehicle for the specified period of time
-    def TASK_CHAR_ARREST_CHAR(self, char: Any, target: Any) -> None: ...  # Makes the character attempt to arrest another character
-    def TASK_CHAR_SLIDE_TO_COORD(self, handle: Any, x: float, y: float, z: float, angle: float, slideSpeed: float) -> None: ...
-    def TASK_CHAR_SLIDE_TO_COORD_AND_PLAY_ANIM(self, handle: Any, x: float, y: float, z: float, heading: float, slideSpeed: float, animationName: str, animationFile: str, blendSpeed: float, loop: Any, lockX: Any, lockY: Any, keepLastFrame: Any, time: Any) -> None: ...  # Makes a character walk to the specified point, trun to heading, then play an animation
-    def TASK_CHAT_WITH_CHAR(self, char: Any, other: Any, leadSpeaker: Any, _p4: Any) -> None: ...  # Makes the character chat with another character
-    def TASK_CLIMB(self, handle: Any, flag: Any) -> None: ...  # Makes the character jump and climb on an object
-    def TASK_COMPLEX_PICKUP_OBJECT(self, char: Any, object: Any) -> None: ...  # Makes character walk to the object and pick it up
-    def TASK_COWER(self, handle: Any) -> None: ...  # Makes the char stumble backwards with their arms in front of their face as if he is backing away fro
-    def TASK_DEAD(self, handle: Any) -> None: ...  # Kills the character
-    def TASK_DESTROY_CAR(self, char: Any, vehicle: Any) -> None: ...  # Makes the character attack a vehicle
-    def TASK_DIE(self, handle: Any) -> None: ...  # Kills the character
-    def TASK_DIE_NAMED_ANIM(self, handle: Any, animationName: str, animationFile: str, blendSpeed: float, time: Any) -> None: ...  # Makes the char perform an animation similarly to 0605
-    def TASK_DIVE_AND_GET_UP(self, handle: Any, directionX: float, directionY: float, timeOnGround: Any) -> None: ...  # Makes the character perform a dive in the specified direction
-    def TASK_DIVE_FROM_ATTACHMENT_AND_GET_UP(self, handle: Any, timeOnGround: Any) -> None: ...  # Makes character detach from host, perform dive then get up
-    def TASK_DRIVE_BY(self, handle: Any, targetChar: Any, targetVehicle: Any, x: float, y: float, z: float, radius: float, type: Any, rightHandCarSeat: Any, fireRate: Any) -> None: ...
-    def TASK_DRIVE_POINT_ROUTE(self, char: Any, vehicle: Any, speed: Any) -> None: ...
-    def TASK_DRIVE_POINT_ROUTE_ADVANCED(self, char: Any, vehicle: Any, speed: float, driveStyle: Any, modelId: Any, drivingStyle: Any) -> None: ...
-    def TASK_DUCK(self, handle: Any, time: Any) -> None: ...  # Makes a character duck with their arms over head
-    def TASK_ENTER_CAR_AS_DRIVER(self, char: Any, vehicle: Any, time: Any) -> None: ...  # Makes a character approach the car and occupy the driver seat
-    def TASK_ENTER_CAR_AS_PASSENGER(self, char: Any, vehicle: Any, time: Any, seat: Any) -> None: ...  # Makes a character approach the car and occupy the specified passenger seat
-    def TASK_EVERYONE_LEAVE_CAR(self, self_: Any) -> None: ...  # Makes all passengers of the car leave it
-    def TASK_FALL_AND_GET_UP(self, handle: Any, fallDown: Any, timeOnGround: Any) -> None: ...  # Makes char fall to the ground and stay there for the specified time
-    def TASK_FLEE_CHAR(self, handle: Any, threat: Any, radius: float, time: Any) -> None: ...  # Makes the character run away from another character
-    def TASK_FLEE_CHAR_ANY_MEANS(self, handle: Any, threat: Any, safeDist: float, time: Any, shoot: Any, shootTime: Any, shootCooldownTime: Any, stealCarDist: float) -> None: ...
-    def TASK_FLEE_POINT(self, handle: Any, x: float, y: float, z: float, radius: float, time: Any) -> None: ...  # Makes the character run away from a point, scared and often screaming
-    def TASK_FOLLOW_FOOTSTEPS(self, handle: Any, target: Any) -> None: ...  # Makes one char follow another
-    def TASK_FOLLOW_PATH_NODES_TO_COORD(self, handle: Any, x: float, y: float, z: float, speed: Any, time: Any) -> None: ...  # Makes the character go to the specified coordinates
-    def TASK_FOLLOW_PATH_NODES_TO_COORD_WITH_RADIUS(self, handle: Any, x: float, y: float, z: float, speed: Any, time: Any, radius: float) -> None: ...  # Makes the specified character run in panic to the specified position
-    def TASK_FOLLOW_PATROL_ROUTE(self, handle: Any, speed: Any, mode: Any) -> None: ...  # Assigns the character to the patrol path
-    def TASK_FOLLOW_POINT_ROUTE(self, handle: Any, speed: Any, mode: Any) -> None: ...  # Makes the character follow the path route
-    def TASK_GOTO_CAR(self, char: Any, vehicle: Any, time: Any, radius: float) -> None: ...
-    def TASK_GOTO_CHAR(self, walking: Any, target: Any, time: Any, radius: float) -> None: ...  # Approaches the character from any direction within the specified radius
-    def TASK_GOTO_CHAR_AIMING(self, handle: Any, target: Any, radiusFrom: float, radiusTo: float) -> None: ...
-    def TASK_GOTO_CHAR_OFFSET(self, char: Any, target: Any, time: Any, radius: float, heading: float) -> None: ...  # Approaches the char at the specified offset, specified by the radius and angle
-    def TASK_GO_STRAIGHT_TO_COORD(self, handle: Any, x: float, y: float, z: float, speed: Any, time: Any) -> None: ...  # Makes the character walk to the specified coordinates
-    def TASK_GO_TO_COORD_ANY_MEANS(self, char: Any, x: float, y: float, z: float, speed: Any, vehicle: Any) -> None: ...  # Assigns the character the task of getting to the specified coordinates
-    def TASK_GO_TO_COORD_WHILE_AIMING(self, char: Any, x: float, y: float, z: float, speed: Any, turnRadius: float, stopRadius: float, target: Any, xOffset: float, yOffset: float, zOffset: float) -> None: ...
-    def TASK_GO_TO_COORD_WHILE_SHOOTING(self, char: Any, x: float, y: float, z: float, speed: Any, turnRadius: float, stopRadius: float, target: Any) -> None: ...  # Makes a character go to the location while shooting at another character
-    def TASK_GO_TO_OBJECT(self, char: Any, object: Any, time: Any, radius: float) -> None: ...  # Makes the character go to an object
-    def TASK_GREET_PARTNER(self, handle: Any, partner: Any, approachRatio: float, greetStyle: Any) -> None: ...  # Makes a character greet another character with a handshake
-    def TASK_HANDS_UP(self, handle: Any, time: Any) -> None: ...  # Makes the char put their hands in the air
-    def TASK_HAND_GESTURE(self, handle: Any, target: Any) -> None: ...  # Makes a character face the other character and make a gesture
-    def TASK_JETPACK(self, handle: Any) -> None: ...
-    def TASK_JUMP(self, handle: Any, state: Any) -> None: ...  # Makes the char perform a jump
-    def TASK_KILL_CHAR_ON_FOOT(self, killer: Any, target: Any) -> None: ...  # Makes a character attack another character on foot
-    def TASK_KILL_CHAR_ON_FOOT_TIMED(self, handle: Any, target: Any, time: Any) -> None: ...  # Makes the character attack the specified character
-    def TASK_KILL_CHAR_ON_FOOT_WHILE_DUCKING(self, char: Any, target: Any, flags: Any, actionDelay: Any, actionChance: Any) -> None: ...
-    def TASK_KINDA_STAY_IN_SAME_PLACE(self, handle: Any, state: Any) -> None: ...  # Makes the character stay near their current position
-    def TASK_LEAVE_ANY_CAR(self, handle: Any) -> None: ...  # Makes the char exit the car, if he is in one
-    def TASK_LEAVE_CAR(self, char: Any, vehicle: Any) -> None: ...  # Makes the character exit the specified vehicle, if they are currently in it
-    def TASK_LEAVE_CAR_AND_FLEE(self, char: Any, vehicle: Any, x: float, y: float, z: float) -> None: ...  # Makes the character exit the vehicle and flee to the specified position
-    def TASK_LEAVE_CAR_IMMEDIATELY(self, char: Any, vehicle: Any) -> None: ...  # Makes the character jump out of the vehicle while it is in motion
-    def TASK_LOOK_ABOUT(self, handle: Any, time: Any) -> None: ...  # Makes a character look out ahead
-    def TASK_LOOK_AT_CHAR(self, observer: Any, target: Any, time: Any) -> None: ...  # Makes the character look at another character
-    def TASK_LOOK_AT_COORD(self, handle: Any, x: float, y: float, z: float, time: Any) -> None: ...  # Makes the char look at the specified coordinates
-    def TASK_LOOK_AT_OBJECT(self, char: Any, object: Any, time: Any) -> None: ...  # Makes the character look at an object
-    def TASK_LOOK_AT_VEHICLE(self, char: Any, vehicle: Any, time: Any) -> None: ...  # Makes the char look at the specified vehicle
-    def TASK_PAUSE(self, handle: Any, time: Any) -> None: ...  # Makes the character pause for the specified amount of time
-    def TASK_PICK_UP_OBJECT(self, char: Any, object: Any, xOffset: float, yOffset: float, zOffset: float, bone: Any, orientation: Any, animationName: str, animationFile: str, time: Any) -> None: ...  # Attaches the specified char to an object with the optional addition of having it perform an animatio
-    def TASK_PICK_UP_SECOND_OBJECT(self, char: Any, object: Any, xOffset: float, yOffset: float, zOffset: float, boneId: Any, orientation: Any, animationName: str, animationFile: str, time: Any) -> None: ...
-    def TASK_PLAY_ANIM(self, handle: Any, animationName: str, animationFile: str, blendSpeed: float, loop: Any, lockX: Any, lockY: Any, keepLastFrame: Any, time: Any) -> None: ...  # Makes the character perform an animation
-    def TASK_PLAY_ANIM_NON_INTERRUPTABLE(self, handle: Any, animationName: str, animationFile: str, blendSpeed: float, loop: Any, lockX: Any, lockY: Any, keepLastFrame: Any, time: Any) -> None: ...  # Makes the character perform an animation like TASK_PLAY_ANIM, except it will not be disturbed by any
-    def TASK_PLAY_ANIM_SECONDARY(self, handle: Any, animationName: str, animationFile: str, blendSpeed: float, loop: Any, lockX: Any, lockY: Any, keepLastFrame: Any, time: Any) -> None: ...  # Makes a character play an animation that affects only the upper half of their body
-    def TASK_PLAY_ANIM_WITH_FLAGS(self, handle: Any, animationName: str, animationFile: str, frameDelta: float, loop: Any, lockX: Any, lockY: Any, lockF: Any, time: Any, disableForce: Any, disableLockZ: Any) -> None: ...  # Makes the char perform an animation
-    def TASK_SAY(self, handle: Any, phrase: Any) -> None: ...  # Makes the character say a phrase from the specified audio table
-    def TASK_SCRATCH_HEAD(self, handle: Any) -> None: ...  # Makes a character scratch their head while looking around
-    def TASK_SET_CHAR_DECISION_MAKER(self, char: Any, handleOrTemplate: Any) -> None: ...  # Sets the decision maker used by the specified char
-    def TASK_SET_IGNORE_WEAPON_RANGE_FLAG(self, handle: Any, state: Any) -> None: ...
-    def TASK_SHAKE_FIST(self, handle: Any) -> None: ...  # Makes the char lift their hand up in the air angrily
-    def TASK_SHOOT_AT_CHAR(self, handle: Any, target: Any, time: Any) -> None: ...
-    def TASK_SHOOT_AT_COORD(self, handle: Any, x: float, y: float, z: float, time: Any) -> None: ...  # Makes the character turn round and shoot at the specified coordinates
-    def TASK_SHUFFLE_TO_NEXT_CAR_SEAT(self, char: Any, vehicle: Any) -> None: ...  # Makes the character move to the seat on the right
-    def TASK_SIT_DOWN(self, handle: Any, time: Any) -> None: ...  # Makes the char sit down for the specified amount of time
-    def TASK_SMART_FLEE_CHAR(self, handle: Any, threat: Any, radius: float, time: Any) -> None: ...  # Makes the character flee from another character
-    def TASK_SMART_FLEE_POINT(self, handle: Any, x: float, y: float, z: float, radius: float, time: Any) -> None: ...  # Makes the character run away from the specified coordinates
-    def TASK_STAND_STILL(self, handle: Any, time: Any) -> None: ...  # Makes the character stand still
-    def TASK_STAY_IN_SAME_PLACE(self, handle: Any, state: Any) -> None: ...  # Makes the character stay in the same place
-    def TASK_SWIM_TO_COORD(self, handle: Any, x: float, y: float, z: float) -> None: ...
-    def TASK_TIRED(self, handle: Any, time: Any) -> None: ...  # Makes the char stop to regain breath
-    def TASK_TOGGLE_DUCK(self, handle: Any, state: Any) -> None: ...  # Makes the character crouch
-    def TASK_TOGGLE_PED_THREAT_SCANNER(self, handle: Any, onFoot: Any, inCar: Any, duringScriptTask: Any) -> None: ...
-    def TASK_TURN_CHAR_TO_FACE_CHAR(self, char: Any, target: Any) -> None: ...  # Makes a character face another character
-    def TASK_TURN_CHAR_TO_FACE_COORD(self, handle: Any, x: float, y: float, z: float) -> None: ...
-    def TASK_USE_ATM(self, handle: Any) -> None: ...  # Makes a character use an ATM machine
-    def TASK_USE_ATTRACTOR(self, char: Any, attractor: Any) -> None: ...
-    def TASK_USE_CLOSEST_MAP_ATTRACTOR(self, handle: Any, radius: float, modelId: Any, fromX: float, fromY: float, fromZ: float, name: str) -> None: ...
-    def TASK_USE_MOBILE_PHONE(self, handle: Any, start: Any) -> None: ...  # Makes a character pull out a cellphone, answer it, and hold it to their ear
-    def TASK_WALK_ALONGSIDE_CHAR(self, handle: Any, target: Any) -> None: ...  # Makes the character walk alongside the specified character
-    def TASK_WANDER_STANDARD(self, handle: Any) -> None: ...  # Makes the character walk around the ped path
-    def TASK_WARP_CHAR_INTO_CAR_AS_DRIVER(self, char: Any, vehicle: Any) -> None: ...  # Warps the character into the specified vehicle's driver seat
-    def TASK_WARP_CHAR_INTO_CAR_AS_PASSENGER(self, char: Any, vehicle: Any, seatId: Any) -> None: ...
-    def TASK_WEAPON_ROLL(self, handle: Any, direction: Any) -> None: ...
+    def TAKE_PHOTO(self, _p1: bool) -> None: ...  # Takes a screenshot of the screen without any HUD elements and stores the file in the "GTA San Andrea
+    def TAKE_REMOTE_CONTROL_OF_CAR(self, player: int, vehicle: Vehicle | int) -> None: ...  # Puts the specified player in control of a remote-control vehicle
+    def TASK_ACHIEVE_HEADING(self, handle: Ped | int, heading: float) -> None: ...  # Rotates a character to the specified angle
+    def TASK_AIM_GUN_AT_CHAR(self, char: Ped | int, target: Ped | int, time: int) -> None: ...  # Makes a character aim at another character
+    def TASK_AIM_GUN_AT_COORD(self, handle: Ped | int, x: float, y: float, z: float, time: int) -> None: ...  # Makes the character aim at the specified coordinates
+    def TASK_CAR_DRIVE_TO_COORD(self, driver: Ped | int, vehicle: Vehicle | int, x: float, y: float, z: float, speed: float, driveStyle: int, modelId: VEHICLE | int, drivingStyle: int) -> None: ...
+    def TASK_CAR_DRIVE_WANDER(self, char: Ped | int, vehicle: Vehicle | int, speed: float, drivingMode: int) -> None: ...  # Makes the character drive around aimlessly in a vehicle
+    def TASK_CAR_MISSION(self, char: Ped | int, vehicle: Vehicle | int, targetVehicle: Vehicle | int, missionId: CAR_MISSION | int, cruiseSpeed: float, drivingStyle: int) -> None: ...  # Sets the car's current mission with various parameters
+    def TASK_CAR_TEMP_ACTION(self, char: Ped | int, vehicle: Vehicle | int, actionId: int, time: int) -> None: ...  # Makes the AI driver perform the action in the vehicle for the specified period of time
+    def TASK_CHAR_ARREST_CHAR(self, char: Ped | int, target: Ped | int) -> None: ...  # Makes the character attempt to arrest another character
+    def TASK_CHAR_SLIDE_TO_COORD(self, handle: Ped | int, x: float, y: float, z: float, angle: float, slideSpeed: float) -> None: ...
+    def TASK_CHAR_SLIDE_TO_COORD_AND_PLAY_ANIM(self, handle: Ped | int, x: float, y: float, z: float, heading: float, slideSpeed: float, animationName: str, animationFile: str, blendSpeed: float, loop: bool, lockX: bool, lockY: bool, keepLastFrame: bool, time: int) -> None: ...  # Makes a character walk to the specified point, trun to heading, then play an animation
+    def TASK_CHAT_WITH_CHAR(self, char: Ped | int, other: Ped | int, leadSpeaker: bool, _p4: int) -> None: ...  # Makes the character chat with another character
+    def TASK_CLIMB(self, handle: Ped | int, flag: bool) -> None: ...  # Makes the character jump and climb on an object
+    def TASK_COMPLEX_PICKUP_OBJECT(self, char: Ped | int, object: GameObject | int) -> None: ...  # Makes character walk to the object and pick it up
+    def TASK_COWER(self, handle: Ped | int) -> None: ...  # Makes the char stumble backwards with their arms in front of their face as if he is backing away fro
+    def TASK_DEAD(self, handle: Ped | int) -> None: ...  # Kills the character
+    def TASK_DESTROY_CAR(self, char: Ped | int, vehicle: Vehicle | int) -> None: ...  # Makes the character attack a vehicle
+    def TASK_DIE(self, handle: Ped | int) -> None: ...  # Kills the character
+    def TASK_DIE_NAMED_ANIM(self, handle: Ped | int, animationName: str, animationFile: str, blendSpeed: float, time: int) -> None: ...  # Makes the char perform an animation similarly to 0605
+    def TASK_DIVE_AND_GET_UP(self, handle: Ped | int, directionX: float, directionY: float, timeOnGround: int) -> None: ...  # Makes the character perform a dive in the specified direction
+    def TASK_DIVE_FROM_ATTACHMENT_AND_GET_UP(self, handle: Ped | int, timeOnGround: int) -> None: ...  # Makes character detach from host, perform dive then get up
+    def TASK_DRIVE_BY(self, handle: Ped | int, targetChar: Ped | int, targetVehicle: Vehicle | int, x: float, y: float, z: float, radius: float, type: int, rightHandCarSeat: bool, fireRate: int) -> None: ...
+    def TASK_DRIVE_POINT_ROUTE(self, char: Ped | int, vehicle: Vehicle | int, speed: int) -> None: ...
+    def TASK_DRIVE_POINT_ROUTE_ADVANCED(self, char: Ped | int, vehicle: Vehicle | int, speed: float, driveStyle: int, modelId: VEHICLE | int, drivingStyle: int) -> None: ...
+    def TASK_DUCK(self, handle: Ped | int, time: int) -> None: ...  # Makes a character duck with their arms over head
+    def TASK_ENTER_CAR_AS_DRIVER(self, char: Ped | int, vehicle: Vehicle | int, time: int) -> None: ...  # Makes a character approach the car and occupy the driver seat
+    def TASK_ENTER_CAR_AS_PASSENGER(self, char: Ped | int, vehicle: Vehicle | int, time: int, seat: int) -> None: ...  # Makes a character approach the car and occupy the specified passenger seat
+    def TASK_EVERYONE_LEAVE_CAR(self, self_: Vehicle | int) -> None: ...  # Makes all passengers of the car leave it
+    def TASK_FALL_AND_GET_UP(self, handle: Ped | int, fallDown: bool, timeOnGround: int) -> None: ...  # Makes char fall to the ground and stay there for the specified time
+    def TASK_FLEE_CHAR(self, handle: Ped | int, threat: Ped | int, radius: float, time: int) -> None: ...  # Makes the character run away from another character
+    def TASK_FLEE_CHAR_ANY_MEANS(self, handle: Ped | int, threat: Ped | int, safeDist: float, time: int, shoot: bool, shootTime: int, shootCooldownTime: int, stealCarDist: float) -> None: ...
+    def TASK_FLEE_POINT(self, handle: Ped | int, x: float, y: float, z: float, radius: float, time: int) -> None: ...  # Makes the character run away from a point, scared and often screaming
+    def TASK_FOLLOW_FOOTSTEPS(self, handle: Ped | int, target: Ped | int) -> None: ...  # Makes one char follow another
+    def TASK_FOLLOW_PATH_NODES_TO_COORD(self, handle: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, time: int) -> None: ...  # Makes the character go to the specified coordinates
+    def TASK_FOLLOW_PATH_NODES_TO_COORD_WITH_RADIUS(self, handle: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, time: int, radius: float) -> None: ...  # Makes the specified character run in panic to the specified position
+    def TASK_FOLLOW_PATROL_ROUTE(self, handle: Ped | int, speed: MOVE_STATE | int, mode: int) -> None: ...  # Assigns the character to the patrol path
+    def TASK_FOLLOW_POINT_ROUTE(self, handle: Ped | int, speed: MOVE_STATE | int, mode: int) -> None: ...  # Makes the character follow the path route
+    def TASK_GOTO_CAR(self, char: Ped | int, vehicle: Vehicle | int, time: int, radius: float) -> None: ...
+    def TASK_GOTO_CHAR(self, walking: Ped | int, target: Ped | int, time: int, radius: float) -> None: ...  # Approaches the character from any direction within the specified radius
+    def TASK_GOTO_CHAR_AIMING(self, handle: Ped | int, target: Ped | int, radiusFrom: float, radiusTo: float) -> None: ...
+    def TASK_GOTO_CHAR_OFFSET(self, char: Ped | int, target: Ped | int, time: int, radius: float, heading: float) -> None: ...  # Approaches the char at the specified offset, specified by the radius and angle
+    def TASK_GO_STRAIGHT_TO_COORD(self, handle: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, time: int) -> None: ...  # Makes the character walk to the specified coordinates
+    def TASK_GO_TO_COORD_ANY_MEANS(self, char: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, vehicle: Vehicle | int) -> None: ...  # Assigns the character the task of getting to the specified coordinates
+    def TASK_GO_TO_COORD_WHILE_AIMING(self, char: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, turnRadius: float, stopRadius: float, target: Ped | int, xOffset: float, yOffset: float, zOffset: float) -> None: ...
+    def TASK_GO_TO_COORD_WHILE_SHOOTING(self, char: Ped | int, x: float, y: float, z: float, speed: MOVE_STATE | int, turnRadius: float, stopRadius: float, target: Ped | int) -> None: ...  # Makes a character go to the location while shooting at another character
+    def TASK_GO_TO_OBJECT(self, char: Ped | int, object: GameObject | int, time: int, radius: float) -> None: ...  # Makes the character go to an object
+    def TASK_GREET_PARTNER(self, handle: Ped | int, partner: Ped | int, approachRatio: float, greetStyle: int) -> None: ...  # Makes a character greet another character with a handshake
+    def TASK_HANDS_UP(self, handle: Ped | int, time: int) -> None: ...  # Makes the char put their hands in the air
+    def TASK_HAND_GESTURE(self, handle: Ped | int, target: Ped | int) -> None: ...  # Makes a character face the other character and make a gesture
+    def TASK_JETPACK(self, handle: Ped | int) -> None: ...
+    def TASK_JUMP(self, handle: Ped | int, state: bool) -> None: ...  # Makes the char perform a jump
+    def TASK_KILL_CHAR_ON_FOOT(self, killer: Ped | int, target: Ped | int) -> None: ...  # Makes a character attack another character on foot
+    def TASK_KILL_CHAR_ON_FOOT_TIMED(self, handle: Ped | int, target: Ped | int, time: int) -> None: ...  # Makes the character attack the specified character
+    def TASK_KILL_CHAR_ON_FOOT_WHILE_DUCKING(self, char: Ped | int, target: Ped | int, flags: int, actionDelay: int, actionChance: int) -> None: ...
+    def TASK_KINDA_STAY_IN_SAME_PLACE(self, handle: Ped | int, state: bool) -> None: ...  # Makes the character stay near their current position
+    def TASK_LEAVE_ANY_CAR(self, handle: Ped | int) -> None: ...  # Makes the char exit the car, if he is in one
+    def TASK_LEAVE_CAR(self, char: Ped | int, vehicle: Vehicle | int) -> None: ...  # Makes the character exit the specified vehicle, if they are currently in it
+    def TASK_LEAVE_CAR_AND_FLEE(self, char: Ped | int, vehicle: Vehicle | int, x: float, y: float, z: float) -> None: ...  # Makes the character exit the vehicle and flee to the specified position
+    def TASK_LEAVE_CAR_IMMEDIATELY(self, char: Ped | int, vehicle: Vehicle | int) -> None: ...  # Makes the character jump out of the vehicle while it is in motion
+    def TASK_LOOK_ABOUT(self, handle: Ped | int, time: int) -> None: ...  # Makes a character look out ahead
+    def TASK_LOOK_AT_CHAR(self, observer: Ped | int, target: Ped | int, time: int) -> None: ...  # Makes the character look at another character
+    def TASK_LOOK_AT_COORD(self, handle: Ped | int, x: float, y: float, z: float, time: int) -> None: ...  # Makes the char look at the specified coordinates
+    def TASK_LOOK_AT_OBJECT(self, char: Ped | int, object: GameObject | int, time: Any) -> None: ...  # Makes the character look at an object
+    def TASK_LOOK_AT_VEHICLE(self, char: Ped | int, vehicle: Vehicle | int, time: int) -> None: ...  # Makes the char look at the specified vehicle
+    def TASK_PAUSE(self, handle: Ped | int, time: int) -> None: ...  # Makes the character pause for the specified amount of time
+    def TASK_PICK_UP_OBJECT(self, char: Ped | int, object: GameObject | int, xOffset: float, yOffset: float, zOffset: float, bone: PED_BONE | int, orientation: int, animationName: str, animationFile: str, time: int) -> None: ...  # Attaches the specified char to an object with the optional addition of having it perform an animatio
+    def TASK_PICK_UP_SECOND_OBJECT(self, char: Ped | int, object: GameObject | int, xOffset: float, yOffset: float, zOffset: float, boneId: PED_BONE | int, orientation: int, animationName: str, animationFile: str, time: int) -> None: ...
+    def TASK_PLAY_ANIM(self, handle: Ped | int, animationName: str, animationFile: str, blendSpeed: float, loop: bool, lockX: bool, lockY: bool, keepLastFrame: bool, time: int) -> None: ...  # Makes the character perform an animation
+    def TASK_PLAY_ANIM_NON_INTERRUPTABLE(self, handle: Ped | int, animationName: str, animationFile: str, blendSpeed: float, loop: bool, lockX: bool, lockY: bool, keepLastFrame: bool, time: int) -> None: ...  # Makes the character perform an animation like TASK_PLAY_ANIM, except it will not be disturbed by any
+    def TASK_PLAY_ANIM_SECONDARY(self, handle: Ped | int, animationName: str, animationFile: str, blendSpeed: float, loop: bool, lockX: bool, lockY: bool, keepLastFrame: bool, time: int) -> None: ...  # Makes a character play an animation that affects only the upper half of their body
+    def TASK_PLAY_ANIM_WITH_FLAGS(self, handle: Ped | int, animationName: str, animationFile: str, frameDelta: float, loop: bool, lockX: bool, lockY: bool, lockF: bool, time: int, disableForce: bool, disableLockZ: bool) -> None: ...  # Makes the char perform an animation
+    def TASK_SAY(self, handle: Ped | int, phrase: int) -> None: ...  # Makes the character say a phrase from the specified audio table
+    def TASK_SCRATCH_HEAD(self, handle: Ped | int) -> None: ...  # Makes a character scratch their head while looking around
+    def TASK_SET_CHAR_DECISION_MAKER(self, char: Ped | int, handleOrTemplate: int) -> None: ...  # Sets the decision maker used by the specified char
+    def TASK_SET_IGNORE_WEAPON_RANGE_FLAG(self, handle: Ped | int, state: bool) -> None: ...
+    def TASK_SHAKE_FIST(self, handle: Ped | int) -> None: ...  # Makes the char lift their hand up in the air angrily
+    def TASK_SHOOT_AT_CHAR(self, handle: Ped | int, target: Ped | int, time: int) -> None: ...
+    def TASK_SHOOT_AT_COORD(self, handle: Ped | int, x: float, y: float, z: float, time: int) -> None: ...  # Makes the character turn round and shoot at the specified coordinates
+    def TASK_SHUFFLE_TO_NEXT_CAR_SEAT(self, char: Ped | int, vehicle: Vehicle | int) -> None: ...  # Makes the character move to the seat on the right
+    def TASK_SIT_DOWN(self, handle: Ped | int, time: int) -> None: ...  # Makes the char sit down for the specified amount of time
+    def TASK_SMART_FLEE_CHAR(self, handle: Ped | int, threat: Ped | int, radius: float, time: int) -> None: ...  # Makes the character flee from another character
+    def TASK_SMART_FLEE_POINT(self, handle: Ped | int, x: float, y: float, z: float, radius: float, time: int) -> None: ...  # Makes the character run away from the specified coordinates
+    def TASK_STAND_STILL(self, handle: Ped | int, time: int) -> None: ...  # Makes the character stand still
+    def TASK_STAY_IN_SAME_PLACE(self, handle: Ped | int, state: bool) -> None: ...  # Makes the character stay in the same place
+    def TASK_SWIM_TO_COORD(self, handle: Ped | int, x: float, y: float, z: float) -> None: ...
+    def TASK_TIRED(self, handle: Ped | int, time: int) -> None: ...  # Makes the char stop to regain breath
+    def TASK_TOGGLE_DUCK(self, handle: Ped | int, state: bool) -> None: ...  # Makes the character crouch
+    def TASK_TOGGLE_PED_THREAT_SCANNER(self, handle: Ped | int, onFoot: bool, inCar: bool, duringScriptTask: bool) -> None: ...
+    def TASK_TURN_CHAR_TO_FACE_CHAR(self, char: Ped | int, target: Ped | int) -> None: ...  # Makes a character face another character
+    def TASK_TURN_CHAR_TO_FACE_COORD(self, handle: Ped | int, x: float, y: float, z: float) -> None: ...
+    def TASK_USE_ATM(self, handle: Ped | int) -> None: ...  # Makes a character use an ATM machine
+    def TASK_USE_ATTRACTOR(self, char: Ped | int, attractor: int) -> None: ...
+    def TASK_USE_CLOSEST_MAP_ATTRACTOR(self, handle: Ped | int, radius: float, modelId: int, fromX: float, fromY: float, fromZ: float, name: str) -> None: ...
+    def TASK_USE_MOBILE_PHONE(self, handle: Ped | int, start: bool) -> None: ...  # Makes a character pull out a cellphone, answer it, and hold it to their ear
+    def TASK_WALK_ALONGSIDE_CHAR(self, handle: Ped | int, target: Ped | int) -> None: ...  # Makes the character walk alongside the specified character
+    def TASK_WANDER_STANDARD(self, handle: Ped | int) -> None: ...  # Makes the character walk around the ped path
+    def TASK_WARP_CHAR_INTO_CAR_AS_DRIVER(self, char: Ped | int, vehicle: Vehicle | int) -> None: ...  # Warps the character into the specified vehicle's driver seat
+    def TASK_WARP_CHAR_INTO_CAR_AS_PASSENGER(self, char: Ped | int, vehicle: Vehicle | int, seatId: int) -> None: ...
+    def TASK_WEAPON_ROLL(self, handle: Ped | int, direction: bool) -> None: ...
     def TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME(self, name: str) -> None: ...  # Ends any script whose name (03A4) matches the given string
-    def TURN_CAR_TO_FACE_COORD(self, self_: Any, x: float, y: float) -> None: ...  # Sets the car's heading so that it is facing the 2D coordinate
-    def UNLOAD_SPECIAL_CHARACTER(self, slotId: Any) -> None: ...  # Releases the special character (023C), freeing game memory
+    def TURN_CAR_TO_FACE_COORD(self, self_: Vehicle | int, x: float, y: float) -> None: ...  # Sets the car's heading so that it is facing the 2D coordinate
+    def UNLOAD_SPECIAL_CHARACTER(self, slotId: int) -> None: ...  # Releases the special character (023C), freeing game memory
     def UNMARK_ALL_ROAD_NODES_AS_DONT_WANDER(self) -> None: ...
-    def UNPAUSE_PLAYBACK_RECORDED_CAR(self, self_: Any) -> None: ...  # Unfreezes the vehicle on its path
-    def UPDATE_PICKUP_MONEY_PER_DAY(self, self_: Any, value: Any) -> None: ...
+    def UNPAUSE_PLAYBACK_RECORDED_CAR(self, self_: Vehicle | int) -> None: ...  # Unfreezes the vehicle on its path
+    def UPDATE_PICKUP_MONEY_PER_DAY(self, self_: int, value: int) -> None: ...
     def USE_DETONATOR(self) -> None: ...  # Detonates all satchel charges and car bombs planted by the player
-    def USE_TEXT_COMMANDS(self, state: Any) -> None: ...  # Enables text and texture drawing
-    def VEHICLE_CAN_BE_TARGETTED_BY_HS_MISSILE(self, self_: Any, state: Any) -> None: ...  # Sets whether the player can target this vehicle with a heatseeking rocket launcher
-    def VEHICLE_DOES_PROVIDE_COVER(self, self_: Any, state: Any) -> None: ...  # Sets whether characters in combat will choose to use the vehicle as cover from gunfire
-    def WAIT(self, time: Any) -> None: ...  # Pauses the script execution for specified amount of time in milliseconds
-    def WARP_CHAR_FROM_CAR_TO_COORD(self, self_: Any, x: float, y: float, z: float) -> None: ...  # Pulls the character out of their car and places at the location
-    def WARP_CHAR_INTO_CAR(self, self_: Any, vehicle: Any) -> None: ...  # Puts the character in the specified vehicle
-    def WARP_CHAR_INTO_CAR_AS_PASSENGER(self, self_: Any, handle: Any, seat: Any) -> None: ...  # Puts the character into a vehicle's passenger seat
+    def USE_TEXT_COMMANDS(self, state: bool) -> None: ...  # Enables text and texture drawing
+    def VEHICLE_CAN_BE_TARGETTED_BY_HS_MISSILE(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the player can target this vehicle with a heatseeking rocket launcher
+    def VEHICLE_DOES_PROVIDE_COVER(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether characters in combat will choose to use the vehicle as cover from gunfire
+    def WAIT(self, time: int) -> None: ...  # Pauses the script execution for specified amount of time in milliseconds
+    def WARP_CHAR_FROM_CAR_TO_COORD(self, self_: Ped | int, x: float, y: float, z: float) -> None: ...  # Pulls the character out of their car and places at the location
+    def WARP_CHAR_INTO_CAR(self, self_: Ped | int, vehicle: Vehicle | int) -> None: ...  # Puts the character in the specified vehicle
+    def WARP_CHAR_INTO_CAR_AS_PASSENGER(self, self_: Ped | int, handle: Vehicle | int, seat: int) -> None: ...  # Puts the character into a vehicle's passenger seat
     def WAS_CUTSCENE_SKIPPED(self) -> bool: ...  # Returns true if the cutscene was skipped
-    def WINCH_CAN_PICK_OBJECT_UP(self, self_: Any, state: Any) -> None: ...  # Sets whether the object can be picked up with the magnocrane
-    def WINCH_CAN_PICK_VEHICLE_UP(self, self_: Any, state: Any) -> None: ...  # Sets whether the vehicle can be picked up using the magnocrane
+    def WINCH_CAN_PICK_OBJECT_UP(self, self_: GameObject | int, state: bool) -> None: ...  # Sets whether the object can be picked up with the magnocrane
+    def WINCH_CAN_PICK_VEHICLE_UP(self, self_: Vehicle | int, state: bool) -> None: ...  # Sets whether the vehicle can be picked up using the magnocrane
 
 
 cmd: _CommandNamespace

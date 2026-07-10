@@ -19,7 +19,7 @@ try:
 except ImportError:
     from . import _mock as _pysa
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 RELOAD_KEY = 0x7A  # F11 - set to None (from a script) to disable hot reload
 
 
@@ -73,6 +73,17 @@ _reload_was_down = False
 # coroutine tasks: generators resumed by the tick loop
 _task_funcs: list = []    # @script-decorated generator functions (restarted on game_start)
 _tasks: list = []         # live Task instances
+
+_NATIVE_GATED_EVENTS = frozenset({
+    "hud_draw", "radar_draw", "after_fade_draw", "menu_draw",
+    "vehicle_render", "ped_render", "object_render",
+})
+
+
+def _sync_native_event(event: str) -> None:
+    if event in _NATIVE_GATED_EVENTS:
+        enabled = any(not handler.disabled for handler in _handlers.get(event, ()))
+        _pysa.set_event_enabled(event, enabled)
 
 
 class Task:
@@ -146,10 +157,14 @@ def register(event: str, fn, **extra):
         _cheat_watchers.append(h)
     else:
         _handlers.setdefault(event, []).append(h)
+        _sync_native_event(event)
     return fn
 
 
 def _clear_registries() -> None:
+    for event in _NATIVE_GATED_EVENTS:
+        if _handlers.get(event):
+            _pysa.set_event_enabled(event, False)
     _handlers.clear()
     _interval_ticks.clear()
     _key_watchers.clear()
@@ -254,6 +269,8 @@ def _rollback_registries(checkpoint) -> None:
     # remaining low-level hooks installed directly by the script.
     game_events._rollback(checkpoint["game_events"])
     hooks._rollback(checkpoint["hooks"])
+    for event in _NATIVE_GATED_EVENTS:
+        _sync_native_event(event)
 
 
 def _unload_script_modules() -> None:
@@ -337,6 +354,13 @@ def reload_scripts() -> None:
 def dispatch_simple(event: str) -> None:
     for h in _handlers.get(event, ()):  # copy not needed: handlers disable, not remove
         h.run()
+    _sync_native_event(event)
+    if event == "shutdown":
+        try:
+            from . import storage
+            storage.flush_all()
+        except Exception:
+            _pysa.log(f"[pysa] storage flush failed:\n{traceback.format_exc()}")
 
 
 def _tick() -> None:
@@ -454,11 +478,13 @@ def dispatch(event: str, arg=None) -> None:
                     h.run(entity, model)
         elif arg is not None and event in ("vehicle_created", "vehicle_destroyed",
                                            "ped_created", "ped_destroyed",
-                                           "object_created", "object_destroyed"):
+                                           "object_created", "object_destroyed",
+                                           "vehicle_render", "ped_render", "object_render"):
             if _handlers.get(event):
                 entity = _wrap_entity(event, arg)
                 for h in _handlers[event]:
                     h.run(entity)
+                _sync_native_event(event)
         else:
             dispatch_simple(event)
     except Exception:

@@ -168,6 +168,29 @@ class RuntimeTests(unittest.TestCase):
 
         self.assertEqual(received, ["reset", "restart"])
 
+    def test_high_frequency_native_events_are_subscription_gated(self):
+        received = []
+        self.assertNotIn("vehicle_render", _mock._enabled_events)
+
+        _runtime.register("vehicle_render", lambda vehicle: received.append(vehicle))
+        self.assertIn("vehicle_render", _mock._enabled_events)
+        _runtime.dispatch("vehicle_render", 0x123400)
+
+        self.assertIsInstance(received[0], Vehicle)
+        self.assertEqual(received[0].address, 0x123400)
+        _runtime._clear_registries()
+        self.assertNotIn("vehicle_render", _mock._enabled_events)
+
+    def test_crashed_render_handler_turns_its_native_gate_off(self):
+        def broken(_vehicle):
+            raise RuntimeError("render failed")
+
+        _runtime.register("vehicle_render", broken)
+        _runtime.dispatch("vehicle_render", 0x123400)
+
+        self.assertTrue(_runtime._handlers["vehicle_render"][0].disabled)
+        self.assertNotIn("vehicle_render", _mock._enabled_events)
+
     def test_model_change_events_wrap_entities_and_include_model(self):
         received = []
         _runtime.register("vehicle_model_changed",

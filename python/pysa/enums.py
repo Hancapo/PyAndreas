@@ -5,7 +5,7 @@ The public names are shortened for Python (`MOVE_STATE.WALK` instead of
 All enums inherit from :class:`int`, so existing APIs and raw commands accept
 them without conversion.
 """
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 
 
 class MOVE_STATE(IntEnum):
@@ -207,3 +207,204 @@ class FIGHT_STYLE(IntEnum):
     FLOWER = 14
     GRAB_KICK = 15
     ELBOWS = 16
+
+
+class PED_BONE(IntEnum):
+    PELVIS1 = 1
+    PELVIS = 2
+    SPINE1 = 3
+    UPPER_TORSO = 4
+    NECK = 5
+    HEAD2 = 6
+    HEAD1 = 7
+    HEAD = 8
+    RIGHT_UPPER_TORSO = 21
+    RIGHT_SHOULDER = 22
+    RIGHT_ELBOW = 23
+    RIGHT_WRIST = 24
+    RIGHT_HAND = 25
+    RIGHT_THUMB = 26
+    LEFT_UPPER_TORSO = 31
+    LEFT_SHOULDER = 32
+    LEFT_ELBOW = 33
+    LEFT_WRIST = 34
+    LEFT_HAND = 35
+    LEFT_THUMB = 36
+    LEFT_HIP = 41
+    LEFT_KNEE = 42
+    LEFT_ANKLE = 43
+    LEFT_FOOT = 44
+    RIGHT_HIP = 51
+    RIGHT_KNEE = 52
+    RIGHT_ANKLE = 53
+    RIGHT_FOOT = 54
+
+
+class GANG(IntEnum):
+    BALLAS = 0
+    GROVE = 1
+    VAGOS = 2
+    RIFA = 3
+    DA_NANG_BOYS = 4
+    MAFIA = 5
+    TRIAD = 6
+    AZTECAS = 7
+    RUSSIAN_MAFIA = 8
+    BIKERS = 9
+
+
+class VEHICLE_CLASS(IntEnum):
+    NORMAL = 0
+    POOR_FAMILY = 1
+    RICH_FAMILY = 2
+    EXECUTIVE = 3
+    WORKER = 4
+    BIG = 5
+    TAXI = 6
+    MOPED = 7
+    MOTORBIKE = 8
+    LEISURE_BOAT = 9
+    WORKER_BOAT = 10
+    BICYCLE = 11
+    IGNORE = -1
+
+
+class VEHICLE_TYPE(IntEnum):
+    INVALID = -1
+    AUTOMOBILE = 0
+    MONSTER_TRUCK = 1
+    QUAD = 2
+    HELICOPTER = 3
+    PLANE = 4
+    BOAT = 5
+    TRAIN = 6
+    FAKE_HELICOPTER = 7
+    FAKE_PLANE = 8
+    BIKE = 9
+    BMX = 10
+    TRAILER = 11
+
+
+class ANIMATION_FLAG(IntFlag):
+    STARTED = 0x0001
+    LOOPED = 0x0002
+    FREEZE_LAST_FRAME = 0x0004
+    UNLOCK_LAST_FRAME = 0x0008
+    PARTIAL = 0x0010
+    MOVEMENT = 0x0020
+    TRANSLATE_X = 0x0040
+    TRANSLATE_Y = 0x0080
+    ADD_TO_BLEND = 0x0400
+    FREEZE_TRANSLATION = 0x2000
+    BLOCK_REFERENCED = 0x4000
+    INDESTRUCTIBLE = 0x8000
+
+
+class BLIP_SPRITE(IntEnum):
+    NONE = 0
+    WHITE = 1
+    CENTRE = 2
+    MAP_HERE = 3
+    NORTH = 4
+    AIRYARD = 5
+    AMMU_NATION = 6
+    BARBER = 7
+    BIG_SMOKE = 8
+    BOATYARD = 9
+    BURGER_SHOT = 10
+    BULLDOZER = 11
+    CATALINA = 12
+    CESAR = 13
+    CHICKEN = 14
+    CJ = 15
+    CRASH = 16
+    DINER = 17
+    EMMET = 18
+    ENEMY_ATTACK = 19
+    FIRE = 20
+    GIRLFRIEND = 21
+    HOSPITAL = 22
+    SYNDICATE = 23
+    MADD_DOGG = 24
+    MAFIA_CASINO = 25
+    MC_STRAP = 26
+    MOD_GARAGE = 27
+    OG_LOC = 28
+    PIZZA = 29
+    POLICE = 30
+    PROPERTY_GREEN = 31
+    PROPERTY_RED = 32
+    RACE = 33
+    RYDER = 34
+    SAVE_GAME = 35
+    SCHOOL = 36
+    QUESTION = 37
+    SWEET = 38
+    TATTOO = 39
+    THE_TRUTH = 40
+    WAYPOINT = 41
+    TORENO_RANCH = 42
+    TRIADS = 43
+    TRIADS_CASINO = 44
+    TSHIRT = 45
+    WOOZIE = 46
+    ZERO = 47
+    DATE_DISCO = 48
+    DATE_DRINK = 49
+    DATE_FOOD = 50
+    TRUCK = 51
+    CASH = 52
+    FLAG = 53
+    GYM = 54
+    IMPOUND = 55
+    LIGHT = 56
+    RUNWAY = 57
+    GANG_BLUE = 58
+    GANG_PURPLE = 59
+    GANG_YELLOW = 60
+    GANG_NEUTRAL = 61
+    GANG_GREEN = 62
+    SPRAY = 63
+
+
+class EXPLOSION_KIND(IntEnum):
+    GRENADE = 0
+    MOLOTOV = 1
+    ROCKET = 2
+    WEAK_ROCKET = 3
+    CAR = 4
+    QUICK_CAR = 5
+    BOAT = 6
+    AIRCRAFT = 7
+    MINE = 8
+    OBJECT = 9
+    TANK_FIRE = 10
+    SMALL = 11
+    RC_VEHICLE = 12
+
+
+class PICKUP_TYPE(IntEnum):
+    NONE = 0
+    IN_SHOP = 1
+    ON_STREET = 2
+    RESPAWNS = 2  # friendly alias for the usual street weapon behavior
+    ONCE = 3
+    ONCE_TIMEOUT = 4
+    ONCE_TIMEOUT_SLOW = 5
+    COLLECTABLE = 6
+    IN_SHOP_OUT_OF_STOCK = 7
+    MONEY = 8
+    MINE_INACTIVE = 9
+    MINE_ARMED = 10
+    NAUTICAL_MINE_INACTIVE = 11
+    NAUTICAL_MINE_ARMED = 12
+    FLOATING_PACKAGE = 13
+    FLOATING_PACKAGE_FLOATING = 14
+    ON_STREET_SLOW = 15
+    ASSET_REVENUE = 16
+    PROPERTY_LOCKED = 17
+    PROPERTY_FOR_SALE = 18
+    MONEY_PERMANENT = 19
+    SNAPSHOT = 20
+    TWO_PLAYER = 21
+    ONCE_FOR_MISSION = 22

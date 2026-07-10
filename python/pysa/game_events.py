@@ -4,13 +4,13 @@ These read like the lifecycle events you already use (`on_vehicle_created`
 etc.), but they fire on things the game *does*, with domain-named fields:
 
     @pysa.on_vehicle_damage
-    def tougher_cars(e):
+    def tougher_cars(e: pysa.VehicleDamageEvent) -> None:
         if e.vehicle == pysa.player.vehicle:
             e.amount *= 0.5        # take half damage
             # e.cancel()          # or ignore the hit entirely
 
     @pysa.on_explosion
-    def no_booms(e):
+    def no_booms(e: pysa.ExplosionEvent) -> None:
         if e.position.distance_to(pysa.player.pos) < 30:
             e.cancel()
 
@@ -28,6 +28,7 @@ not covered here, drop to `pysa.on_call(...)`.
 from __future__ import annotations
 
 import traceback
+from typing import TYPE_CHECKING, Union
 
 try:
     import _pysa
@@ -35,8 +36,15 @@ except ImportError:
     from . import _mock as _pysa
 
 from . import hooks
+from .enums import EXPLOSION_KIND
 from .functions import FUNCTIONS
 from .math3 import Vector3
+from .models import WEAPON
+
+if TYPE_CHECKING:
+    from .entities import GameObject, Ped, Vehicle
+
+EventEntity = Union["Ped", "Vehicle", "GameObject", int, None]
 
 _OWNER_WRAP = {"CPed": "ped", "CPlayerPed": "ped", "CVehicle": "vehicle",
                "CAutomobile": "vehicle", "CObject": "object"}
@@ -58,11 +66,11 @@ def entity_from_ptr(ptr: int):
 
 
 # event name -> (function, subject_or_None, {domain_field: (arg_name, kind)})
-# kind: "entity" | "ped" | "vehicle" | "object" | "int" | "float" | "bool" | "vec"
+# kind: entity wrappers, scalar primitives, vectors, or a domain enum.
 _EVENTS = {
     "vehicle_damage": ("CVehicle::InflictDamage", "vehicle", {
         "attacker": ("damager", "entity"),
-        "weapon": ("weapon", "int"),
+        "weapon": ("weapon", "weapon"),
         "amount": ("intensity", "float"),
     }),
     "vehicle_explode": ("CVehicle::BlowUpCar", "vehicle", {
@@ -78,19 +86,19 @@ _EVENTS = {
     "explosion": ("CExplosion::AddExplosion", None, {
         "victim": ("victim", "entity"),
         "creator": ("creator", "entity"),
-        "kind": ("explosionType", "int"),
+        "kind": ("explosionType", "explosion"),
         "position": ("posn", "vec"),
     }),
     "wanted_level_change": ("CPlayerPed::SetWantedLevel", "player", {
         "level": ("level", "int"),
     }),
     "weapon_given": ("CPed::GiveWeapon", "ped", {
-        "weapon": ("weaponType", "int"),
+        "weapon": ("weaponType", "weapon"),
         "ammo": ("ammo", "int"),
     }),
     "projectile_fired": ("CProjectileInfo::AddProjectile", None, {
         "shooter": ("creator", "entity"),
-        "weapon": ("weaponType", "int"),
+        "weapon": ("weaponType", "weapon"),
         "position": ("posn", "vec"),
         "target": ("victim", "entity"),
     }),
@@ -123,6 +131,16 @@ class GameEvent:
             return Vector3(self._h.argf(slot), self._h.argf(slot + 1),
                            self._h.argf(slot + 2))
         raw = self._h.arg(slot)
+        if kind == "weapon":
+            try:
+                return WEAPON(raw)
+            except ValueError:
+                return raw
+        if kind == "explosion":
+            try:
+                return EXPLOSION_KIND(raw)
+            except ValueError:
+                return raw
         if kind == "entity":
             return entity_from_ptr(raw)
         if kind in ("ped", "vehicle", "object"):
@@ -165,7 +183,68 @@ class GameEvent:
         return names
 
     def __repr__(self) -> str:
-        return f"GameEvent({', '.join(self._field_names())})"
+        return f"{type(self).__name__}({', '.join(self._field_names())})"
+
+
+class VehicleDamageEvent(GameEvent):
+    """A vehicle is about to receive damage; writable fields alter the hit."""
+
+    vehicle: Vehicle
+    attacker: EventEntity
+    weapon: WEAPON | int
+    amount: float
+
+
+class VehicleExplodeEvent(GameEvent):
+    vehicle: Vehicle
+    attacker: EventEntity
+
+
+class TyreBurstEvent(GameEvent):
+    vehicle: Vehicle
+    tyre: int
+
+
+class WeaponFireEvent(GameEvent):
+    shooter: EventEntity
+    target: EventEntity
+
+
+class ExplosionEvent(GameEvent):
+    victim: EventEntity
+    creator: EventEntity
+    kind: EXPLOSION_KIND | int
+    position: Vector3
+
+
+class WantedLevelChangeEvent(GameEvent):
+    player: Ped
+    level: int
+
+
+class WeaponGivenEvent(GameEvent):
+    ped: Ped
+    weapon: WEAPON | int
+    ammo: int
+
+
+class ProjectileFiredEvent(GameEvent):
+    shooter: EventEntity
+    weapon: WEAPON | int
+    position: Vector3
+    target: EventEntity
+
+
+_EVENT_CLASSES = {
+    "vehicle_damage": VehicleDamageEvent,
+    "vehicle_explode": VehicleExplodeEvent,
+    "tyre_burst": TyreBurstEvent,
+    "weapon_fire": WeaponFireEvent,
+    "explosion": ExplosionEvent,
+    "wanted_level_change": WantedLevelChangeEvent,
+    "weapon_given": WeaponGivenEvent,
+    "projectile_fired": ProjectileFiredEvent,
+}
 
 
 # Registry: one hook per event, fanning out to many handlers.
@@ -175,7 +254,7 @@ _hook_ids: dict[str, int] = {}
 
 def _make_dispatch(event_name: str, subject, resolved: dict, owner_class: str):
     def dispatch(raw: hooks.Hook):
-        ev = GameEvent(raw, resolved, subject, owner_class)
+        ev = _EVENT_CLASSES[event_name](raw, resolved, subject, owner_class)
         for fn in list(_handlers.get(event_name, ())):
             try:
                 fn(ev)

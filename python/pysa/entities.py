@@ -171,6 +171,96 @@ class Entity:
         return blip
 
 
+class StaticEntity:
+    """Read-only wrapper for a streamed world building or dummy entity.
+
+    These entities do not have SCM handles, so they cannot be passed to script
+    commands. They are primarily useful for inspection and spatial queries.
+    """
+
+    __slots__ = ("_address",)
+    _struct_class = "CEntity"
+
+    def __init__(self, address: int):
+        self._address = int(address)
+
+    @property
+    def address(self) -> int:
+        return self._address
+
+    @property
+    def exists(self) -> bool:
+        return self._address != 0
+
+    @property
+    def struct(self):
+        from .gamestruct import Struct
+        if not self._address:
+            raise ValueError(f"{type(self).__name__} has no live address")
+        return Struct(self._address, self._struct_class)
+
+    @property
+    def model(self) -> int:
+        value = _pysa.read_u16(self._address + 0x22)
+        return value - 0x10000 if value >= 0x8000 else value
+
+    @property
+    def model_info(self):
+        from .model_info import model_info
+        return model_info(self.model)
+
+    @property
+    def area(self) -> int:
+        return _pysa.read_u8(self._address + 0x2F)
+
+    @property
+    def pos(self) -> Vector3:
+        matrix = _pysa.read_u32(self._address + 0x14)
+        base = matrix + 0x30 if matrix else self._address + 0x4
+        return Vector3(_pysa.read_f32(base), _pysa.read_f32(base + 4),
+                       _pysa.read_f32(base + 8))
+
+    @property
+    def heading(self) -> float:
+        import math
+        matrix = _pysa.read_u32(self._address + 0x14)
+        if not matrix:
+            return math.degrees(_pysa.read_f32(self._address + 0x10)) % 360.0
+        forward_x = _pysa.read_f32(matrix + 0x10)
+        forward_y = _pysa.read_f32(matrix + 0x14)
+        return math.degrees(math.atan2(-forward_x, forward_y)) % 360.0
+
+    def distance_to(self, target) -> float:
+        other = target.pos if hasattr(target, "pos") else target
+        return self.pos.distance_to(other)
+
+    def is_near(self, target, radius: float) -> bool:
+        return self.distance_to(target) <= radius
+
+    def __eq__(self, other) -> bool:
+        return type(self) is type(other) and self._address == other._address
+
+    def __hash__(self) -> int:
+        return hash((type(self), self._address))
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(model={self.model}, addr=0x{self._address:08X})"
+
+
+class Building(StaticEntity):
+    """A streamed map building from the game's building pool."""
+
+    __slots__ = ()
+    _struct_class = "CBuilding"
+
+
+class Dummy(StaticEntity):
+    """A lightweight streamed map entity from the game's dummy pool."""
+
+    __slots__ = ()
+    _struct_class = "CDummy"
+
+
 class PedTasks:
     """AI task shortcuts for a ped: `ped.tasks.wander()`, `.attack(target)`..."""
 
@@ -464,6 +554,11 @@ class Ped(Entity):
     @property
     def model(self):
         return _enum_or_int(PED, cmd.GET_CHAR_MODEL(self))
+
+    @property
+    def model_info(self):
+        from .model_info import model_info
+        return model_info(self.model)
 
     @property
     def current_weapon(self) -> int:
@@ -1055,6 +1150,11 @@ class Vehicle(Entity):
         return _enum_or_int(VEHICLE, cmd.GET_CAR_MODEL(self))
 
     @property
+    def model_info(self):
+        from .model_info import model_info
+        return model_info(self.model)
+
+    @property
     def model_name(self) -> str:
         """The internal model name, e.g. 'infernus' (None if not a standard car)."""
         from .models import VEHICLE_NAMES
@@ -1544,6 +1644,11 @@ class GameObject(Entity):
         return Vector3(*cmd.GET_OBJECT_COORDINATES(self))
 
     @property
+    def model_info(self):
+        from .model_info import model_info
+        return model_info(self.model)
+
+    @property
     def anim(self) -> ObjectAnimation:
         return ObjectAnimation(self)
 
@@ -1821,3 +1926,13 @@ def all_vehicles():
 def all_objects():
     """Every dynamic object currently in the world."""
     return [GameObject.from_ptr(p) for p in _pysa.objects()]
+
+
+def all_buildings():
+    """Every currently streamed map building (read-only wrappers)."""
+    return [Building(p) for p in _pysa.buildings()]
+
+
+def all_dummies():
+    """Every currently streamed lightweight map entity (read-only wrappers)."""
+    return [Dummy(p) for p in _pysa.dummies()]

@@ -13,7 +13,7 @@ cushioned = 0
 
 
 @pysa.on_vehicle_damage
-def tougher_cars(e):
+def tougher_cars(e: pysa.VehicleDamageEvent) -> None:
     global cushioned
     if player.playing and e.vehicle == player.vehicle:
         cushioned += 1
@@ -22,7 +22,7 @@ def tougher_cars(e):
 
 
 @pysa.on_explosion
-def shield_nearby(e):
+def shield_nearby(e: pysa.ExplosionEvent) -> None:
     # Cancel explosions that go off right next to the player.
     if player.playing and e.position.distance_to(player.pos) < 4.0:
         e.cancel()

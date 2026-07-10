@@ -19,13 +19,14 @@
     def typed_python(): ...
 
     @pysa.on_vehicle_created      # game spawned a vehicle (receives Vehicle)
-    def new_car(vehicle): ...
+    def new_car(vehicle: pysa.Vehicle) -> None: ...
 
     @pysa.on_game_start           # new game / save loaded / scripts reloaded
     def session(): ...
 
     @pysa.on_vehicle_model_changed
-    def reskinned(vehicle, model): ...
+    def reskinned(vehicle: pysa.Vehicle,
+                  model: pysa.VEHICLE | int) -> None: ...
 """
 from __future__ import annotations
 
@@ -104,3 +105,10 @@ on_ped_destroyed = _simple("ped_destroyed")
 on_ped_model_changed = _simple("ped_model_changed")
 on_object_created = _simple("object_created")
 on_object_destroyed = _simple("object_destroyed")
+on_hud_draw = _simple("hud_draw")
+on_radar_draw = _simple("radar_draw")
+on_after_fade_draw = _simple("after_fade_draw")
+on_menu_draw = _simple("menu_draw")
+on_vehicle_render = _simple("vehicle_render")
+on_ped_render = _simple("ped_render")
+on_object_render = _simple("object_render")

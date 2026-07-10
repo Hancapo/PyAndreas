@@ -17,10 +17,12 @@ except ImportError:
     from . import _mock as _pysa
 
 from . import memory
-from .entities import (GameObject, Ped, Vehicle, all_objects, all_peds,
-                       all_vehicles, load_model, release_model)
+from .entities import (GameObject, Ped, Vehicle, all_buildings, all_dummies,
+                       all_objects, all_peds, all_vehicles, load_model,
+                       release_model)
 from .math3 import Vector3
 from .native import cmd
+from .pickups import all_pickups
 
 GRAVITY_ADDR = 0x863984
 DEFAULT_GRAVITY = 0.008
@@ -524,3 +526,6 @@ spawn_object = GameObject.spawn
 peds = EntityCollection(all_peds, "peds")
 vehicles = EntityCollection(all_vehicles, "vehicles")
 objects = EntityCollection(all_objects, "objects")
+buildings = EntityCollection(all_buildings, "buildings")
+dummies = EntityCollection(all_dummies, "dummies")
+pickups = EntityCollection(all_pickups, "pickups")

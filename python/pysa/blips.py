@@ -9,11 +9,14 @@
 """
 from __future__ import annotations
 
+from enum import IntEnum
+
+from .enums import BLIP_SPRITE
 from .math3 import Vector3
 from .native import cmd
 
 
-class COLOR:
+class COLOR(IntEnum):
     RED = 0
     GREEN = 1
     BLUE = 2
@@ -23,7 +26,7 @@ class COLOR:
     CYAN = 6
 
 
-class DISPLAY:
+class DISPLAY(IntEnum):
     NEITHER = 0
     MARKER_ONLY = 1
     BLIP_ONLY = 2
@@ -82,8 +85,8 @@ def add_for_coord(pos, color: int = None, scale: int = None) -> Blip:
     return b
 
 
-def add_sprite_for_coord(pos, sprite: int) -> Blip:
-    """Sprite blip (radar icons; e.g. 41 = triads, 52 = crosshair...)."""
+def add_sprite_for_coord(pos, sprite: BLIP_SPRITE) -> Blip:
+    """Add a named radar icon at a position."""
     x, y, z = Vector3.of(pos)
     return _blip(cmd.ADD_SPRITE_BLIP_FOR_COORD(x, y, z, sprite))
 

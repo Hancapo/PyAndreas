@@ -78,8 +78,9 @@ def main() -> None:
         innames = ",".join(p["name"] for p in inputs)
         outnames = ",".join(p["name"] for p in outputs)
         desc = c.get("short_desc", "")
+        param_types = tuple(p["type"] for p in inputs)
         entries.append((c["name"], int(c["id"], 16), inspec, outspec, flags,
-                        innames, outnames, desc))
+                        innames, outnames, desc, param_types))
 
     out_path = Path(__file__).resolve().parent.parent / "python" / "pysa" / "signatures.py"
     with out_path.open("w", encoding="utf-8") as f:
@@ -90,9 +91,17 @@ def main() -> None:
                 '"""\n\n'
                 "#: name -> (opcode, inspec, outspec, flags, innames, outnames, desc)\n"
                 "SIGS = {\n")
-        for name, opcode, inspec, outspec, flags, innames, outnames, desc in entries:
+        for name, opcode, inspec, outspec, flags, innames, outnames, desc, _ in entries:
             f.write(f" {name!r}:(0x{opcode:04X},{inspec!r},{outspec!r},{flags},"
                     f"{innames!r},{outnames!r},{desc!r}),\n")
+        f.write("}\n\n"
+                "#: Original Sanny parameter types for richer docs and editor stubs.\n"
+                "PARAM_TYPES = {\n")
+        generic = {"int", "float", "string", "string128", "gxt_key",
+                   "zone_key", "GarageName", "AnimGroup", "any", "arguments"}
+        for name, _, _, _, _, _, _, _, param_types in entries:
+            if any(kind not in generic for kind in param_types):
+                f.write(f" {name!r}:{param_types!r},\n")
         f.write("}\n\nFLAG_COND = 1\n")
     print(f"Wrote {len(entries)} signatures ({skipped} skipped) to {out_path}")
 
