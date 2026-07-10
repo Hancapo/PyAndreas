@@ -120,9 +120,6 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     shutil.copytree(ROOT / "examples", root / "PyAndreas" / "examples",
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-    shutil.copy2(ROOT / "LICENSE", root / "LICENSE")
-    if (ROOT / "CHANGELOG.md").is_file():
-        shutil.copy2(ROOT / "CHANGELOG.md", root / "CHANGELOG.md")
 
     (root / "INSTALL.txt").write_text(
         f"PyAndreas {project_version()}\n\n"
