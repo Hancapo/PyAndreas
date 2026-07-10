@@ -10,7 +10,6 @@ The changelog is release-oriented and uses a small fixed set of categories:
 ## [0.2.0] - 2026-07-09
 
 ### Added
-- A complete release builder with a copy-ready GTA SA layout, deterministic ZIP archive, bundled one-file `pysa.pyz`, and SHA-256 checksum.
 - Integer enums for ped bones, gangs, vehicle classes and types, animation flags, radar sprites, mission-audio slots, checkpoint styles, explosion kinds, pickup types, and collision surfaces.
 - Friendly read-only model information for generic, vehicle, and ped models, including vehicle handling data.
 - Atomic JSON persistence through `pysa.storage`, with automatic shutdown and hot-reload flushing.
@@ -23,21 +22,15 @@ The changelog is release-oriented and uses a small fixed set of categories:
 - Intuitive controller stick directions, reusable button actions and combos, and a simple keyboard/controller `ui.Menu` with actions, toggles, and choices.
 - Subscription-gated ped damage and death, vehicle enter and exit, weapon-change, and zone-transition events.
 - `run_on_game_thread()` for safely handing background-thread results back to GTA's game thread.
-- An OOP MSPARK CLEO port and focused examples for effects, controller input, threading, menus, raycasts, state events, persistence, pools, hooks, and typed entities.
 
 ### Changed
 - Weapon, vehicle, ped, pickup, checkpoint, explosion, and common SCM domains now consistently accept typed enums while preserving integer compatibility.
 - SCM discovery, documentation, runtime signatures, and generated editor stubs now retain entity, model, weapon, and enum types instead of collapsing them to raw integers.
 - Script reloads now refresh local helper modules and transactionally roll back handlers, tasks, hooks, and game events created by failed imports.
-- The in-game Python library is packaged as a single `pysa.pyz`, while user scripts remain normal editable `.py` files.
-- MSPARK now uses the high-level OOP API and automatic resource ownership without direct `cmd.*` calls.
+- The ASI now discovers its Python runtime, library, and scripts relative to its actual loaded location, enabling Mod Loader installations while preserving traditional game-root installs.
 
 ### Fixed
-- End-user release ZIPs no longer include repository-only `LICENSE` or `CHANGELOG.md` files.
-- The ASI now resolves its Python runtime, library, scripts, and examples relative to its actual loaded location, allowing the complete release layout to run from a Mod Loader folder.
-- Bundled examples now ship in an inactive `PyAndreas\examples` folder instead of the live `PyAndreas\scripts` folder, so users explicitly choose which scripts to enable.
 - Corrected swapped once-only and respawning pickup constants to match plugin-sdk's `ePickupType` values.
-- Controller aiming now converts GTA's inverted vertical stick axis so pushing up raises the MSPARK beam.
 - Script task cleanup continues across individual cleanup failures instead of abandoning the remaining resources.
 - Failed script imports no longer leak partially registered callbacks, hooks, tasks, or local helper modules.
 
@@ -49,5 +42,5 @@ The changelog is release-oriented and uses a small fixed set of categories:
 ## [0.1.0] - 2026-07-09
 
 ### Added
-- Initial public source release of the GTA San Andreas 1.0 US ASI bridge and Python scripting API.
+- Initial release of the GTA San Andreas 1.0 US ASI bridge and Python scripting API.
 - Embedded CPython runtime hosting, hot-reloaded scripts, SCM opcode calls, typed entity wrappers, HUD helpers, memory access, game-structure fields, and raw function hooks.
