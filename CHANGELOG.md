@@ -1,38 +1,50 @@
 # Changelog
 
-## 0.2.0 - 2026-07-09
+All notable changes to `PyAndreas` are documented in this file.
 
-- Added a complete release builder with a copy-ready game layout, deterministic
-  ZIP archive, and SHA-256 checksum.
-- Added integer enums for ped bones, gangs, vehicle classes/types, animation
-  flags, and radar sprites; weapon and vehicle APIs consistently accept enums.
-- Added friendly read-only model information for generic, vehicle, and ped
-  models.
-- Added atomic JSON persistence through `pysa.storage` with automatic shutdown
-  and hot-reload flushing.
-- Added read-only `Building` and `Dummy` entities and live
-  `world.buildings`/`world.dummies` collections.
-- Added opt-in HUD/radar/menu/fade and entity-render events. High-frequency
-  native events do not enter Python unless a handler is registered.
-- Improved SCM documentation and editor stubs with entity, weapon, model, and
-  enum parameter types.
-- Added typed declarations for all core event decorators, including exact
-  `Vehicle`, `Ped`, `GameObject`, and model-change callback signatures.
-- Added specific high-level game-event payload classes, typed weapon fields,
-  and the plugin-sdk-derived `EXPLOSION_KIND` enum.
-- Added the complete `PICKUP_TYPE` enum, corrected the former swapped
-  once/respawning constants, and exposed active pickups through
-  `world.pickups` with friendly model/type/ammo/position properties.
-- Added the MSPARK CLEO test port and the reusable API it exposed as missing:
-  safe checkpoint visual updates, ped-local offsets, vehicle-to-object
-  attachment, mission-audio cleanup/slot enums, and smoke/light/corona helpers.
-- Added ped animation clips, vehicle/camera conveniences, automatic
-  `ScriptSession` resource ownership, typed world raycasts with complete
-  surface enums, intuitive controller actions, simple menus, safe game-thread
-  scheduling, and subscription-gated gameplay state events.
-- Expanded transactional hot reload, lifecycle/model events, offline tests,
-  and source-archive packaging.
+The changelog is release-oriented and uses a small fixed set of categories:
+`Breaking Changes`, `Added`, `Changed`, `Fixed`, and `Performance`.
 
-## 0.1.0
+## [Unreleased]
 
-- Initial source release.
+## [0.2.0] - 2026-07-09
+
+### Added
+- A complete release builder with a copy-ready GTA SA layout, deterministic ZIP archive, bundled one-file `pysa.pyz`, and SHA-256 checksum.
+- Integer enums for ped bones, gangs, vehicle classes and types, animation flags, radar sprites, mission-audio slots, checkpoint styles, explosion kinds, pickup types, and collision surfaces.
+- Friendly read-only model information for generic, vehicle, and ped models, including vehicle handling data.
+- Atomic JSON persistence through `pysa.storage`, with automatic shutdown and hot-reload flushing.
+- Read-only `Building` and `Dummy` wrappers and live spatial collections for buildings, dummies, vehicles, peds, objects, and pickups.
+- Typed lifecycle, model-change, draw-stage, and entity-render events, including exact callback declarations for editor autocomplete.
+- High-level game-event payloads for vehicle damage and explosions, tyre bursts, weapon fire and grants, wanted-level changes, projectiles, and pickup collection, with cancellation or argument rewriting where the underlying hook supports it.
+- Ped animation clips, vehicle and camera conveniences, ped-local offsets, vehicle-to-object attachment, safe checkpoint visual updates, mission-audio cleanup, and smoke, light, and corona helpers.
+- `ScriptSession` ownership for spawned entities, markers, mission audio, camera overrides, and player-control cleanup across normal exit, errors, cancellation, and hot reload.
+- Typed native world raycasts with collision position, normal, entity, material, lighting, piece, and depth information.
+- Intuitive controller stick directions, reusable button actions and combos, and a simple keyboard/controller `ui.Menu` with actions, toggles, and choices.
+- Subscription-gated ped damage and death, vehicle enter and exit, weapon-change, and zone-transition events.
+- `run_on_game_thread()` for safely handing background-thread results back to GTA's game thread.
+- An OOP MSPARK CLEO port and focused examples for effects, controller input, threading, menus, raycasts, state events, persistence, pools, hooks, and typed entities.
+
+### Changed
+- Weapon, vehicle, ped, pickup, checkpoint, explosion, and common SCM domains now consistently accept typed enums while preserving integer compatibility.
+- SCM discovery, documentation, runtime signatures, and generated editor stubs now retain entity, model, weapon, and enum types instead of collapsing them to raw integers.
+- Script reloads now refresh local helper modules and transactionally roll back handlers, tasks, hooks, and game events created by failed imports.
+- The in-game Python library is packaged as a single `pysa.pyz`, while user scripts remain normal editable `.py` files.
+- MSPARK now uses the high-level OOP API and automatic resource ownership without direct `cmd.*` calls.
+
+### Fixed
+- Corrected swapped once-only and respawning pickup constants to match plugin-sdk's `ePickupType` values.
+- Controller aiming now converts GTA's inverted vertical stick axis so pushing up raises the MSPARK beam.
+- Script task cleanup continues across individual cleanup failures instead of abandoning the remaining resources.
+- Failed script imports no longer leak partially registered callbacks, hooks, tasks, or local helper modules.
+
+### Performance
+- High-frequency HUD, radar, menu, fade, vehicle-render, ped-render, and object-render events enter Python only while subscribed.
+- Polled gameplay state events remain dormant until a matching handler is registered.
+- CPython releases the GIL between game frames so ordinary `threading` and `asyncio` workers can continue running.
+
+## [0.1.0] - 2026-07-09
+
+### Added
+- Initial public source release of the GTA San Andreas 1.0 US ASI bridge and Python scripting API.
+- Embedded CPython runtime hosting, hot-reloaded scripts, SCM opcode calls, typed entity wrappers, HUD helpers, memory access, game-structure fields, and raw function hooks.
