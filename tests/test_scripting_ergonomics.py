@@ -142,6 +142,22 @@ class ScriptingErgonomicsTests(unittest.TestCase):
         self.assertTrue(values["enabled"])
         self.assertEqual(values["weather"], "rain")
 
+    def test_shared_slider_clamps_steps_and_tracks_the_pointer(self):
+        value = {"current": 0.5}
+        slider = ui.Slider(
+            0.0, 1.0, 0.05, lambda: value["current"],
+            lambda new_value: value.__setitem__("current", new_value))
+        track = ui.Rect(100, 20, 200, 24)
+
+        slider.set_from_pointer(250, track)
+        self.assertEqual(value["current"], 0.75)
+        slider.change(1)
+        self.assertEqual(value["current"], 0.8)
+        slider.set_from_pointer(500, track)
+        self.assertEqual(value["current"], 1.0)
+        slider.set_from_pointer(0, track)
+        self.assertEqual(value["current"], 0.0)
+
     def test_polled_gameplay_events_are_dormant_until_subscribed(self):
         ped = FakePed()
         received = []

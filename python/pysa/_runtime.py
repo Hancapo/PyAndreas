@@ -76,6 +76,8 @@ _scripts: list = []       # [(module_name, file_path)]
 _script_modules: set = set()  # every module loaded from the scripts folder
 _scripts_dir: str = ""
 _reload_was_down = False
+_reload_requested = False
+_game_stdout_installed = False
 
 # coroutine tasks: generators resumed by the tick loop
 _task_funcs: list = []    # @script-decorated generator functions (restarted on game_start)
@@ -156,6 +158,67 @@ def run_on_game_thread(fn, *args, **kwargs) -> Future:
 
 
 call_soon = run_on_game_thread
+
+
+def request_reload() -> None:
+    """Reload all user scripts safely at the start of the next game tick."""
+    global _reload_requested
+    _reload_requested = True
+
+
+class _GamePrintStream:
+    """Mirror stdout to the log and queue complete lines as subtitles."""
+
+    def __init__(self, log_stream):
+        self.log_stream = log_stream
+        self.buffer = ""
+        self.encoding = getattr(log_stream, "encoding", "utf-8")
+        self.errors = getattr(log_stream, "errors", "replace")
+
+    def write(self, value) -> int:
+        text = str(value)
+        self.log_stream.write(text)
+        self.buffer += text
+        while "\n" in self.buffer:
+            line, self.buffer = self.buffer.split("\n", 1)
+            line = line.rstrip("\r")
+            if line:
+                _print_messages.put(line)
+        return len(text)
+
+    def flush(self) -> None:
+        self.log_stream.flush()
+
+    def isatty(self) -> bool:
+        return False
+
+    def __getattr__(self, name):
+        return getattr(self.log_stream, name)
+
+
+_print_messages = Queue()
+
+
+def _install_game_stdout() -> None:
+    global _game_stdout_installed
+    if (_game_stdout_installed or
+            getattr(_pysa, "__name__", "") != "_pysa"):
+        return
+    sys.stdout = _GamePrintStream(sys.stdout)
+    _game_stdout_installed = True
+
+
+def _drain_print_messages() -> None:
+    while True:
+        try:
+            message = _print_messages.get_nowait()
+        except Empty:
+            return
+        try:
+            _pysa.message(message, 3000, 0)
+        except Exception:
+            _pysa.log(f"[pysa] could not display print subtitle:\n"
+                      f"{traceback.format_exc()}")
 
 
 def _drain_main_thread_queue() -> None:
@@ -250,6 +313,11 @@ def _clear_registries() -> None:
     except Exception:
         pass
     try:
+        from . import testing
+        testing._clear()
+    except Exception:
+        pass
+    try:
         from . import hooks
         hooks.remove_all()
     except Exception:
@@ -292,7 +360,7 @@ def _local_module_names() -> set:
 
 def _registry_checkpoint():
     """Capture append-only registration state before importing one script."""
-    from . import game_events, hooks
+    from . import game_events, hooks, testing
 
     return {
         "handlers": {name: len(items) for name, items in _handlers.items()},
@@ -304,12 +372,13 @@ def _registry_checkpoint():
         "tasks": len(_tasks),
         "hooks": hooks._checkpoint(),
         "game_events": game_events._checkpoint(),
+        "testing": testing._checkpoint(),
     }
 
 
 def _rollback_registries(checkpoint) -> None:
     """Remove decorators/hooks/tasks created by a failed script import."""
-    from . import game_events, hooks
+    from . import game_events, hooks, testing
 
     for name in list(_handlers):
         keep = checkpoint["handlers"].get(name, 0)
@@ -335,6 +404,7 @@ def _rollback_registries(checkpoint) -> None:
     # remaining low-level hooks installed directly by the script.
     game_events._rollback(checkpoint["game_events"])
     hooks._rollback(checkpoint["hooks"])
+    testing._rollback(checkpoint["testing"])
     for event in _NATIVE_GATED_EVENTS:
         _sync_native_event(event)
 
@@ -383,6 +453,9 @@ def bootstrap(scripts_dir: str) -> int:
     from pathlib import Path
 
     _scripts_dir = scripts_dir
+    _install_game_stdout()
+    from . import dev_console
+    dev_console._install_builtin(os.path.dirname(scripts_dir))
     _pysa.log(f"[pysa] runtime {VERSION}, python {sys.version.split()[0]}, "
               f"scripts: {scripts_dir}")
 
@@ -430,9 +503,18 @@ def dispatch_simple(event: str) -> None:
 
 
 def _tick() -> None:
-    global _reload_was_down
+    global _reload_requested, _reload_was_down
 
     _drain_main_thread_queue()
+    _drain_print_messages()
+
+    from . import dev_console
+    dev_console._update_builtin()
+
+    if _reload_requested:
+        _reload_requested = False
+        reload_scripts()
+        return
 
     # hot reload key (edge-triggered)
     if RELOAD_KEY:
@@ -567,9 +649,18 @@ def dispatch(event: str, arg=None) -> None:
             _tick()
         elif event == "draw":
             dispatch_simple("draw")
+        elif event == "developer_console_draw":
+            from . import dev_console
+            dev_console._draw_builtin()
+        elif event == "frontend_open":
+            from . import dev_console
+            dev_console._suspend_builtin()
         elif event == "game_start":
             _restart_script_tasks()
             dispatch_simple("game_start")
+        elif event == "developer_mode_changed":
+            from . import dev_console
+            dev_console._set_developer_mode(bool(arg))
         elif event in ("vehicle_model_changed", "ped_model_changed"):
             ptr, model = arg
             if _handlers.get(event):
@@ -604,6 +695,9 @@ def dispatch(event: str, arg=None) -> None:
                 _sync_native_event(event)
         else:
             dispatch_simple(event)
+            if event == "shutdown":
+                from . import dev_console
+                dev_console._shutdown_builtin()
     except Exception:
         # Last-ditch guard: never let an exception cross into C++.
         try:

@@ -77,3 +77,25 @@ def draw(message: str, x: float, y: float, size: float = 1.0,
 def screen_size() -> tuple:
     """Current render resolution as (width, height)."""
     return _pysa.screen_size()
+
+
+def text_width(message: str, size: float = 1.0, font: int = FONT.SUBTITLES,
+               proportional: bool = True) -> float:
+    """Rendered width of text using the same scale rules as :func:`draw`."""
+    return float(_pysa.text_width(str(message), 0.5 * float(size), int(font),
+                                  1 if proportional else 0))
+
+
+def draw_mono(message: str, x: float, y: float, pixel_height: float = 16.0,
+              color=(255, 255, 255), clip=None) -> bool:
+    """Draw text with the configured TrueType monospace console font."""
+    args = (str(message), float(x), float(y), float(pixel_height), _pack(color))
+    if clip is not None:
+        left, top, right, bottom = clip
+        args += (float(left), float(top), float(right), float(bottom))
+    return bool(_pysa.draw_mono_text(*args))
+
+
+def mono_text_width(message: str, pixel_height: float = 16.0) -> float:
+    """Width of text rendered by :func:`draw_mono`."""
+    return float(_pysa.mono_text_width(str(message), float(pixel_height)))

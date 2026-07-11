@@ -10,6 +10,7 @@ removed automatically with the script that created them during hot reload.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Callable, Iterable, Optional, TypeVar, Union
 
 try:
@@ -24,6 +25,120 @@ from .pad import BUTTON
 
 TChoice = TypeVar("TChoice")
 Enabled = Union[bool, Callable[[], bool]]
+
+
+@dataclass(frozen=True)
+class Theme:
+    """Shared colors for PyAndreas' built-in UI controls."""
+
+    surface: tuple[int, int, int, int] = (12, 17, 20, 230)
+    control: tuple[int, int, int, int] = (28, 36, 41, 235)
+    hover: tuple[int, int, int, int] = (38, 104, 76, 245)
+    accent: tuple[int, int, int, int] = (58, 211, 146, 255)
+    track: tuple[int, int, int, int] = (35, 47, 53, 245)
+    text: tuple[int, int, int] = (225, 232, 236)
+    muted: tuple[int, int, int] = (145, 155, 162)
+    border: tuple[int, int, int, int] = (51, 67, 76, 255)
+
+
+DARK_THEME = Theme()
+
+
+@dataclass(frozen=True)
+class Rect:
+    """Rectangle shared by drawing and pointer hit-testing."""
+
+    x: float
+    y: float
+    width: float
+    height: float
+
+    def contains(self, x: float, y: float) -> bool:
+        return (self.x <= float(x) <= self.x + self.width and
+                self.y <= float(y) <= self.y + self.height)
+
+
+class Slider:
+    """Value and interaction logic for a horizontal numeric slider.
+
+    The widget is renderer-independent, so menus and developer tools can use
+    the same clamping, stepping and mouse behavior.
+    """
+
+    __slots__ = ("minimum", "maximum", "step", "getter", "setter")
+
+    def __init__(self, minimum: float, maximum: float, step: float,
+                 getter: Callable[[], float],
+                 setter: Callable[[float], Any]):
+        if maximum <= minimum:
+            raise ValueError("slider maximum must be greater than minimum")
+        if step <= 0:
+            raise ValueError("slider step must be positive")
+        self.minimum = float(minimum)
+        self.maximum = float(maximum)
+        self.step = float(step)
+        self.getter = getter
+        self.setter = setter
+
+    @property
+    def value(self) -> float:
+        return max(self.minimum, min(self.maximum, float(self.getter())))
+
+    @property
+    def fraction(self) -> float:
+        return (self.value - self.minimum) / (self.maximum - self.minimum)
+
+    def set(self, value: float) -> float:
+        value = max(self.minimum, min(self.maximum, float(value)))
+        steps = round((value - self.minimum) / self.step)
+        value = self.minimum + steps * self.step
+        value = max(self.minimum, min(self.maximum, value))
+        # Avoid exposing floating-point noise in settings and scripts.
+        precision = max(0, len(f"{self.step:.10f}".rstrip("0").split(".")[-1]))
+        value = round(value, precision)
+        self.setter(value)
+        return value
+
+    def change(self, steps: int) -> float:
+        return self.set(self.value + int(steps) * self.step)
+
+    def set_from_pointer(self, x: float, track: Rect) -> float:
+        fraction = ((float(x) - track.x) / max(1.0, track.width))
+        return self.set(self.minimum + max(0.0, min(1.0, fraction)) *
+                        (self.maximum - self.minimum))
+
+
+def draw_button(bounds: Rect, label: str, *, hovered: bool = False,
+                active: bool = False, pixels: float = 13.0,
+                theme: Theme = DARK_THEME) -> None:
+    """Draw a standard monospace PyAndreas button."""
+    draw.rect(bounds.x, bounds.y, bounds.width, bounds.height,
+              theme.hover if hovered or active else theme.control)
+    text_width = hud.mono_text_width(str(label), pixels)
+    hud.draw_mono(str(label), bounds.x + (bounds.width - text_width) * 0.5,
+                  bounds.y + (bounds.height - pixels) * 0.42, pixels,
+                  theme.text if hovered or active else theme.muted)
+
+
+def draw_slider(bounds: Rect, fraction: float, *, hovered: bool = False,
+                theme: Theme = DARK_THEME) -> None:
+    """Draw the standard PyAndreas slider track, fill and thumb."""
+    fraction = max(0.0, min(1.0, float(fraction)))
+    track_height = max(4.0, bounds.height * 0.22)
+    track_y = bounds.y + (bounds.height - track_height) * 0.5
+    draw.bar(bounds.x, track_y, bounds.width, track_height, fraction,
+             fg=theme.accent, bg=theme.track)
+    thumb = max(10.0, bounds.height * 0.55)
+    thumb_x = bounds.x + fraction * bounds.width
+    draw.rect(thumb_x - thumb * 0.5, bounds.y + (bounds.height - thumb) * 0.5,
+              thumb, thumb, theme.text if hovered else theme.accent)
+
+
+def draw_toggle(bounds: Rect, enabled: bool, *, hovered: bool = False,
+                pixels: float = 13.0, theme: Theme = DARK_THEME) -> None:
+    """Draw a toggle using the same surface, accent and text rules."""
+    draw_button(bounds, "ON" if enabled else "OFF", hovered=hovered,
+                active=enabled, pixels=pixels, theme=theme)
 
 
 class MenuItem:
