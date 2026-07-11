@@ -73,7 +73,11 @@ xcopy /Y "$(TargetPath)" "$(GTA_SA_DIR)\scripts\"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\PySaEvents.cpp" />
+    <ClCompile Include="src\PySaFont.cpp" />
+    <ClCompile Include="src\PySaHost.cpp" />
     <ClCompile Include="src\PySaModule.cpp" />
+    <ClCompile Include="src\PySaMenu.cpp" />
     <ClCompile Include="src\PySaRender.cpp" />
     <ClCompile Include="src\PySaHooks.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\safetyhook\safetyhook.cpp">
@@ -84,6 +88,10 @@ xcopy /Y "$(TargetPath)" "$(GTA_SA_DIR)\scripts\"
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\PySaEvents.h" />
+    <ClInclude Include="src\PySaFont.h" />
+    <ClInclude Include="src\PySaHost.h" />
+    <ClInclude Include="src\PySaMenu.h" />
     <ClInclude Include="src\PySaModule.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

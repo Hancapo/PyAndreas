@@ -25,12 +25,16 @@
 #include "CMessages.h"
 #include "CTimer.h"
 #include "CFont.h"
+#include "CMenuManager.h"
+#include "CPad.h"
+#include "CRadar.h"
 #include "CCheat.h"
 #include "common.h"
 
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 
 using namespace plugin;
@@ -40,6 +44,32 @@ namespace pysa {
 std::vector<DrawItem> g_drawQueue;
 
 static std::string s_baseDir;
+static bool s_consoleInputCaptured = false;
+static CMouseControllerState s_consoleMouseState{};
+
+void CaptureConsoleInputFrame() {
+    if (!s_consoleInputCaptured)
+        return;
+
+    // Python reads the preserved raw state. GTA receives cleared pad,
+    // keyboard and mouse states, preventing any gameplay binding from
+    // leaking through while the developer console owns input.
+    s_consoleMouseState = CPad::NewMouseControllerState;
+    CPad *pad = CPad::GetPad(0);
+    if (pad) {
+        memset(&pad->NewState, 0, sizeof(pad->NewState));
+        memset(&pad->OldState, 0, sizeof(pad->OldState));
+        memset(&pad->PCTempKeyState, 0, sizeof(pad->PCTempKeyState));
+        memset(&pad->PCTempJoyState, 0, sizeof(pad->PCTempJoyState));
+        memset(&pad->PCTempMouseState, 0, sizeof(pad->PCTempMouseState));
+    }
+    memset(&CPad::NewKeyState, 0, sizeof(CPad::NewKeyState));
+    memset(&CPad::OldKeyState, 0, sizeof(CPad::OldKeyState));
+    memset(&CPad::NewMouseControllerState, 0,
+           sizeof(CPad::NewMouseControllerState));
+    memset(&CPad::OldMouseControllerState, 0,
+           sizeof(CPad::OldMouseControllerState));
+}
 
 void SetBaseDir(const std::string &dir) { s_baseDir = dir; }
 const std::string &BaseDir() { return s_baseDir; }
@@ -805,6 +835,19 @@ static PyObject *py_draw_text(PyObject *, PyObject *args) {
     return Py_BuildValue("");
 }
 
+static PyObject *py_text_width(PyObject *, PyObject *args) {
+    const char *text;
+    float sx;
+    int font = 2;
+    int proportional = 0;
+    if (!PyArg_ParseTuple(args, "sf|ii", &text, &sx, &font, &proportional))
+        return nullptr;
+    CFont::SetFontStyle(static_cast<short>(font));
+    CFont::SetProportional(proportional != 0);
+    CFont::SetScale(sx, 1.0f);
+    return PyFloat_FromDouble(CFont::GetStringWidth(text, true, false));
+}
+
 void FlushDrawQueue() {
     if (g_drawQueue.empty())
         return;
@@ -835,6 +878,78 @@ static PyObject *py_screen_size(PyObject *, PyObject *) {
     int w = *reinterpret_cast<int *>(0xC17044);  // RsGlobal.maximumWidth
     int h = *reinterpret_cast<int *>(0xC17048);  // RsGlobal.maximumHeight
     return Py_BuildValue("(ii)", w, h);
+}
+
+static PyObject *py_frontend_active(PyObject *, PyObject *) {
+    return PyBool_FromLong(FrontEndMenuManager.m_bMenuActive ? 1 : 0);
+}
+
+static PyObject *py_waypoint(PyObject *, PyObject *) {
+    int handle = FrontEndMenuManager.m_nTargetBlipIndex;
+    if (handle <= 0)
+        return Py_BuildValue("");
+    int index = CRadar::GetActualBlipArrayIndex(handle);
+    if (index < 0 || index >= static_cast<int>(MAX_RADAR_TRACES))
+        return Py_BuildValue("");
+    const tRadarTrace &trace = CRadar::ms_RadarTrace[index];
+    if (!trace.m_bInUse || trace.m_nRadarSprite != RADAR_SPRITE_WAYPOINT)
+        return Py_BuildValue("");
+    return Py_BuildValue("(fff)", trace.m_vecPos.x, trace.m_vecPos.y,
+                         trace.m_vecPos.z);
+}
+
+static PyObject *py_mouse_state(PyObject *, PyObject *) {
+    const CMouseControllerState &mouse = s_consoleInputCaptured
+        ? s_consoleMouseState : CPad::NewMouseControllerState;
+    int wheel = mouse.wheelUp ? 1 : (mouse.wheelDown ? -1 : 0);
+    return Py_BuildValue("(ffiii)", mouse.x, mouse.y,
+                         mouse.lmb ? 1 : 0, mouse.rmb ? 1 : 0, wheel);
+}
+
+static PyObject *py_capture_input(PyObject *, PyObject *args) {
+    int captured;
+    if (!PyArg_ParseTuple(args, "p", &captured))
+        return nullptr;
+    s_consoleInputCaptured = captured != 0;
+    if (!s_consoleInputCaptured)
+        memset(&s_consoleMouseState, 0, sizeof(s_consoleMouseState));
+    return Py_BuildValue("");
+}
+
+static PyObject *py_clipboard_get(PyObject *, PyObject *) {
+    if (!OpenClipboard(nullptr))
+        return PyUnicode_FromString("");
+    HANDLE handle = GetClipboardData(CF_UNICODETEXT);
+    const wchar_t *text = handle
+        ? static_cast<const wchar_t *>(GlobalLock(handle)) : nullptr;
+    PyObject *result = text ? PyUnicode_FromWideChar(text, -1)
+                            : PyUnicode_FromString("");
+    if (text) GlobalUnlock(handle);
+    CloseClipboard();
+    return result;
+}
+
+static PyObject *py_clipboard_set(PyObject *, PyObject *args) {
+    const char *utf8;
+    if (!PyArg_ParseTuple(args, "s", &utf8))
+        return nullptr;
+    int count = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, nullptr, 0);
+    if (count <= 0 || !OpenClipboard(nullptr))
+        return PyBool_FromLong(0);
+    HGLOBAL handle = GlobalAlloc(GMEM_MOVEABLE,
+                                 static_cast<SIZE_T>(count) * sizeof(wchar_t));
+    wchar_t *target = handle
+        ? static_cast<wchar_t *>(GlobalLock(handle)) : nullptr;
+    bool ok = false;
+    if (target) {
+        MultiByteToWideChar(CP_UTF8, 0, utf8, -1, target, count);
+        GlobalUnlock(handle);
+        EmptyClipboard();
+        ok = SetClipboardData(CF_UNICODETEXT, handle) != nullptr;
+    }
+    if (!ok && handle) GlobalFree(handle);
+    CloseClipboard();
+    return PyBool_FromLong(ok ? 1 : 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -944,7 +1059,21 @@ static PyMethodDef s_methods[] = {
     {"big_message", py_big_message, METH_VARARGS, "big_message(text, time_ms=4000, style=0)"},
     {"draw_text", py_draw_text, METH_VARARGS,
      "draw_text(text, x, y, sx, sy, rgba, font, align, shadow, drop_rgba, proportional, wrapx)"},
+    {"text_width", py_text_width, METH_VARARGS,
+     "text_width(text, sx, font=2, proportional=False) -> pixels"},
     {"screen_size", py_screen_size, METH_NOARGS, "screen_size() -> (width, height)"},
+    {"frontend_active", py_frontend_active, METH_NOARGS,
+     "frontend_active() -> whether GTA's pause/front-end menu is open"},
+    {"waypoint", py_waypoint, METH_NOARGS,
+     "waypoint() -> map waypoint (x, y, z) or None"},
+    {"mouse_state", py_mouse_state, METH_NOARGS,
+     "mouse_state() -> relative x, relative y, left, right, wheel"},
+    {"capture_input", py_capture_input, METH_VARARGS,
+     "capture_input(enabled) -> reserve keyboard/mouse/controller for console"},
+    {"clipboard_get", py_clipboard_get, METH_NOARGS,
+     "clipboard_get() -> Unicode clipboard text"},
+    {"clipboard_set", py_clipboard_set, METH_VARARGS,
+     "clipboard_set(text) -> bool"},
     {"key_down", py_key_down, METH_VARARGS, "key_down(vk) -> bool"},
     {"cheat_buffer", py_cheat_buffer, METH_NOARGS, "cheat_buffer() -> recently typed chars (reversed)"},
     {"clear_cheat_buffer", py_clear_cheat_buffer, METH_NOARGS, "clear_cheat_buffer()"},
@@ -978,6 +1107,7 @@ extern "C" PyObject *PyInit__pysa(void) {
     s_allMethods.clear();
     AppendMethods(s_methods);
     AppendMethods(pysa_render_methods);
+    AppendMethods(pysa_font_methods);
     AppendMethods(pysa_hook_methods);
     s_allMethods.push_back({nullptr, nullptr, 0, nullptr});  // sentinel
     s_moduleDef.m_methods = s_allMethods.data();

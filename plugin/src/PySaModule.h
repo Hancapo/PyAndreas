@@ -42,12 +42,15 @@ const std::string &BaseDir();    // <game>\PyAndreas
 void FlushDrawQueue();           // text; call from drawingEvent after dispatching "draw"
 void FlushRenderQueue();         // rects/sprites; call before FlushDrawQueue
 void ShutdownHooks();            // remove all function hooks (call before Py_Finalize)
+void ResetEventGates();
 bool SetEventEnabled(const char *name, bool enabled);
 bool EventEnabled(const char *name);
+void CaptureConsoleInputFrame(); // suppress GTA controls while preserving console input
 
 // Method tables contributed by the render and hook translation units,
 // concatenated into the _pysa module at init.
 extern PyMethodDef pysa_render_methods[];
+extern PyMethodDef pysa_font_methods[];
 extern PyMethodDef pysa_hook_methods[];
 
 }  // namespace pysa
