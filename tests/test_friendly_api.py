@@ -1,18 +1,108 @@
 import unittest
 from unittest import mock
+import importlib
 
 from enum import IntEnum
 
 from pysa import (CAMERA_MODE, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
                   ENTITY_STATUS, MOVE_STATE, VEHICLE, VEHICLE_DOOR,
                   VEHICLE_WHEEL, WEAPON, PED, PICKUP_TYPE, Building, Dummy,
-                  Ped, Pickup, Vehicle)
-from pysa import _mock, camera, entities, pickups, world
+                  Ped, Pickup, Vehicle, Cutscene, Train)
+from pysa import _mock, blips, camera, entities, game, pickups, trains, world
 from pysa.enums import VEHICLE_CLASS, VEHICLE_TYPE
 from pysa.model_info import PedModelInfo, VehicleModelInfo, model_info
+player_module = importlib.import_module("pysa.player")
 
 
 class FriendlyApiTests(unittest.TestCase):
+    def test_map_waypoint_is_a_vector_or_none(self):
+        with mock.patch.object(blips._pysa, "waypoint",
+                               return_value=(123.0, -456.0, 0.0)):
+            point = blips.waypoint()
+        assert point is not None
+        self.assertEqual(tuple(point), (123.0, -456.0, 0.0))
+
+        with mock.patch.object(blips._pysa, "waypoint", return_value=None):
+            self.assertIsNone(blips.waypoint())
+
+    def test_blip_facade_exposes_lifecycle_and_options(self):
+        marker = blips.Blip(12)
+        with mock.patch.object(blips.cmd, "DOES_BLIP_EXIST", return_value=True), \
+                mock.patch.object(blips.cmd, "SET_BLIP_AS_FRIENDLY") as friendly, \
+                mock.patch.object(blips.cmd, "SET_BLIP_ALWAYS_DISPLAY_ON_ZOOMED_RADAR") as zoom:
+            self.assertTrue(marker.exists)
+            marker.set_friendly()
+            marker.keep_on_zoomed_radar()
+        friendly.assert_called_once_with(marker, True)
+        zoom.assert_called_once_with(marker, True)
+
+    def test_short_range_and_contact_blips_are_wrapped(self):
+        sprite = next(iter(blips.BLIP_SPRITE))
+        with mock.patch.object(blips.cmd, "ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD",
+                               return_value=21), \
+                mock.patch.object(blips.cmd, "ADD_SPRITE_BLIP_FOR_CONTACT_POINT",
+                                  return_value=22):
+            nearby = blips.add_short_range((1, 2, 3), sprite)
+            mission = blips.add_contact_point((4, 5, 6), sprite)
+        self.assertEqual(nearby.handle, 21)
+        self.assertEqual(mission.handle, 22)
+
+    def test_camera_move_track_and_attachment_are_friendly(self):
+        ped, vehicle = Ped(7), Vehicle(8)
+        with mock.patch.object(camera.cmd, "ATTACH_CAMERA_TO_CHAR_LOOK_AT_VEHICLE") as attach, \
+                mock.patch.object(camera.cmd, "CAMERA_SET_VECTOR_MOVE") as move, \
+                mock.patch.object(camera.cmd, "CAMERA_SET_VECTOR_TRACK") as track:
+            camera.attach_to(ped, (1, 2, 3), look_at=vehicle,
+                             switch=camera.SWITCH.SMOOTH)
+            camera.move((0, 0, 0), (10, 20, 30), 1500)
+            camera.track((1, 1, 1), (2, 2, 2), 500, ease=False)
+        attach.assert_called_once_with(
+            ped, 1.0, 2.0, 3.0, vehicle, 0.0, camera.SWITCH.SMOOTH)
+        move.assert_called_once_with(0.0, 0.0, 0.0, 10.0, 20.0, 30.0, 1500, True)
+        track.assert_called_once_with(1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 500, False)
+
+    def test_game_facade_types_language_and_clamps_radar_zoom(self):
+        with mock.patch.object(game.cmd, "GET_CURRENT_LANGUAGE", return_value=4), \
+                mock.patch.object(game.cmd, "SET_RADAR_ZOOM") as zoom:
+            self.assertIs(game.language(), game.LANGUAGE.SPANISH)
+            game.set_radar_zoom(999)
+        zoom.assert_called_once_with(170)
+
+    def test_cutscene_object_owns_named_workflow(self):
+        scene = Cutscene("intro")
+        with mock.patch("pysa.cutscenes.cmd.LOAD_CUTSCENE") as load, \
+                mock.patch("pysa.cutscenes.cmd.SET_CUTSCENE_OFFSET") as offset, \
+                mock.patch("pysa.cutscenes.cmd.START_CUTSCENE") as start:
+            self.assertIs(scene.load((10, 20, 30)), scene)
+            scene.start()
+        load.assert_called_once_with("intro")
+        offset.assert_called_once_with(10.0, 20.0, 30.0)
+        start.assert_called_once_with()
+
+    def test_world_date_roads_and_roadblocks(self):
+        with mock.patch.object(world.cmd, "GET_CURRENT_DATE", return_value=(11, 7)), \
+                mock.patch.object(world.cmd, "GET_CLOSEST_STRAIGHT_ROAD",
+                                  return_value=(1, 2, 3, 4, 5, 6, 90.0)), \
+                mock.patch.object(world.cmd, "CREATE_SCRIPT_ROADBLOCK") as roadblock:
+            self.assertEqual(world.get_date(), (11, 7))
+            road = world.closest_straight_road((0, 0, 0))
+            world.add_roadblock((1, 2, 3), (4, 5, 6), kind=2)
+        self.assertEqual(tuple(road.start), (1, 2, 3))
+        self.assertEqual(tuple(road.end), (4, 5, 6))
+        self.assertEqual(road.angle, 90.0)
+        roadblock.assert_called_once_with(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 2)
+
+    def test_train_spawn_returns_specialized_vehicle(self):
+        with mock.patch.object(trains.cmd, "CREATE_MISSION_TRAIN", return_value=44), \
+                mock.patch.object(trains.cmd, "SET_TRAIN_CRUISE_SPEED") as cruise, \
+                mock.patch.object(trains.cmd, "SET_TRAIN_SPEED") as speed:
+            train = trains.spawn(0, (10, 20, 30))
+            train.set_speed(12.5)
+        self.assertIsInstance(train, Train)
+        self.assertEqual(train.handle, 44)
+        cruise.assert_called_once_with(train, 12.5)
+        speed.assert_called_once_with(train, 12.5)
+
     def test_vehicle_and_weapon_constants_are_integer_enums(self):
         self.assertIsInstance(VEHICLE.INFERNUS, IntEnum)
         self.assertIsInstance(WEAPON.M4, IntEnum)
@@ -54,6 +144,45 @@ class FriendlyApiTests(unittest.TestCase):
 
         give.assert_called_once_with(ped, WEAPON.AK47, 250)
         equip.assert_called_once_with(ped, WEAPON.AK47)
+
+    def test_player_skin_change_streams_model_before_using_it(self):
+        player = player_module.player
+
+        with mock.patch.object(type(player), "playing",
+                               new_callable=mock.PropertyMock,
+                               return_value=True), \
+                mock.patch.object(type(player), "ped",
+                                  new_callable=mock.PropertyMock,
+                                  return_value=Ped(7)), \
+                mock.patch.object(Ped, "_ptr_of",
+                                  new=staticmethod(lambda _handle: 0x1000)), \
+                mock.patch.object(player_module, "load_model",
+                                  return_value=True) as load, \
+                mock.patch.object(player_module, "release_model") as release, \
+                mock.patch.object(player_module.cmd, "SET_PLAYER_MODEL") as set_model:
+            player.clothes.set_model(PED.WMYMECH)
+
+        load.assert_called_once_with(int(PED.WMYMECH))
+        set_model.assert_called_once_with(player.index, int(PED.WMYMECH))
+        release.assert_called_once_with(int(PED.WMYMECH))
+
+    def test_player_skin_change_stops_when_streaming_fails(self):
+        player = player_module.player
+
+        with mock.patch.object(type(player), "playing",
+                               new_callable=mock.PropertyMock,
+                               return_value=True), \
+                mock.patch.object(type(player), "ped",
+                                  new_callable=mock.PropertyMock,
+                                  return_value=Ped(7)), \
+                mock.patch.object(Ped, "_ptr_of",
+                                  new=staticmethod(lambda _handle: 0x1000)), \
+                mock.patch.object(player_module, "load_model",
+                                  return_value=False), \
+                mock.patch.object(player_module.cmd, "SET_PLAYER_MODEL") as set_model:
+            with self.assertRaisesRegex(RuntimeError, "failed to load"):
+                player.clothes.set_model(PED.WMYMECH)
+        set_model.assert_not_called()
 
     def test_regular_pickup_module_accepts_weapon_enum(self):
         with mock.patch.object(pickups.cmd, "GET_WEAPONTYPE_MODEL",

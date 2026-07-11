@@ -10,10 +10,17 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from typing import Optional
+
+try:
+    import _pysa
+except ImportError:
+    from . import _mock as _pysa
 
 from .enums import BLIP_SPRITE
 from .math3 import Vector3
 from .native import cmd
+from .type_aliases import Position
 
 
 class COLOR(IntEnum):
@@ -24,6 +31,8 @@ class COLOR(IntEnum):
     YELLOW = 4
     PURPLE = 5
     CYAN = 6
+    THREAT = 7
+    DESTINATION = 8
 
 
 class DISPLAY(IntEnum):
@@ -31,6 +40,11 @@ class DISPLAY(IntEnum):
     MARKER_ONLY = 1
     BLIP_ONLY = 2
     BOTH = 3
+
+
+class APPEARANCE(IntEnum):
+    FRIEND = 0
+    THREAT = 1
 
 
 class Blip:
@@ -47,6 +61,10 @@ class Blip:
     @property
     def handle(self) -> int:
         return self._handle
+
+    @property
+    def exists(self) -> bool:
+        return bool(cmd.DOES_BLIP_EXIST(self))
 
     @property
     def color(self):
@@ -66,6 +84,19 @@ class Blip:
 
     def display(self, mode: int = DISPLAY.BOTH) -> None:
         cmd.CHANGE_BLIP_DISPLAY(self, mode)
+
+    def set_friendly(self, enabled: bool = True) -> None:
+        cmd.SET_BLIP_AS_FRIENDLY(self, enabled)
+
+    def keep_on_zoomed_radar(self, enabled: bool = True) -> None:
+        cmd.SET_BLIP_ALWAYS_DISPLAY_ON_ZOOMED_RADAR(self, enabled)
+
+    def set_appearance(self, appearance: APPEARANCE) -> None:
+        cmd.SET_COORD_BLIP_APPEARANCE(self, appearance)
+
+    def attach_to_entrance(self, pos: Position, radius: float = 2.0) -> None:
+        x, y, _ = Vector3.of(pos)
+        cmd.SET_BLIP_ENTRY_EXIT(self, x, y, radius)
 
     def remove(self) -> None:
         cmd.REMOVE_BLIP(self)
@@ -91,6 +122,23 @@ def add_sprite_for_coord(pos, sprite: BLIP_SPRITE) -> Blip:
     return _blip(cmd.ADD_SPRITE_BLIP_FOR_COORD(x, y, z, sprite))
 
 
+def add_short_range(pos: Position, sprite: BLIP_SPRITE) -> Blip:
+    """Add an icon visible only while the player is nearby."""
+    x, y, z = Vector3.of(pos)
+    return _blip(cmd.ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD(x, y, z, sprite))
+
+
+def add_contact_point(pos: Position, sprite: BLIP_SPRITE, *,
+                      short_range: bool = False) -> Blip:
+    """Add an icon with the mission contact-point marker."""
+    x, y, z = Vector3.of(pos)
+    if short_range:
+        handle = cmd.ADD_SHORT_RANGE_SPRITE_BLIP_FOR_CONTACT_POINT(x, y, z, sprite)
+    else:
+        handle = cmd.ADD_SPRITE_BLIP_FOR_CONTACT_POINT(x, y, z, sprite)
+    return _blip(handle)
+
+
 def add_for_char(ped) -> Blip:
     return _blip(cmd.ADD_BLIP_FOR_CHAR(ped))
 
@@ -105,3 +153,17 @@ def add_for_object(obj) -> Blip:
 
 def add_for_pickup(pickup) -> Blip:
     return _blip(cmd.ADD_BLIP_FOR_PICKUP(pickup))
+
+
+def waypoint() -> Optional[Vector3]:
+    """Player-placed map waypoint, or ``None`` when none is active."""
+    position = _pysa.waypoint()
+    return None if position is None else Vector3.of(position)
+
+
+def show_on_all_levels(enabled: bool = True) -> None:
+    cmd.SHOW_BLIPS_ON_ALL_LEVELS(enabled)
+
+
+def hide_all(enabled: bool = True) -> None:
+    cmd.HIDE_ALL_FRONTEND_BLIPS(enabled)

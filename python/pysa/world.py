@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import (Callable, Generic, Iterator, Optional, Protocol, TypeVar,
                     Union, overload)
@@ -124,6 +125,20 @@ def get_time() -> tuple[int, int]:
 
 def set_time(hours: int, minutes: int = 0) -> None:
     cmd.SET_TIME_OF_DAY(hours, minutes)
+
+
+def get_date() -> tuple[int, int]:
+    """Current in-game calendar date as ``(day, month)``."""
+    return cmd.GET_CURRENT_DATE()
+
+
+def store_clock() -> None:
+    """Remember the clock so it can later be restored."""
+    cmd.STORE_CLOCK()
+
+
+def restore_clock() -> None:
+    cmd.RESTORE_CLOCK()
 
 
 def force_weather(weather_id: WEATHER) -> None:
@@ -363,6 +378,36 @@ def roads_reset(left_bottom, right_top) -> None:
     x1, y1, z1 = Vector3.of(left_bottom)
     x2, y2, z2 = Vector3.of(right_top)
     cmd.SWITCH_ROADS_BACK_TO_ORIGINAL(x1, y1, z1, x2, y2, z2)
+
+
+@dataclass(frozen=True)
+class StraightRoad:
+    """The two path nodes and heading returned by a road lookup."""
+    start: Vector3
+    end: Vector3
+    angle: float
+
+
+def closest_straight_road(pos: Position, min_distance: float = 0.0,
+                          max_distance: float = 100.0) -> StraightRoad:
+    """Find a nearby straight road segment suitable for aligned spawning."""
+    x, y, z = Vector3.of(pos)
+    values = cmd.GET_CLOSEST_STRAIGHT_ROAD(
+        x, y, z, min_distance, max_distance)
+    ax, ay, az, bx, by, bz, angle = values
+    return StraightRoad(Vector3(ax, ay, az), Vector3(bx, by, bz), angle)
+
+
+def add_roadblock(left_bottom: Position, right_top: Position,
+                  kind: int = 0) -> None:
+    """Create a script roadblock in a 3D box."""
+    x1, y1, z1 = Vector3.of(left_bottom)
+    x2, y2, z2 = Vector3.of(right_top)
+    cmd.CREATE_SCRIPT_ROADBLOCK(x1, y1, z1, x2, y2, z2, kind)
+
+
+def clear_roadblocks() -> None:
+    cmd.CLEAR_ALL_SCRIPT_ROADBLOCKS()
 
 
 def ped_roads_on(left_bottom, right_top) -> None:

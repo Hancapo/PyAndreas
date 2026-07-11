@@ -35,8 +35,8 @@ Press F11 in-game to hot-reload all scripts. Errors go to PyAndreas.log.
 from typing import Any
 
 from ._runtime import VERSION as __version__
-from ._runtime import (Task, call_soon, reload_scripts, run_on_game_thread,
-                       script, start)
+from ._runtime import (Task, call_soon, reload_scripts, request_reload,
+                       run_on_game_thread, script, start)
 from .events import (on_button, on_cheat, on_device_lost, on_device_reset,
                      on_draw, on_game_reinit, on_game_restart, on_game_start,
                      on_key, on_object_created, on_object_destroyed,
@@ -91,6 +91,8 @@ from .markers import CHECKPOINT, Checkpoint, Marker3D, Sphere
 from .timers import Countdown, Stopwatch
 from .pickups import Pickup, all_pickups
 from .world import Fire
+from .cutscenes import Cutscene
+from .trains import Train
 # Live, iterable views over the entity pools (also at pysa.world.*).
 from .world import buildings, dummies, objects, peds, vehicles
 from .audio import MissionAudio, RADIO
@@ -99,11 +101,13 @@ from .pad import BUTTON
 from .pad import ButtonAction, Stick
 from .session import ScriptSession
 from .type_aliases import PedModel, Position, VehicleModel, WeaponId
+from .dev_console import DeveloperConsole, developer_console
+from .testing import TestRun, dev_test, run_tests, test_names
 from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
                            VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
-from . import (audio, blips, camera, draw, fx, game_events, hooks, hud, markers,
-               memory, pad, pickups, storage, text, timers, world)
-from . import session, state_events, ui
+from . import (audio, blips, camera, cutscenes, draw, fx, game, game_events, hooks, hud, markers,
+               memory, pad, pickups, storage, testing, text, timers, world)
+from . import dev_console, session, state_events, trains, ui
 
 try:
     import _pysa as _bridge
@@ -130,7 +134,7 @@ def base_dir() -> str:
     return str(_bridge.base_dir())
 
 __all__ = [
-    "__version__", "reload_scripts",
+    "__version__", "reload_scripts", "request_reload",
     "on_tick", "on_draw", "on_key", "on_button", "on_cheat", "on_game_start", "on_shutdown",
     "on_game_restart", "on_game_reinit", "on_render_init", "on_device_lost",
     "on_device_reset", "on_pools_init", "on_pools_shutdown",
@@ -140,7 +144,7 @@ __all__ = [
     "on_hud_draw", "on_radar_draw", "on_after_fade_draw", "on_menu_draw",
     "on_vehicle_render", "on_ped_render", "on_object_render",
     "script", "start", "Task", "run_on_game_thread", "call_soon",
-    "Entity", "StaticEntity", "Ped", "Vehicle", "GameObject", "Building", "Dummy",
+    "Entity", "StaticEntity", "Ped", "Vehicle", "Train", "GameObject", "Building", "Dummy",
     "PedTasks", "PedAnimation", "PedAnimationClip", "PedWeapons",
     "VehicleDoor", "VehicleDoors", "VehicleTyre",
     "VehicleTyres", "VehicleDamage", "VehicleMods", "VehicleAI", "VehicleHandling",
@@ -174,12 +178,14 @@ __all__ = [
     "VehicleExitEvent", "WeaponChangedEvent", "ZoneEvent",
     "on_ped_damage", "on_ped_death", "on_vehicle_enter", "on_vehicle_exit",
     "on_weapon_changed", "on_zone_enter", "on_zone_exit",
-    "blips", "camera", "draw", "hooks", "hud", "memory", "pickups", "world",
+    "blips", "camera", "cutscenes", "draw", "game", "hooks", "hud", "memory", "pickups", "trains", "world",
     "game_events", "state_events", "markers", "timers", "audio", "fx",
     "text", "pad", "storage", "session", "ui", "BUTTON", "Stick",
     "ButtonAction", "ScriptSession",
     "Position", "PedModel", "VehicleModel", "WeaponId",
-    "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire",
+    "DeveloperConsole", "developer_console", "TestRun", "dev_test",
+    "run_tests", "test_names",
+    "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire", "Cutscene",
     "Pickup", "all_pickups",
     "Stopwatch", "Countdown", "MissionAudio", "RADIO", "FxSystem",
     "log", "game_time", "key_down", "base_dir",

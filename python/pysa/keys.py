@@ -69,3 +69,19 @@ class KEY:
     RSHIFT = 0xA1
     LCTRL = 0xA2
     RCTRL = 0xA3
+    LALT = 0xA4
+    RALT = 0xA5
+
+    # Layout-dependent punctuation keys (Win32 VK_OEM_*).
+    SEMICOLON = 0xBA
+    EQUALS = 0xBB
+    COMMA = 0xBC
+    MINUS = 0xBD
+    PERIOD = 0xBE
+    SLASH = 0xBF
+    BACKTICK = 0xC0
+    LEFT_BRACKET = 0xDB
+    BACKSLASH = 0xDC
+    RIGHT_BRACKET = 0xDD
+    QUOTE = 0xDE
+    OEM_102 = 0xE2

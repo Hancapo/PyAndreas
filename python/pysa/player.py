@@ -18,10 +18,10 @@ try:
 except ImportError:
     from . import _mock as _pysa
 
-from .entities import Ped, Vehicle
+from .entities import Ped, Vehicle, load_model, release_model
 from .math3 import Vector3
 from .native import call, cmd
-from .type_aliases import WeaponId
+from .type_aliases import PedModel, WeaponId
 
 
 # plugin-sdk: CWorld::Players = (CPlayerInfo*)0xB7CD98, sizeof(CPlayerInfo)=0x190
@@ -464,7 +464,7 @@ class PlayerClothes:
     def skin_texture_address(self) -> int:
         return self._player.skin_texture_address
 
-    def set_model(self, model: int) -> None:
+    def set_model(self, model: PedModel) -> None:
         self._player.set_model(model)
 
     def rebuild(self) -> None:
@@ -1494,8 +1494,17 @@ class _Player:
 
     # -- clothes / model -------------------------------------------------------
 
-    def set_model(self, model: int) -> None:
-        cmd.SET_PLAYER_MODEL(self.index, model)
+    def set_model(self, model: PedModel) -> None:
+        """Safely replace CJ's model after streaming it into memory."""
+        model_id = int(model)
+        if not self.playing or not self.ped.exists:
+            raise RuntimeError("cannot change player model before gameplay is active")
+        if not load_model(model_id):
+            raise RuntimeError(f"player model {model_id} failed to load")
+        try:
+            cmd.SET_PLAYER_MODEL(self.index, model_id)
+        finally:
+            release_model(model_id)
 
     def build_model(self) -> None:
         cmd.BUILD_PLAYER_MODEL(self.index)

@@ -29,8 +29,9 @@ def _reset():
     _enabled_events.clear()
     _pickup_info.clear()
     _checkpoint_updates.clear()
-    global _raycast_result
+    global _clipboard, _raycast_result
     _raycast_result = None
+    _clipboard = ""
 
 
 def call(opcode, spec, *args):
@@ -217,8 +218,53 @@ def draw_text(*args):
     pass
 
 
+def text_width(text, sx, font=2, proportional=0):
+    return len(str(text)) * 16.0 * float(sx)
+
+
+def draw_mono_text(text, x, y, pixel_height, rgba, *clip):
+    return True
+
+
+def mono_text_width(text, pixel_height):
+    return len(str(text)) * float(pixel_height) * 0.6
+
+
 def screen_size():
     return (640, 448)
+
+
+def frontend_active():
+    return False
+
+
+def waypoint():
+    return None
+
+
+def mouse_state():
+    return (0.0, 0.0, False, False, 0)
+
+
+_input_captured = False
+
+
+def capture_input(enabled):
+    global _input_captured
+    _input_captured = bool(enabled)
+
+
+_clipboard = ""
+
+
+def clipboard_get():
+    return _clipboard
+
+
+def clipboard_set(text):
+    global _clipboard
+    _clipboard = str(text)
+    return True
 
 
 def key_down(vk):
