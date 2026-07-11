@@ -15,6 +15,8 @@ SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 
 - Write GTA SA scripts in Python instead of SCM/CLEO.
 - Reload scripts in-game with **F11**.
+- Use plain `print(...)` for quick in-game subtitle output; it is also copied
+  to `PyAndreas.log`.
 - Use event decorators such as `@pysa.on_tick`, `@pysa.on_key`,
   `@pysa.on_cheat`, `@pysa.on_draw`, and game entity lifecycle hooks.
 - Work with OOP wrappers for `player`, `Ped`, `Vehicle`, `GameObject`, blips,
@@ -97,6 +99,7 @@ Each shows off a different part of the API:
 | `example_godmode.py` | toggles, `cmd.*` proofs, `@pysa.on_tick(ms=...)` |
 | `example_speedometer.py` | per-frame `hud.draw` |
 | `example_bodyguard.py` | `@pysa.script` coroutines, `ped.tasks.*`, blips |
+| `example_navigation_and_camera.py` | waypoint travel and smooth camera movement/tracking/FOV |
 | `example_hud_panel.py` | `draw.rect`/`draw.bar` health/armour panel |
 | `example_textures.py` | `draw.load_textures` + `draw.sprite` (with fallback) |
 | `example_hook_damage.py` | game events: `on_vehicle_damage`, `on_explosion` |
@@ -107,6 +110,7 @@ Each shows off a different part of the API:
 | `example_gamepad.py` | `@on_button(...)`, `pad.pressed(...)` combos, `pad.left_stick()`, `pad.rumble()` |
 | `example_threads.py` | background threads (GIL released between frames) |
 | `example_toolkit.py` | automatic cleanup, menus, raycasts, and state events |
+| `example_dev_console.py` | optional smoke tests for the built-in developer console |
 | `mspark.py` | CLEO MSPARK port: controller aiming, checkpoint visuals, coronas, smoke, lights, audio and staged explosions |
 
 ## Install for Editor Autocomplete
@@ -283,10 +287,12 @@ the editor-facing Pyright contract runs once on Python 3.13.
 | Vehicles | `Vehicle.spawn(VEHICLE.INFERNUS)`, `car.speed`, `car.doors[VEHICLE_DOOR.FRONT_LEFT]`, `car.ai.driving_style(DRIVING_STYLE.AVOID_CARS)` |
 | Handling data | `car.handling.mass`, `.traction_multiplier`, `.center_of_mass`, `.suspension_force` (read-only shared model data) |
 | Model information | `car.model_info.game_name`, `.vehicle_type`, `.door_count`, `.dimensions`, `model_info(VEHICLE.INFERNUS)` |
-| World | time/weather/gravity, typed `world.raycast(...)`, line of sight, ground/water, explosions |
+| World | time/date/weather/gravity, typed raycasts, ground/water, roads and script roadblocks |
 | HUD | `hud.help_text(...)`, `hud.big_text(...)`, `hud.draw(...)` |
-| Camera | `camera.fix_at(...)`, `camera.point_at(...)`, `camera.restore()`, `camera.shake()` |
-| Blips/pickups | `blips.add_for_char(...)`, `pickups.weapon(..., pickup_type=PICKUP_TYPE.ONCE)`, inspect active items through `world.pickups` |
+| Camera | fixed/attached cameras, smooth position/target/FOV animation, persistence and cinema mode |
+| Blips/pickups | normal/short-range/contact blips, map waypoint, friendly/display options, typed pickups |
+| Game/UI state | `game.show_hud(...)`, radar visibility/zoom, language detection and save menu |
+| Cutscenes/trains | OOP `Cutscene` workflow and mission `Train` spawning/control/carriage access |
 | Markers | `Checkpoint(pos)`, `Marker3D(pos)`, `Sphere(pos, r)` with `pos in sphere` |
 | Entity pools | `world.vehicles`, `peds`, `objects`, `buildings`, `dummies`, and live `world.pickups`; all support iteration and spatial queries |
 | Pool queries | `world.vehicles.near(pos, r)`, `.nearest(pos, exclude=...)`, `.where(...)`, `.of_model("rhino")` |
@@ -297,6 +303,7 @@ the editor-facing Pyright contract runs once on Python 3.13.
 | Audio | `audio.play_sound(pos, id)`, `audio.set_radio(RADIO.K_DST)`, `MissionAudio(0).load(...).play()` |
 | Particle FX | `FxSystem("fire", pos).play()`, `FxSystem.on(ped, "smoke30")`, `fx.corona(pos, size, color)` |
 | GXT text | `text.load_table(...)`, `text.show("KEY", x, y, number=..., color=..., align=...)` |
+| Map waypoint | `blips.waypoint()` returns its `Vector3`, or `None` |
 | SCM commands | `cmd.CREATE_CAR(...)`, `cmd.GET_PLAYER_CHAR(...)`, `pysa.find_commands("blip")` |
 | Memory/raw funcs | `memory.read_float(...)`, `memory.patch(...)`, `call_func(...)` |
 | Struct fields | `ped.struct.m_fHealth`, `car.struct.m_fGasPedal = 1.0`, `struct_of(x, "CPed")` |
@@ -305,6 +312,7 @@ the editor-facing Pyright contract runs once on Python 3.13.
 | State events | ped damage/death, vehicle enter/exit, weapon and zone transitions; dormant unless subscribed |
 | Resource sessions | `with ScriptSession() as session:` owns spawned entities, markers, audio and camera cleanup |
 | Menus | `ui.Menu(...)`, `.action(...)`, `.toggle_item(...)`, and `.choice(...)` |
+| Developer tools | Built-in F10 console, pause-menu/INI developer mode, `@dev_test`, timed smoke tests and live Python evaluation |
 | Function hooks | `@pysa.on_call("CVehicle::InflictDamage")`, `call.this`, `call.intensity`, `call.skip()`, `find_functions(...)` |
 | Threads | workers run between frames; `run_on_game_thread(...)` safely hands game work back |
 
@@ -408,6 +416,87 @@ Python type checkers cannot infer the local parameter of a newly declared
 function backwards from a decorator, so the `: pysa.Vehicle`/`: pysa.Ped`
 annotation is required for completion inside that function. The decorator
 stubs then preserve and validate that exact callback type.
+
+## In-Game Developer Console and Tests
+
+The Python console is built into PyAndreas; it does not require a `.py` script.
+Toggle it from **Pause Menu > Options > PyAndreas**, or edit
+`PyAndreas/PyAndreas.ini`:
+
+```ini
+[PyAndreas]
+DeveloperMode = 1
+```
+
+Press F10 during gameplay to open it. The submenu toggle saves immediately
+and the console becomes available without restarting the game.
+
+Useful console commands are:
+
+- `tests` or `tests vehicle` to run all registered tests or a filtered group.
+- `status` to inspect the current test run.
+- `reload` or `restart` to queue a safe F11-style script reload.
+- `scripts`, `history`, `clear`, and `close`.
+- Any Python expression or one-line statement, such as `player.health`,
+  `world.vehicles.nearest(player)`, or `player.money += 1000`.
+
+Tab completes names and attributes; Up and Down browse command history.
+Left/Right, Home, End, Backspace, and Delete edit around a blinking insertion
+cursor. Text input follows the active Windows keyboard layout, including Shift
+and AltGr combinations. `print(...)` entered here is captured in console
+scrollback. Player controls are restored when the console closes. The console
+executes arbitrary Python and is available only while Developer Mode is on.
+
+While open, the console has its own fullscreen-safe mouse pointer. Click to
+place the caret, drag to select input text, or drag an existing selection to
+move it. Ctrl+A/C/X/V provide select-all and Unicode clipboard operations.
+
+The layout scales automatically with the game resolution. For unusually large
+or distant displays, an extra multiplier is available:
+
+```python
+pysa.developer_console().scale = 1.25
+```
+
+Console text is rendered directly from a TrueType monospace font rather than
+GTA's bitmap font tables. It defaults to Windows Consolas and can be replaced
+with another font file in `PyAndreas.ini` (relative paths start at the
+`PyAndreas` data folder):
+
+```ini
+[PyAndreas]
+ConsoleFont = %WINDIR%\Fonts\consola.ttf
+ConsoleFontFace = Consolas
+ConsoleBackgroundOpacity = 0.69
+ConsoleScale = 1.00
+ConsoleHistoryLimit = 100
+ConsoleAutoComplete = 1
+```
+
+Tests use ordinary assertions and may yield game milliseconds:
+
+```python
+@pysa.dev_test("temporary car remains valid")
+def temporary_car():
+    with pysa.ScriptSession() as session:
+        car = session.spawn_vehicle(pysa.VEHICLE.GREENWOO, pysa.player.pos)
+        yield 500
+        assert car.exists
+```
+
+They can also run without the console:
+
+```python
+run = pysa.run_tests("vehicle")
+```
+
+Or run them automatically once the game is ready:
+
+```python
+@pysa.on_game_start
+def check_my_mod():
+    pysa.run_tests()
+```
 
 ## Game Events
 
