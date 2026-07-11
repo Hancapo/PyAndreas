@@ -29,6 +29,8 @@ class PackagingTests(unittest.TestCase):
         self.assertGreater(count, 30)
         self.assertIn("pysa/__init__.py", names)
         self.assertIn("pysa/_runtime.py", names)
+        self.assertIn("pysa/dev_console.py", names)
+        self.assertIn("pysa/testing.py", names)
         self.assertIn("pysa/native.pyi", names)
         self.assertIn("pysa/events.pyi", names)
         self.assertIn("pysa/game_events.pyi", names)
@@ -70,6 +72,24 @@ class PackagingTests(unittest.TestCase):
             self.assertEqual((scripts / "edited.py").read_text(encoding="utf-8"),
                              "user edit")
             self.assertTrue((game / "PyAndreas" / "examples" / "same.py").is_file())
+
+    def test_install_preserves_existing_configuration(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            stage = root / "stage"
+            game = root / "game"
+            staged_config = stage / "PyAndreas" / "PyAndreas.ini"
+            installed_config = game / "PyAndreas" / "PyAndreas.ini"
+            staged_config.parent.mkdir(parents=True)
+            installed_config.parent.mkdir(parents=True)
+            (stage / "PyAndreas" / "lib").mkdir(parents=True)
+            staged_config.write_text("DeveloperMode=0", encoding="utf-8")
+            installed_config.write_text("DeveloperMode=1", encoding="utf-8")
+
+            _install(stage, game)
+
+            self.assertEqual(installed_config.read_text(encoding="utf-8"),
+                             "DeveloperMode=1")
 
 
 if __name__ == "__main__":

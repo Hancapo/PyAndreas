@@ -80,7 +80,11 @@ def _install(stage: Path, game_dir: Path) -> None:
     game_dir = game_dir.resolve()
     if not game_dir.is_dir():
         raise FileNotFoundError(f"game directory does not exist: {game_dir}")
+    config = game_dir / "PyAndreas" / "PyAndreas.ini"
+    existing_config = config.read_bytes() if config.is_file() else None
     shutil.copytree(stage, game_dir, dirs_exist_ok=True)
+    if existing_config is not None:
+        config.write_bytes(existing_config)
 
     # With --game-dir the caller explicitly requested installation. Remove
     # only the obsolete loose runtime package, never the editable scripts.
@@ -120,6 +124,7 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     shutil.copytree(ROOT / "examples", root / "PyAndreas" / "examples",
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    shutil.copy2(ROOT / "PyAndreas.ini", root / "PyAndreas" / "PyAndreas.ini")
 
     (root / "INSTALL.txt").write_text(
         f"PyAndreas {project_version()}\n\n"
@@ -129,7 +134,9 @@ def assemble(asi: Path = DEFAULT_ASI, runtime: Path = DEFAULT_RUNTIME,
         "The ASI belongs in scripts\\; user Python files belong in "
         "PyAndreas\\scripts\\. Bundled examples are inactive in "
         "PyAndreas\\examples\\; copy only the examples you choose into the "
-        "scripts folder. Press F11 in game to reload scripts.\n",
+        "scripts folder. Press F11 in game to reload scripts. Developer Mode "
+        "and the built-in F10 console can be enabled from Pause Menu > "
+        "Options > PyAndreas or PyAndreas\\PyAndreas.ini.\n",
         encoding="utf-8",
     )
 
