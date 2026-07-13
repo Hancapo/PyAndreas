@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Optional
 
 import pysa
-from pysa import (Ped, ScriptSession, VEHICLE, WEAPON, Vehicle,
+from pysa import (AREA, AreaId, Ped, Placement, ScriptSession, VEHICLE, WEAPON, Vehicle,
                   VehicleModelInfo, model_info, world)
 
 
@@ -25,6 +25,17 @@ spawned_car.model
 spawned_car.driver
 
 pysa.player.weapons.current = WEAPON.M4
+current_area: AREA = pysa.player.location.area
+custom_area: AreaId = 42
+outside: bool = pysa.player.location.outside
+entrance = pysa.player.location.last_entry_exit
+if entrance is not None:
+    exterior: Placement = entrance.exterior
+    pysa.player.location.teleport(exterior)
+pysa.player.location.teleport((0, 0, 5), area=AREA.OUTSIDE,
+                              heading=90, include_vehicle=True)
+world_area: AREA = world.current_area()
+world.set_area(AREA.OUTSIDE)
 
 
 @pysa.dev_test

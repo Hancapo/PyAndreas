@@ -72,6 +72,29 @@ The common path uses typed constants and plain Python values. Raw SCM commands, 
 structs, and hooks are available as advanced escape hatches when a high-level
 operation does not exist yet.
 
+### Locations and interiors
+
+`player.location` exposes the parts of an interior transition separately: the
+current render area, the EnEx entrance data, and a safe teleport operation.
+Area IDs use the typed `AREA` enum but remain compatible with custom integer
+IDs.
+
+```python
+from pysa import AREA, player
+
+print(player.location.area)       # AREA.OUTSIDE or AREA.INTERIOR_*
+
+enex = player.location.last_entry_exit
+if not player.location.outside and enex is not None:
+    print(enex.name, enex.exterior.pos, enex.exterior.heading)
+    player.location.teleport(enex.exterior)
+
+# Plain coordinates are also supported. Supplying AREA.OUTSIDE changes both
+# the visible world and CJ's entity area, including his current vehicle.
+player.location.teleport((1529.6, -1691.2, 13.3),
+                         area=AREA.OUTSIDE, heading=90)
+```
+
 ## Repository Contents
 
 This repository contains source code only. Built ASI files, Visual Studio object

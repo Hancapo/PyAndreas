@@ -8,6 +8,46 @@ them without conversion.
 from enum import IntEnum, IntFlag
 
 
+class AREA(IntEnum):
+    """GTA world/interior area codes.
+
+    Interior area codes are shared render worlds, not unique buildings.  EnEx
+    information identifies the actual entrance used by the player.
+    """
+
+    OUTSIDE = 0
+    INTERIOR_1 = 1
+    INTERIOR_2 = 2
+    INTERIOR_3 = 3
+    INTERIOR_4 = 4
+    INTERIOR_5 = 5
+    INTERIOR_6 = 6
+    INTERIOR_7 = 7
+    INTERIOR_8 = 8
+    INTERIOR_9 = 9
+    INTERIOR_10 = 10
+    INTERIOR_11 = 11
+    INTERIOR_12 = 12
+    INTERIOR_13 = 13
+    INTERIOR_14 = 14
+    INTERIOR_15 = 15
+    INTERIOR_16 = 16
+    INTERIOR_17 = 17
+    INTERIOR_18 = 18
+
+    @classmethod
+    def _missing_(cls, value):
+        """Keep mod-added byte-sized area IDs typed as AREA values."""
+        if isinstance(value, bool) or not isinstance(value, int):
+            return None
+        if not 0 <= value <= 0xFF:
+            return None
+        member = int.__new__(cls, value)
+        member._name_ = f"CUSTOM_{value}"
+        member._value_ = value
+        return member
+
+
 class MOVE_STATE(IntEnum):
     NONE = 0
     STILL = 1

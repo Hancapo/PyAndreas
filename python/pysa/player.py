@@ -10,8 +10,9 @@
 """
 from __future__ import annotations
 
+import math
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, Union
 
 try:
     import _pysa
@@ -19,9 +20,11 @@ except ImportError:
     from . import _mock as _pysa
 
 from .entities import Ped, Vehicle, load_model, release_model
+from .enums import AREA
+from .interiors import EntryExit, Placement
 from .math3 import Vector3
 from .native import call, cmd
-from .type_aliases import PedModel, WeaponId
+from .type_aliases import AreaId, PedModel, Position, WeaponId
 
 
 # plugin-sdk: CWorld::Players = (CPlayerInfo*)0xB7CD98, sizeof(CPlayerInfo)=0x190
@@ -791,6 +794,86 @@ class PlayerMissions:
         self._player.left_crane()
 
 
+class PlayerLocation:
+    """Player placement, interior and EnEx information."""
+
+    __slots__ = ("_player",)
+
+    def __init__(self, player: "_Player"):
+        self._player = player
+
+    @property
+    def area(self) -> AREA:
+        """The player's world/interior render area."""
+        return AREA(int(self._player.ped.area_visible))
+
+    @property
+    def outside(self) -> bool:
+        return self.area == AREA.OUTSIDE
+
+    @property
+    def last_entry_exit(self) -> Optional[EntryExit]:
+        """EnEx used to reach the current interior, or ``None`` outside."""
+        ped = self._player.ped
+        if AREA(int(ped.area_visible)) == AREA.OUTSIDE:
+            return None
+        name = cmd.GET_NAME_OF_ENTRY_EXIT_CHAR_USED(ped)
+        x, y, z, heading = cmd.GET_POSITION_OF_ENTRY_EXIT_CHAR_USED(ped)
+        # Opcode 094C returns radians despite the rest of the heading API
+        # using degrees (a vanilla GTA SA inconsistency).
+        exterior = Placement(
+            (x, y, z), math.degrees(float(heading)), AREA.OUTSIDE)
+        return EntryExit(str(name), exterior)
+
+    def teleport(self, destination: Union[Position, Placement], *,
+                 area: Optional[AreaId] = None,
+                 heading: Optional[float] = None,
+                 include_vehicle: bool = True,
+                 load_scene: bool = True) -> Placement:
+        """Move the player while synchronizing area, vehicle and world state.
+
+        A :class:`Placement` supplies its own area and heading. Plain
+        coordinates retain the current values unless ``area`` or ``heading``
+        is provided. Set ``include_vehicle=False`` to leave the current vehicle
+        behind.
+        """
+        if isinstance(destination, Placement):
+            pos = destination.pos
+            target_area = destination.area if area is None else AREA(int(area))
+            target_heading = (destination.heading if heading is None
+                              else float(heading))
+        else:
+            pos = Vector3.of(destination)
+            target_area = self.area if area is None else AREA(int(area))
+            target_heading = (self._player.heading if heading is None
+                              else float(heading))
+
+        ped = self._player.ped
+        vehicle = self._player.vehicle
+        cmd.SET_AREA_VISIBLE(target_area)
+        ped.area_visible = target_area
+
+        if load_scene:
+            cmd.REQUEST_COLLISION(pos.x, pos.y)
+            cmd.LOAD_SCENE_IN_DIRECTION(
+                pos.x, pos.y, pos.z, target_heading)
+
+        if vehicle is not None and include_vehicle:
+            cmd.SET_VEHICLE_AREA_VISIBLE(vehicle, target_area)
+            vehicle.pos = pos
+            vehicle.heading = target_heading
+        elif vehicle is not None:
+            cmd.WARP_CHAR_FROM_CAR_TO_COORD(ped, pos.x, pos.y, pos.z)
+            ped.heading = target_heading
+        else:
+            ped.pos = pos
+            ped.heading = target_heading
+
+        if target_area == AREA.OUTSIDE:
+            self._player.force_interior_lighting(False)
+        return Placement(pos, target_heading, target_area)
+
+
 class _Player:
     """Player 0 (single player). Use the module-level `player` instance."""
 
@@ -872,6 +955,10 @@ class _Player:
     @property
     def missions(self) -> PlayerMissions:
         return PlayerMissions(self)
+
+    @property
+    def location(self) -> PlayerLocation:
+        return PlayerLocation(self)
 
     # -- convenience proxies to the ped ---------------------------------------
 

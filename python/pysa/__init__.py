@@ -57,11 +57,13 @@ from .entities import (Building, Dummy, Entity, GameObject, ObjectAnimation, Ped
                        VehicleTyres, all_buildings, all_dummies, all_objects, all_peds, all_vehicles,
                        load_model, release_model)
 from .keys import KEY
-from .enums import (ANIMATION_FLAG, BLIP_SPRITE, CAMERA_MODE, CAR_MISSION,
-                    DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS, EXPLOSION_KIND,
-                    FIGHT_STYLE, GANG, LIGHT_OVERRIDE, MOVE_STATE, PED_BONE,
-                    MISSION_AUDIO_SLOT, PICKUP_TYPE, SURFACE, VEHICLE_CLASS,
-                    VEHICLE_DOOR, VEHICLE_TYPE, VEHICLE_WHEEL)
+from .enums import (ANIMATION_FLAG, AREA, BLIP_SPRITE, CAMERA_MODE,
+                    CAR_MISSION, DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS,
+                    EXPLOSION_KIND, FIGHT_STYLE, GANG, LIGHT_OVERRIDE,
+                    MOVE_STATE, PED_BONE, MISSION_AUDIO_SLOT, PICKUP_TYPE,
+                    SURFACE, VEHICLE_CLASS, VEHICLE_DOOR, VEHICLE_TYPE,
+                    VEHICLE_WHEEL)
+from .interiors import EntryExit, Placement
 from .math3 import Vector3
 from .models import PED_TYPE, VEHICLE, VEHICLES, WEAPON, vehicle_id
 from .ped_models import PED
@@ -71,7 +73,7 @@ from .native import (NOT, End, Out, call, call_ex, call_func, cmd, doc,
 from .opcodes import OPCODES
 from .player import (PLAYER_STATE, PlayerCamera, PlayerClothes, PlayerControls,
                      PlayerCoop, PlayerGroup, PlayerMissions, PlayerPerks,
-                     PlayerRecords, PlayerStats, PlayerTargeting,
+                     PlayerLocation, PlayerRecords, PlayerStats, PlayerTargeting,
                      PlayerVehicles, PlayerVitals, PlayerWanted,
                      PlayerWeapons, player)
 from .gamestruct import Struct, struct_of
@@ -100,12 +102,12 @@ from .fx import FxSystem
 from .pad import BUTTON
 from .pad import ButtonAction, Stick
 from .session import ScriptSession
-from .type_aliases import PedModel, Position, VehicleModel, WeaponId
+from .type_aliases import AreaId, PedModel, Position, VehicleModel, WeaponId
 from .dev_console import DeveloperConsole, developer_console
 from .testing import TestRun, dev_test, run_tests, test_names
 from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
                            VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
-from . import (audio, blips, camera, cutscenes, draw, fx, game, game_events, hooks, hud, markers,
+from . import (audio, blips, camera, cutscenes, draw, fx, game, game_events, hooks, hud, interiors, markers,
                memory, pad, pickups, storage, testing, text, timers, world)
 from . import dev_console, session, state_events, trains, ui
 
@@ -154,7 +156,7 @@ __all__ = [
     "peds", "vehicles", "objects", "buildings", "dummies",
     "KEY", "Vector3", "PED", "PED_TYPE", "VEHICLE", "VEHICLES", "WEAPON", "vehicle_id",
     "ModelInfo", "PedModelInfo", "VehicleModelInfo", "model_info",
-    "MOVE_STATE", "CAMERA_MODE", "DRIVING_STYLE", "CAR_MISSION",
+    "AREA", "MOVE_STATE", "CAMERA_MODE", "DRIVING_STYLE", "CAR_MISSION",
     "DOOR_LOCK", "VEHICLE_DOOR", "VEHICLE_WHEEL", "LIGHT_OVERRIDE",
     "ENTITY_STATUS", "FIGHT_STYLE", "PED_BONE", "GANG", "VEHICLE_CLASS",
     "VEHICLE_TYPE", "ANIMATION_FLAG", "BLIP_SPRITE", "EXPLOSION_KIND",
@@ -165,7 +167,8 @@ __all__ = [
     "player", "PLAYER_STATE", "PlayerStats", "PlayerGroup", "PlayerWeapons",
     "PlayerWanted", "PlayerControls", "PlayerPerks", "PlayerClothes",
     "PlayerVitals", "PlayerVehicles", "PlayerTargeting", "PlayerRecords",
-    "PlayerCamera", "PlayerCoop", "PlayerMissions",
+    "PlayerCamera", "PlayerCoop", "PlayerMissions", "PlayerLocation",
+    "Placement", "EntryExit",
     "Struct", "struct_of", "OFFSETS",
     "Hook", "Call", "on_call", "hook", "find_functions", "function_doc",
     "GameEvent", "VehicleDamageEvent", "VehicleExplodeEvent", "TyreBurstEvent",
@@ -179,10 +182,10 @@ __all__ = [
     "on_ped_damage", "on_ped_death", "on_vehicle_enter", "on_vehicle_exit",
     "on_weapon_changed", "on_zone_enter", "on_zone_exit",
     "blips", "camera", "cutscenes", "draw", "game", "hooks", "hud", "memory", "pickups", "trains", "world",
-    "game_events", "state_events", "markers", "timers", "audio", "fx",
+    "game_events", "state_events", "interiors", "markers", "timers", "audio", "fx",
     "text", "pad", "storage", "session", "ui", "BUTTON", "Stick",
     "ButtonAction", "ScriptSession",
-    "Position", "PedModel", "VehicleModel", "WeaponId",
+    "Position", "AreaId", "PedModel", "VehicleModel", "WeaponId",
     "DeveloperConsole", "developer_console", "TestRun", "dev_test",
     "run_tests", "test_names",
     "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire", "Cutscene",

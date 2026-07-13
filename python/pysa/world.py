@@ -24,11 +24,11 @@ from .entities import (Building, Dummy, GameObject, Ped, Vehicle,
                        all_buildings, all_dummies,
                        all_objects, all_peds, all_vehicles, entity_from_ptr,
                        load_model, release_model)
-from .enums import EXPLOSION_KIND, SURFACE
+from .enums import AREA, EXPLOSION_KIND, SURFACE
 from .math3 import Vector3
 from .native import cmd
 from .pickups import Pickup, all_pickups
-from .type_aliases import Position
+from .type_aliases import AreaId, Position
 
 
 TEntity = TypeVar("TEntity")
@@ -207,11 +207,11 @@ def random_float_range(min_value: float, max_value: float) -> float:
     return cmd.GENERATE_RANDOM_FLOAT_IN_RANGE(min_value, max_value)
 
 
-def current_area() -> int:
-    return cmd.GET_AREA_VISIBLE()
+def current_area() -> AREA:
+    return AREA(int(cmd.GET_AREA_VISIBLE()))
 
 
-def set_area(area_id: int) -> None:
+def set_area(area_id: AreaId) -> None:
     cmd.SET_AREA_VISIBLE(area_id)
 
 

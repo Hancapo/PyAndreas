@@ -25,13 +25,13 @@ except ImportError:
     from . import _mock as _pysa
 
 from .math3 import Vector3
-from .enums import (CAR_MISSION, DOOR_LOCK, DRIVING_STYLE, ENTITY_STATUS,
-                    FIGHT_STYLE, LIGHT_OVERRIDE, MOVE_STATE, VEHICLE_DOOR,
-                    VEHICLE_WHEEL)
+from .enums import (AREA, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
+                    ENTITY_STATUS, FIGHT_STYLE, LIGHT_OVERRIDE, MOVE_STATE,
+                    VEHICLE_DOOR, VEHICLE_WHEEL)
 from .models import PED_TYPE, VEHICLE, WEAPON, vehicle_id
 from .native import cmd
 from .ped_models import PED
-from .type_aliases import PedModel, Position, VehicleModel, WeaponId
+from .type_aliases import AreaId, PedModel, Position, VehicleModel, WeaponId
 
 if TYPE_CHECKING:
     from .blips import Blip
@@ -597,11 +597,11 @@ class Ped(Entity):
         return cmd.GET_CHAR_SWIM_STATE(self)
 
     @property
-    def area_visible(self) -> int:
-        return cmd.GET_CHAR_AREA_VISIBLE(self)
+    def area_visible(self) -> AREA:
+        return AREA(int(cmd.GET_CHAR_AREA_VISIBLE(self)))
 
     @area_visible.setter
-    def area_visible(self, area_id: int) -> None:
+    def area_visible(self, area_id: AreaId) -> None:
         cmd.SET_CHAR_AREA_VISIBLE(self, area_id)
 
     @property

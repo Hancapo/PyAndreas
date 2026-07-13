@@ -1,13 +1,14 @@
 import unittest
 from unittest import mock
 import importlib
+import math
 
 from enum import IntEnum
 
-from pysa import (CAMERA_MODE, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
+from pysa import (AREA, CAMERA_MODE, CAR_MISSION, DOOR_LOCK, DRIVING_STYLE,
                   ENTITY_STATUS, MOVE_STATE, VEHICLE, VEHICLE_DOOR,
                   VEHICLE_WHEEL, WEAPON, PED, PICKUP_TYPE, Building, Dummy,
-                  Ped, Pickup, Vehicle, Cutscene, Train)
+                  EntryExit, Ped, Pickup, Placement, Vehicle, Cutscene, Train)
 from pysa import _mock, blips, camera, entities, game, pickups, trains, world
 from pysa.enums import VEHICLE_CLASS, VEHICLE_TYPE
 from pysa.model_info import PedModelInfo, VehicleModelInfo, model_info
@@ -113,6 +114,10 @@ class FriendlyApiTests(unittest.TestCase):
         self.assertEqual(len(PED), 265)
 
     def test_plugin_sdk_behavior_enums_have_exact_values(self):
+        self.assertEqual(AREA.OUTSIDE, 0)
+        self.assertEqual(AREA.INTERIOR_18, 18)
+        self.assertEqual(int(AREA(42)), 42)
+        self.assertEqual(AREA(42).name, "CUSTOM_42")
         self.assertEqual(MOVE_STATE.RUN, 6)
         self.assertEqual(CAMERA_MODE.FIXED, 15)
         self.assertEqual(DRIVING_STYLE.PLOUGH_THROUGH, 3)
@@ -121,6 +126,81 @@ class FriendlyApiTests(unittest.TestCase):
         self.assertEqual(ENTITY_STATUS.WRECKED, 5)
         self.assertEqual(VEHICLE_DOOR.REAR_RIGHT, 5)
         self.assertEqual(VEHICLE_WHEEL.FRONT_RIGHT, 2)
+
+    def test_player_location_exposes_enex_as_structured_data(self):
+        player = player_module.player
+        ped = Ped(7)
+        with mock.patch.object(type(player), "ped",
+                               new_callable=mock.PropertyMock,
+                               return_value=ped), \
+                mock.patch.object(entities.cmd, "GET_CHAR_AREA_VISIBLE",
+                                  return_value=3), \
+                mock.patch.object(player_module.cmd,
+                                  "GET_NAME_OF_ENTRY_EXIT_CHAR_USED",
+                                  return_value="AMMUN1"), \
+                mock.patch.object(player_module.cmd,
+                                  "GET_POSITION_OF_ENTRY_EXIT_CHAR_USED",
+                                  return_value=(10.0, 20.0, 30.0, math.pi / 2)):
+            enex = player.location.last_entry_exit
+
+        self.assertIsInstance(enex, EntryExit)
+        assert enex is not None
+        self.assertEqual(enex.name, "AMMUN1")
+        self.assertEqual(enex.exterior,
+                         Placement((10, 20, 30), 90, AREA.OUTSIDE))
+
+    def test_player_location_teleport_synchronizes_outside_state(self):
+        player = player_module.player
+        ped = Ped(7)
+        destination = Placement((100, 200, 12), 45, AREA.OUTSIDE)
+        with mock.patch.object(type(player), "ped",
+                               new_callable=mock.PropertyMock,
+                               return_value=ped), \
+                mock.patch.object(type(player), "vehicle",
+                                  new_callable=mock.PropertyMock,
+                                  return_value=None), \
+                mock.patch.object(player_module.cmd, "SET_AREA_VISIBLE") as world_area, \
+                mock.patch.object(entities.cmd, "SET_CHAR_AREA_VISIBLE") as char_area, \
+                mock.patch.object(player_module.cmd, "REQUEST_COLLISION") as collision, \
+                mock.patch.object(player_module.cmd, "LOAD_SCENE_IN_DIRECTION") as scene, \
+                mock.patch.object(entities.cmd, "SET_CHAR_COORDINATES") as coords, \
+                mock.patch.object(entities.cmd, "SET_CHAR_HEADING") as set_heading, \
+                mock.patch.object(player_module.cmd,
+                                  "FORCE_INTERIOR_LIGHTING_FOR_PLAYER") as lighting:
+            result = player.location.teleport(destination)
+
+        self.assertEqual(result, destination)
+        world_area.assert_called_once_with(AREA.OUTSIDE)
+        char_area.assert_called_once_with(ped, AREA.OUTSIDE)
+        collision.assert_called_once_with(100.0, 200.0)
+        scene.assert_called_once_with(100.0, 200.0, 12.0, 45.0)
+        coords.assert_called_once_with(ped, 100.0, 200.0, 12.0)
+        set_heading.assert_called_once_with(ped, 45.0)
+        lighting.assert_called_once_with(player.index, False)
+
+    def test_player_location_teleport_carries_current_vehicle(self):
+        player = player_module.player
+        ped, vehicle = Ped(7), Vehicle(8)
+        destination = Placement((50, 60, 7), 180, AREA.INTERIOR_2)
+        with mock.patch.object(type(player), "ped",
+                               new_callable=mock.PropertyMock,
+                               return_value=ped), \
+                mock.patch.object(type(player), "vehicle",
+                                  new_callable=mock.PropertyMock,
+                                  return_value=vehicle), \
+                mock.patch.object(player_module.cmd, "SET_AREA_VISIBLE"), \
+                mock.patch.object(entities.cmd, "SET_CHAR_AREA_VISIBLE"), \
+                mock.patch.object(player_module.cmd,
+                                  "SET_VEHICLE_AREA_VISIBLE") as vehicle_area, \
+                mock.patch.object(entities.cmd, "SET_CAR_COORDINATES") as coords, \
+                mock.patch.object(entities.cmd, "SET_CAR_HEADING") as heading, \
+                mock.patch.object(entities.cmd, "SET_CHAR_COORDINATES") as ped_coords:
+            player.location.teleport(destination, load_scene=False)
+
+        vehicle_area.assert_called_once_with(vehicle, AREA.INTERIOR_2)
+        coords.assert_called_once_with(vehicle, 50.0, 60.0, 7.0)
+        heading.assert_called_once_with(vehicle, 180.0)
+        ped_coords.assert_not_called()
 
     def test_vehicle_resolver_prefers_enum_and_keeps_legacy_names(self):
         self.assertEqual(entities.vehicle_id(VEHICLE.INFERNUS), 411)
