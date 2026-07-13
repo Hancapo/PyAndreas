@@ -7,7 +7,7 @@ PyAndreas embeds CPython into GTA SA and exposes a Python package, `pysa`, for
 writing in-game scripts with hot reload, event decorators, typed entity wrappers,
 SCM opcode calls, memory helpers, HUD helpers, and raw game function calls.
 
-> Status: v0.2 development release. This targets GTA San Andreas PC 1.0 US.
+> Status: v0.3.0 release. This targets GTA San Andreas PC 1.0 US.
 > Copy-ready ZIP releases include the ASI, Python runtime, one-file `pysa.pyz`,
 > examples, install instructions, and a SHA-256 checksum.
 

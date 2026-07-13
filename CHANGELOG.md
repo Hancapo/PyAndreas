@@ -7,59 +7,41 @@ The changelog is release-oriented and uses a small fixed set of categories:
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-13
+
 ### Added
-- Public `Position`, `PedModel`, `VehicleModel`, and `WeaponId` aliases for annotating ordinary scripts with the same friendly value forms accepted by PyAndreas.
-- A strict editor-facing Pyright contract that prevents callback declarations and common chained API types from silently regressing.
-- A built-in F10 developer console with Python evaluation, captured `print()` output, layout-aware text input, cursor editing, history, tab completion, script reload commands, and live test output.
-- A native PyAndreas settings page inside GTA's Options menu and a matching persistent `PyAndreas.ini` Developer Mode setting.
-- `@dev_test` and `run_tests()` for isolated in-game smoke tests, including generator tests that wait in game milliseconds.
-- Mouse-driven console caret placement, drag selection, selection repositioning, and Ctrl+A/C/X/V clipboard editing while the console is open.
-- `blips.waypoint()` for retrieving the player's map marker as a `Vector3`.
-- Expanded radar helpers with live `Blip.exists`, friendly/zoom/appearance controls, short-range icons, contact points, interior-level visibility, and frontend hiding.
-- Smooth and attached camera APIs for position/target/FOV animation, persistence, collision, cinematic mode, and ped/vehicle look-at combinations.
-- High-level `game` controls for HUD/radar visibility, radar zoom, typed language detection, and the normal save menu.
-- OOP `Cutscene` and `Train` APIs covering named cutscene playback and mission-train spawning, movement, speed, stations, carriages, cleanup, and state.
-- World date and stored-clock helpers, typed straight-road lookup results, and script roadblock management.
-- Expression-aware in-game completion for built-ins, console commands, namespace names, nested attributes, indexed values, and typed function results such as `blips.waypoint().x`.
-- A bounded completion popup navigated with Up/Down, accepted with Enter, and dismissed with Esc replaces completion text dumped into console history.
-- Holding Up or Down now repeats completion-menu navigation after a normal keyboard delay.
-- Tab now opens the completion popup even for a single partial match and, like Enter, accepts the highlighted suggestion when the popup is already open.
-- Completion results now remain visible and update live during typing, paste, Backspace, and Delete, closing automatically only when no candidate remains.
-- The console now provides automatic member suggestions after `.`, Ctrl+Space invocation, selected-item signature/type details, PageUp/PageDown navigation, paired brackets and quotes, Ctrl+Left/Right word movement, and Ctrl+L clearing.
-- Completion entries now highlight on mouse hover, accept on click, and navigate with the wheel; the wheel also scrolls console history, and clicking an earlier `>>>` command recalls it for editing.
-- Console history now eases smoothly between wheel targets using fractional row movement and a compact visual scrollbar instead of jumping three lines at once.
-- Monospace text supports native Direct3D scissor rectangles so partially visible history rows animate cleanly at console boundaries without bleeding into the header or input bar.
-- The history scrollbar supports thumb dragging and track clicks; output text supports cross-line mouse selection and Ctrl+C copying, while double-clicking `>>>` commands recalls them for editing.
-- Console diagnostics now warn before assignments to read-only properties and mutations of returned `Vector3` snapshots that cannot propagate back to game entities, with a write-back example.
-- Call signature help now tracks the active argument inside multi-parameter functions, shows its annotation/default and documentation, and lets Ctrl+Space complete unused named parameters.
-- Python syntax highlighting now colors keywords, strings, numbers, comments, operators, built-ins, calls, and attributes in both the live editor and executed `>>>` history lines.
-- The same semantic palette now covers returned values, wrapped history, completion names and type details, and call signatures while preserving dedicated diagnostic/status colors.
-- Completion entries now use explicit kind colors for properties, methods, enums, classes, modules, strings, numbers, and other values; property annotations use concise names such as `PlayerCamera` instead of raw `<class 'module.Type'>` representations.
-- The main console code/history surface is translucent, with `ConsoleBackgroundOpacity` expressed as `0.0`-`1.0`; the input strip remains slightly stronger for readability.
-- A clickable console `SETTINGS` page now controls UI scale, opacity, history capacity, and automatic IntelliSense with immediate INI persistence, alongside a clickable header X close button.
-- Common PyAndreas modules such as `blips`, `camera`, `game`, `trains`, and `cutscenes` are now directly available in the console namespace.
-- Console output wrapping and caret-following horizontal input scrolling keep all text inside the panel.
-- Completion popups reserve their screen area from console history rendering, preventing batched output text from painting over the suggestion box.
-- The completion popup now spans most of the console width so long API names remain visible.
+- A built-in F10 developer console with live Python evaluation, command history, script reload commands, and test execution.
+- Extensible slash commands with aliases, typed arguments, usage help, typo suggestions, argument completion, and automatic removal during script reloads.
+- Console autocomplete for PyAndreas APIs, nested attributes, enums, and function results, with parameter hints, syntax highlighting, and assignment warnings.
+- Mouse editing for console input and history, including text selection, clipboard shortcuts, clickable suggestions, smooth scrolling, and scrollbar dragging.
+- A native **Options > PyAndreas** menu for Developer Mode and console settings for scale, opacity, history size, font, and autocomplete.
+- Map waypoint access through `blips.waypoint()`, plus short-range blips, contact points, friendly markers, and additional visibility and appearance controls.
+- Typed world/interior areas and structured EnEx entrance data, with player teleporting that keeps CJ, his vehicle, world visibility, heading, and collision loading synchronized.
+- Camera movement, tracking, FOV transitions, entity attachment, collision control, persistent positions, and cinematic views.
+- High-level controls for HUD and radar visibility, radar zoom, game language, and the save menu.
+- `Cutscene` and `Train` APIs for cutscene playback and train spawning, movement, speed, stations, carriages, and cleanup.
+- World date and clock state helpers, road and pedestrian-path controls, straight-road queries, and script roadblocks.
+- `@pysa.dev_test` and `pysa.run_tests()` for in-game tests, including tests that wait for game time.
+- Reusable sliders, buttons, toggles, themes, and hitboxes for custom interfaces.
+- Expanded editor type information for entity collections, events, player state, vehicles, models, controllers, menus, and callbacks.
 
 ### Changed
-- Plain `print(...)` output from user mods now appears as an in-game subtitle while remaining mirrored in `PyAndreas.log`.
-- Console text now loads a real configurable TrueType monospace font file and renders through Direct3D instead of emulating fixed-width text with GTA's bitmap fonts.
-- The native host was separated into focused host, event, menu, font, render, and hook translation units; `Main.cpp` now contains only plugin composition.
-- Live world collections now retain their concrete member type through iteration, indexing, filtering, proximity searches, and nearest-entity queries.
-- Script sessions, player vehicle relationships, vehicle occupants, model information, controller sticks, and menu callbacks now expose precise return and parameter types for editor completion.
-- Generated SCM command stubs now recognize pickup, blip, checkpoint, fire, sphere, marker, particle, controller, weather, radio, checkpoint-style, corona, flare, and driving-style domains instead of presenting them as generic integers.
-- Ped and player weapon facades now expose `WEAPON` enum values while continuing to accept raw integer ids.
+- Plain `print(...)` output from user mods appears as an in-game subtitle while remaining mirrored in `PyAndreas.log`.
+- Weapon and common SCM values use named enums in autocomplete while retaining integer compatibility.
+- Console text input follows the active Windows keyboard layout, including Shift and AltGr combinations.
+- Gameplay keyboard, mouse, controller, and camera actions are suppressed while the console is open.
 
 ### Fixed
-- Member completion now reopens after Backspace/Delete repairs a temporary no-match fragment such as `player.pez` back to `player.pe`, without requiring the entire member name to be erased.
-- `player.clothes.set_model(...)` now streams and validates ped models before `SET_PLAYER_MODEL`, preventing crashes caused by unloaded RenderWare clumps, and releases the streaming reference afterward.
-- The developer console now renders in GTA's late draw stage above the HUD, and its independently drawn caret no longer makes the full input line flash.
-- Opening GTA's front end now closes the developer console, restores controls immediately and repeats that restoration on the first gameplay tick instead of invisibly reopening the console.
-- Held Backspace/Delete and cursor keys now repeat normally, and the TrueType caret advances over trailing whitespace by fixed font cells.
-- Developer-console input capture now suppresses GTA keyboard, mouse, and controller actions—including camera-mode switching—while preserving raw input for console editing.
-- Vehicle, ped, and object creation callbacks now wait until GTA has assigned a valid pool handle and model, and other lifecycle callbacks reject unusable wrappers, so entity properties no longer report constructor-time sentinel values such as `-1`.
-- Freed GTA pool references are now rejected by entity wrappers, command packing, and the native pointer bridge instead of being passed to game functions as stale objects.
+- Player skin changes no longer crash when the requested model is not already loaded.
+- Entity creation callbacks no longer expose vehicles, pedestrians, or objects before their model and handle are valid.
+- Deleted entities are rejected instead of being reused through stale Python objects.
+- Console autocomplete recovers after correcting a partial name and updates continuously while typing.
+- Console text, suggestions, parameter hints, history, selections, and scrollbars remain clipped to their panels at different resolutions and UI scales.
+- Held Backspace, Delete, arrow keys, and suggestion navigation repeat correctly.
+- Opening the pause menu while the console is active no longer leaves player controls disabled after returning to the game.
+- Console text and caret rendering remain aligned above the HUD, including whitespace and long input lines.
+- EnEx entrance headings are converted to the degree-based heading used by the rest of PyAndreas before teleporting the player.
+- Developer-console autocomplete and parameter hints work correctly when the editor package is installed with Python 3.8.
 
 ## [0.2.0] - 2026-07-09
 
@@ -78,10 +60,10 @@ The changelog is release-oriented and uses a small fixed set of categories:
 - `run_on_game_thread()` for safely handing background-thread results back to GTA's game thread.
 
 ### Changed
-- Weapon, vehicle, ped, pickup, checkpoint, explosion, and common SCM domains now consistently accept typed enums while preserving integer compatibility.
-- SCM discovery, documentation, runtime signatures, and generated editor stubs now retain entity, model, weapon, and enum types instead of collapsing them to raw integers.
-- Script reloads now refresh local helper modules and transactionally roll back handlers, tasks, hooks, and game events created by failed imports.
-- The ASI now discovers its Python runtime, library, and scripts relative to its actual loaded location, enabling Mod Loader installations while preserving traditional game-root installs.
+- Weapon, vehicle, ped, pickup, checkpoint, explosion, and common SCM domains consistently accept typed enums while preserving integer compatibility.
+- SCM discovery, documentation, runtime signatures, and generated editor stubs retain entity, model, weapon, and enum types instead of collapsing them to raw integers.
+- Script reloads refresh local helper modules and transactionally roll back handlers, tasks, hooks, and game events created by failed imports.
+- The ASI discovers its Python runtime, library, and scripts relative to its actual loaded location, enabling Mod Loader installations while preserving traditional game-root installs.
 
 ### Fixed
 - Corrected swapped once-only and respawning pickup constants to match plugin-sdk's `ePickupType` values.
