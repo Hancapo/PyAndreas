@@ -454,14 +454,28 @@ DeveloperMode = 1
 Press F10 during gameplay to open it. The submenu toggle saves immediately
 and the console becomes available without restarting the game.
 
-Useful console commands are:
+Slash commands provide quick access to common actions:
 
-- `tests` or `tests vehicle` to run all registered tests or a filtered group.
-- `status` to inspect the current test run.
-- `reload` or `restart` to queue a safe F11-style script reload.
-- `scripts`, `history`, `clear`, and `close`.
-- Any Python expression or one-line statement, such as `player.health`,
+- `/help` or `/help vehicle` lists commands and usage.
+- `/reload`, `/scripts`, `/tests [filter]`, `/status`, and `/settings` manage development tools.
+- `/where`, `/copypos`, and `/tp waypoint` inspect or change the player's position.
+- `/heal`, `/armour 100`, `/wanted 0`, `/skin wmymech`, and `/weapon m4 500` modify the player.
+- `/vehicle infernus`, `/repair`, `/weather sandstorm`, `/time 22:30`, and `/gravity 9.81` modify the world.
+- `/launch`, `/explode`, and `/cleanup` provide temporary or destructive test actions.
+- Any Python expression or one-line statement still works, such as `player.health`,
   `world.vehicles.nearest(player)`, or `player.money += 1000`.
+
+Command names and arguments use the same completion window as Python code.
+For example, typing `/vehicle inf` suggests `infernus`, while `/weapon ` lists
+the `WEAPON` enum. Unknown commands suggest the closest matching name.
+
+User scripts can add commands which are removed safely on F11 reload:
+
+```python
+@pysa.console_command("garage", description="Teleport to the garage")
+def garage():
+    pysa.player.pos = (1024, -1024, 32)
+```
 
 Tab completes names and attributes; Up and Down browse command history.
 Left/Right, Home, End, Backspace, and Delete edit around a blinking insertion

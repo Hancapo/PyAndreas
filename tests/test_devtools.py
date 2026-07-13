@@ -2,7 +2,8 @@ import unittest
 from unittest import mock
 from types import SimpleNamespace
 
-from pysa import _mock, _runtime, dev_console, testing
+from pysa import (_mock, _runtime, console_command, console_commands,
+                  dev_console, testing)
 from pysa.dev_console import DeveloperConsole
 from pysa.keys import KEY
 from pysa.player import PlayerControls
@@ -33,6 +34,100 @@ class DeveloperToolsTests(unittest.TestCase):
         self.assertIn("Script reload queued...", console.output)
         self.assertIs(console.execute("blips"), console.namespace["pysa"].blips)
         self.assertIs(console.execute("camera"), console.namespace["pysa"].camera)
+
+    def test_slash_commands_support_help_aliases_and_readable_errors(self):
+        console = DeveloperConsole()
+
+        console.execute("/help vehicle")
+        self.assertTrue(any("/vehicle <model>" in line
+                            for line in console.output))
+        console.execute("/restart")
+        self.assertTrue(_runtime._reload_requested)
+
+        with self.assertRaisesRegex(
+                console_commands.CommandError, "Did you mean /vehicle"):
+            console.execute("/vehcle")
+        with self.assertRaisesRegex(
+                console_commands.CommandError, "Usage: /wanted <level>"):
+            console.execute("/wanted")
+
+    def test_custom_slash_commands_convert_typed_arguments(self):
+        received = []
+
+        @console_command("demo", aliases=("d",),
+                         description="A custom command")
+        def demo(count: int, enabled: bool = True):
+            received.append((count, enabled))
+            return "done"
+
+        console = DeveloperConsole()
+        self.assertEqual(console.execute("/demo 3 off"), "done")
+        console.execute("/d 4 on")
+        self.assertEqual(received, [(3, False), (4, True)])
+        self.assertIn("demo", console_commands.command_names())
+
+    def test_slash_completion_covers_commands_and_arguments(self):
+        console = DeveloperConsole()
+        console.input = "/ve"
+        console.cursor = len(console.input)
+        console._complete()
+        self.assertIsNotNone(console._completion)
+        self.assertIn("/vehicle", console._completion.labels)
+
+        console.input = "/vehicle inf"
+        console.cursor = len(console.input)
+        console._complete()
+        self.assertIsNotNone(console._completion)
+        self.assertIn("infernus", console._completion.labels)
+
+        console.input = "/weather sun"
+        console.cursor = len(console.input)
+        console._complete()
+        self.assertIsNotNone(console._completion)
+        self.assertIn("sunny_la", console._completion.labels)
+
+        self.assertTrue(console_commands.can_execute_without_arguments(
+            "/heal"))
+        self.assertFalse(console_commands.can_execute_without_arguments(
+            "/wanted"))
+
+    def test_slash_command_cleanup_owns_spawned_resources(self):
+        cleaned = []
+
+        class Resource:
+            def delete(self):
+                cleaned.append("deleted")
+
+        console = DeveloperConsole()
+        console._command_context.track(Resource())
+        console.execute("/cleanup")
+
+        self.assertEqual(cleaned, ["deleted"])
+        self.assertIn("Cleaned up 1 resource(s)", console.output)
+
+    def test_gravity_command_accepts_metres_per_second_squared(self):
+        console = DeveloperConsole()
+        with mock.patch("pysa.world.set_gravity") as set_gravity:
+            console.execute("/gravity 9.81")
+            set_gravity.assert_called_once_with(0.008)
+
+        with mock.patch("pysa.world.set_gravity") as set_gravity:
+            console.execute("/gravity 1")
+            self.assertAlmostEqual(
+                set_gravity.call_args.args[0], 0.008 / 9.81)
+        self.assertTrue(any("Gravity set to 1 m/s^2" in line
+                            for line in console.output))
+
+    def test_failed_script_import_rolls_back_console_commands(self):
+        checkpoint = console_commands._checkpoint()
+
+        @console_command("temporary")
+        def temporary():
+            return None
+
+        self.assertIn("temporary", console_commands.command_names())
+        console_commands._rollback(checkpoint)
+        self.assertNotIn("temporary", console_commands.command_names())
 
     def test_console_warns_about_snapshot_and_read_only_assignments(self):
         from pysa.math3 import Vector3

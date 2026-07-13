@@ -318,6 +318,11 @@ def _clear_registries() -> None:
     except Exception:
         pass
     try:
+        from . import console_commands
+        console_commands._clear_user_commands()
+    except Exception:
+        pass
+    try:
         from . import hooks
         hooks.remove_all()
     except Exception:
@@ -360,7 +365,7 @@ def _local_module_names() -> set:
 
 def _registry_checkpoint():
     """Capture append-only registration state before importing one script."""
-    from . import game_events, hooks, testing
+    from . import console_commands, game_events, hooks, testing
 
     return {
         "handlers": {name: len(items) for name, items in _handlers.items()},
@@ -373,12 +378,13 @@ def _registry_checkpoint():
         "hooks": hooks._checkpoint(),
         "game_events": game_events._checkpoint(),
         "testing": testing._checkpoint(),
+        "console_commands": console_commands._checkpoint(),
     }
 
 
 def _rollback_registries(checkpoint) -> None:
     """Remove decorators/hooks/tasks created by a failed script import."""
-    from . import game_events, hooks, testing
+    from . import console_commands, game_events, hooks, testing
 
     for name in list(_handlers):
         keep = checkpoint["handlers"].get(name, 0)
@@ -405,6 +411,7 @@ def _rollback_registries(checkpoint) -> None:
     game_events._rollback(checkpoint["game_events"])
     hooks._rollback(checkpoint["hooks"])
     testing._rollback(checkpoint["testing"])
+    console_commands._rollback(checkpoint["console_commands"])
     for event in _NATIVE_GATED_EVENTS:
         _sync_native_event(event)
 

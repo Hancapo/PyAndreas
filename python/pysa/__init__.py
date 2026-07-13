@@ -104,6 +104,8 @@ from .pad import ButtonAction, Stick
 from .session import ScriptSession
 from .type_aliases import AreaId, PedModel, Position, VehicleModel, WeaponId
 from .dev_console import DeveloperConsole, developer_console
+from .console_commands import (CommandContext, command_names,
+                               console_command)
 from .testing import TestRun, dev_test, run_tests, test_names
 from .state_events import (PedDamageEvent, PedDeathEvent, VehicleEnterEvent,
                            VehicleExitEvent, WeaponChangedEvent, ZoneEvent)
@@ -186,7 +188,8 @@ __all__ = [
     "text", "pad", "storage", "session", "ui", "BUTTON", "Stick",
     "ButtonAction", "ScriptSession",
     "Position", "AreaId", "PedModel", "VehicleModel", "WeaponId",
-    "DeveloperConsole", "developer_console", "TestRun", "dev_test",
+    "DeveloperConsole", "developer_console", "CommandContext",
+    "console_command", "command_names", "TestRun", "dev_test",
     "run_tests", "test_names",
     "Checkpoint", "Marker3D", "Sphere", "CHECKPOINT", "Fire", "Cutscene",
     "Pickup", "all_pickups",

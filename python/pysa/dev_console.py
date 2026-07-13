@@ -26,8 +26,12 @@ try:
 except ImportError:
     from . import _mock as _pysa
 
-from . import _runtime, draw, hud, testing, ui
+from . import _runtime, console_commands, draw, hud, testing, ui
 from .keys import KEY
+
+
+_UNION_ORIGINS = ((Union, types.UnionType)
+                  if hasattr(types, "UnionType") else (Union,))
 
 
 _TEXT_KEYS = (
@@ -145,7 +149,7 @@ class DeveloperConsole:
         "_call_hint_cache",
         "_close_hitbox", "_settings_hitbox", "_settings_hitboxes",
         "_settings_sliders", "_settings_slider_hitboxes",
-        "_settings_dragging",
+        "_settings_dragging", "_command_context",
     )
 
     def __init__(self, toggle_key: int = KEY.F10, *, prompt: str = ">>> ",
@@ -162,7 +166,7 @@ class DeveloperConsole:
         self.history_limit = max(1, int(history_limit))
         self.output: list[str] = [
             "PyAndreas developer console",
-            "Type help for commands; Python expressions work directly.",
+            "Type /help for commands; Python expressions work directly.",
         ]
         self.output_limit = max(10, int(output_limit))
         self.namespace = namespace or self._default_namespace()
@@ -229,6 +233,7 @@ class DeveloperConsole:
         }
         self._settings_slider_hitboxes: dict[str, ui.Rect] = {}
         self._settings_dragging: Optional[str] = None
+        self._command_context = console_commands.CommandContext(self)
 
         if _register_handlers:
             _runtime.register("tick", self.update)
@@ -360,7 +365,11 @@ class DeveloperConsole:
                 self._completion = None
                 return
             if self._pressed(KEY.ENTER):
-                self._accept_completion()
+                if console_commands.can_execute_without_arguments(self.input):
+                    self._completion = None
+                    self._submit()
+                else:
+                    self._accept_completion()
                 return
             if self._repeat_pressed(KEY.UP, initial_delay=0.32,
                                     interval=0.08):
@@ -709,10 +718,12 @@ class DeveloperConsole:
         source = source.strip()
         if not source:
             return None
-        command, _, argument = source.partition(" ")
-        builtin = getattr(self, f"_command_{command.lower()}", None)
-        if callable(builtin):
-            return builtin(argument.strip())
+        slash = source.startswith("/")
+        command_result = console_commands.execute(
+            self._command_context, source[1:] if slash else source,
+            slash=slash)
+        if command_result is not NotImplemented:
+            return command_result
 
         for warning in self._assignment_warnings(source):
             self.write("Warning: " + warning)
@@ -807,7 +818,7 @@ class DeveloperConsole:
     @staticmethod
     def _concrete_annotation(annotation: Any) -> Any:
         origin = get_origin(annotation)
-        if origin in (Union, types.UnionType):
+        if origin in _UNION_ORIGINS:
             choices = [item for item in get_args(annotation)
                        if item is not type(None)]
             if len(choices) == 1:
@@ -835,54 +846,6 @@ class DeveloperConsole:
         except Exception as exc:
             self.write(f"Error: {type(exc).__name__}: {exc}")
             _pysa.log(f"[pysa:console] {source}\n{traceback.format_exc()}")
-
-    def _command_help(self, _argument: str) -> None:
-        self.write("Commands: help, clear, close, reload, restart, tests [filter],")
-        self.write("          status, scripts, history")
-        self.write("Anything else is evaluated as Python; assignments also work.")
-        self.write("Tab/Ctrl+Space opens IntelliSense; Up/Down selects; Enter/Tab accepts.")
-        self.write("Ctrl+Left/Right moves by word; Ctrl+L clears; pairs close automatically.")
-
-    def _command_clear(self, _argument: str) -> None:
-        self.clear()
-
-    def _command_close(self, _argument: str) -> None:
-        self.close()
-
-    def _command_reload(self, _argument: str) -> None:
-        self.write("Script reload queued...")
-        _runtime.request_reload()
-
-    def _command_restart(self, argument: str) -> None:
-        self._command_reload(argument)
-
-    def _command_tests(self, argument: str) -> None:
-        self.last_test_run = testing.run_tests(argument or None, self.write)
-
-    def _command_test(self, argument: str) -> None:
-        self._command_tests(argument)
-
-    def _command_status(self, _argument: str) -> None:
-        run = self.last_test_run
-        if run is None:
-            self.write("No test run started")
-        elif run.running:
-            self.write(
-                f"Tests running: {run.passed} passed, {run.failed} failed")
-        else:
-            self.write(
-                f"Tests finished: {run.passed} passed, {run.failed} failed")
-
-    def _command_scripts(self, _argument: str) -> None:
-        if not _runtime._scripts:
-            self.write("No active user scripts")
-            return
-        for module, path in _runtime._scripts:
-            self.write(f"{module}: {os.path.basename(path)}")
-
-    def _command_history(self, _argument: str) -> None:
-        for index, source in enumerate(self.history, 1):
-            self.write(f"{index:>3}: {source}")
 
     def _pressed(self, key: int) -> bool:
         down = bool(_pysa.key_down(int(key)))
@@ -1015,6 +978,8 @@ class DeveloperConsole:
         """Whether the caret is editing a dotted member expression."""
         if not self.auto_complete:
             return False
+        if self.input.startswith("/"):
+            return True
         target = self._completion_target()
         if target is None:
             return False
@@ -1600,6 +1565,17 @@ class DeveloperConsole:
         self.cursor = target + len(text)
 
     def _complete(self) -> None:
+        if self.input.startswith("/"):
+            completion = console_commands.complete(
+                self._command_context, self.input, self.cursor)
+            if completion is None:
+                self._completion = None
+                return
+            self._completion = _CompletionMenu(
+                completion.start, completion.end, completion.candidates,
+                completion.labels, completion.details,
+                [_CODE_CALL for _ in completion.candidates])
+            return
         target = self._completion_target()
         if target is None:
             self._completion = None
@@ -1664,6 +1640,21 @@ class DeveloperConsole:
             start, self.cursor, candidates, leaves, details, colors)
 
     def _call_hint(self) -> Optional[_CallHint]:
+        if self.input.startswith("/"):
+            slash_hint = console_commands.call_hint(self.input, self.cursor)
+            if slash_hint is None:
+                self._call_hint_cache = None
+                return None
+            command, signature, active = slash_hint
+            key = (self.input, self.cursor)
+            if (self._call_hint_cache is not None and
+                    self._call_hint_cache.key == key):
+                return self._call_hint_cache
+            parameters = list(signature.parameters.values())
+            self._call_hint_cache = _CallHint(
+                key, command.handler, f"/{command.name}", signature,
+                parameters, active, 0, command.description)
+            return self._call_hint_cache
         key = (self.input, self.cursor)
         if self._call_hint_cache is not None and self._call_hint_cache.key == key:
             return self._call_hint_cache
@@ -1702,7 +1693,10 @@ class DeveloperConsole:
         function_name = name_match.group(1)
         try:
             function = self._resolve_completion_receiver(function_name)
-            signature = inspect.signature(function, eval_str=True)
+            try:
+                signature = inspect.signature(function, eval_str=True)
+            except TypeError:  # ``eval_str`` was added after Python 3.8.
+                signature = inspect.signature(function)
         except Exception:
             self._call_hint_cache = None
             return None
@@ -1813,7 +1807,7 @@ class DeveloperConsole:
         values.update({word: None for word in keyword.kwlist})
         for name in dir(self):
             if name.startswith("_command_"):
-                values[name.removeprefix("_command_")] = getattr(self, name)
+                values[name[len("_command_"):]] = getattr(self, name)
         return values
 
     @staticmethod
@@ -1873,7 +1867,7 @@ class DeveloperConsole:
     @staticmethod
     def _type_display(annotation: Any) -> str:
         origin = get_origin(annotation)
-        if origin in (Union, types.UnionType):
+        if origin in _UNION_ORIGINS:
             return " | ".join(DeveloperConsole._type_display(item)
                               for item in get_args(annotation))
         if origin is not None:
@@ -1908,7 +1902,7 @@ class DeveloperConsole:
                 if annotation is inspect.Signature.empty:
                     raise TypeError("call has no return annotation")
                 origin = get_origin(annotation)
-                if origin in (Union, types.UnionType):
+                if origin in _UNION_ORIGINS:
                     choices = [item for item in get_args(annotation)
                                if item is not type(None)]
                     if len(choices) == 1:

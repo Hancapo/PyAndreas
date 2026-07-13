@@ -46,6 +46,15 @@ def typed_smoke_test() -> None:
 console: pysa.DeveloperConsole = pysa.DeveloperConsole()
 test_run: pysa.TestRun = pysa.run_tests("typed")
 
+
+@pysa.console_command("typed-command", aliases=("tc",))
+def typed_command(count: int = 1, enabled: bool = True) -> str:
+    return f"{count}: {enabled}"
+
+
+command_context: pysa.CommandContext
+registered_commands: list[str] = pysa.command_names()
+
 waypoint = pysa.blips.waypoint()
 if waypoint is not None:
     waypoint.x
