@@ -7,6 +7,11 @@ The changelog is release-oriented and uses a small fixed set of categories:
 
 ## [Unreleased]
 
+### Fixed
+- Moving the mouse over autocomplete results no longer changes the active
+  keyboard selection or repositions the suggestion list; clicking still
+  selects and accepts the hovered result.
+
 ## [0.3.0] - 2026-07-13
 
 ### Added

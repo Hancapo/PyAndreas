@@ -140,7 +140,8 @@ class DeveloperConsole:
         "last_test_run", "_restore_after_frontend", "mouse_x", "mouse_y",
         "selection_anchor", "_mouse_was_down", "_mouse_selecting",
         "_drag_source", "_drag_target", "_completion",
-        "_completion_hitbox", "_output_hitboxes", "_scroll_offset",
+        "_completion_hitbox", "_completion_hover_row", "_output_hitboxes",
+        "_scroll_offset",
         "_scroll_visual", "_scroll_time", "_max_scroll",
         "_scrollbar_hitbox", "_scrollbar_dragging", "_scrollbar_drag_offset",
         "_wrapped_output_cache", "_output_cell_width",
@@ -193,6 +194,7 @@ class DeveloperConsole:
         self._completion_hitbox: Optional[
             tuple[float, float, float, float, int, int]
         ] = None
+        self._completion_hover_row: Optional[int] = None
         self._output_hitboxes: list[
             tuple[float, float, float, float, str, int]
         ] = []
@@ -1048,6 +1050,10 @@ class DeveloperConsole:
                 draw.rect(x + 2.0 * ui_scale, row_y,
                           width - 4.0 * ui_scale, row_height,
                           (35, 92, 68, 255))
+            elif absolute == self._completion_hover_row:
+                draw.rect(x + 2.0 * ui_scale, row_y,
+                          width - 4.0 * ui_scale, row_height,
+                          (27, 36, 41, 255))
             available = max(1, int((width - 12.0 * ui_scale) // cell))
             shown = label if len(label) <= available else label[:max(1, available - 1)] + "~"
             self._draw_syntax(
@@ -1462,17 +1468,26 @@ class DeveloperConsole:
                          box_y <= self.mouse_y < box_y + row_count * row_height)
             if over_rows:
                 row = int((self.mouse_y - box_y) // row_height)
-                self._completion.selected = min(
+                absolute = min(
                     len(self._completion.labels) - 1, first + row)
-                if down and not self._mouse_was_down:
+                clicked = down and not self._mouse_was_down
+                self._completion_hover_row = absolute
+                # Hover is visual only. Keyboard navigation retains the active
+                # selection until the user explicitly clicks a mouse row.
+                if clicked:
+                    self._completion.selected = absolute
                     self._accept_completion()
                     self._mouse_was_down = down
                     return
+            else:
+                self._completion_hover_row = None
             if wheel:
                 self._move_completion(-wheel)
                 self._mouse_was_down = down
                 return
-        elif wheel:
+        else:
+            self._completion_hover_row = None
+        if (self._completion is None or hitbox is None) and wheel:
             self._scroll_offset = max(
                 0, min(max(self._max_scroll, len(self.output) - 1),
                        self._scroll_offset + wheel * 3))

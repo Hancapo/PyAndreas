@@ -618,6 +618,45 @@ class DeveloperToolsTests(unittest.TestCase):
         self.assertEqual(console.input, "thing.beta")
         self.assertIsNone(console._completion)
 
+    def test_completion_hover_never_reclaims_keyboard_selection(self):
+        console = DeveloperConsole(namespace={
+            "thing": SimpleNamespace(alpha=1, beta=2, gamma=3),
+            "__builtins__": __builtins__,
+        })
+        console.visible = True
+        console.input = "thing."
+        console.cursor = len(console.input)
+        console._complete()
+        assert console._completion is not None
+        console._completion_hitbox = (10.0, 20.0, 200.0, 15.0, 0, 3)
+        console.mouse_x = 20.0
+        console.mouse_y = 25.0  # first row remains hovered
+
+        # Establish the row currently under the pointer, then navigate by
+        # keyboard while the pointer stays there.
+        with mock.patch.object(dev_console._pysa, "mouse_state",
+                               return_value=(0, 0, False, False, 0)):
+            console._update_mouse()
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               side_effect=lambda key: key == KEY.DOWN), \
+             mock.patch.object(dev_console._pysa, "mouse_state",
+                               return_value=(0, 0, False, False, 0)), \
+             mock.patch("pysa.dev_console.time.monotonic", return_value=1.0):
+            console.update()
+        self.assertEqual(console._completion.selected, 1)
+
+        # Moving inside the original row or across other rows changes only the
+        # hover decoration. It must never move or scroll keyboard selection.
+        with mock.patch.object(dev_console._pysa, "mouse_state",
+                               return_value=(2, 0, False, False, 0)):
+            console._update_mouse()
+        self.assertEqual(console._completion.selected, 1)
+        with mock.patch.object(dev_console._pysa, "mouse_state",
+                               return_value=(0, 31, False, False, 0)):
+            console._update_mouse()
+        self.assertEqual(console._completion.selected, 1)
+        self.assertEqual(console._completion_hover_row, 2)
+
     def test_mouse_wheel_navigates_completions_and_scrollback(self):
         console = DeveloperConsole(namespace={
             "thing": SimpleNamespace(alpha=1, beta=2, gamma=3),
