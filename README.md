@@ -280,6 +280,9 @@ This produces `dist\release`, `dist\PyAndreas-<version>-win32.zip`, and its
 `.sha256` checksum. Add `-GameDir C:\path\to\GTA-SA` to install the assembled
 release after a successful build. By default it packages the embeddable runtime
 already at `dist\PyAndreas\python`; use `-RuntimeDir` to select another one.
+Unlike a direct MSBuild invocation, the release script suppresses the
+`GTA_SA_DIR` development copy hook so it cannot accidentally install a second
+ASI alongside an existing Mod Loader installation.
 
 ## Development Checks
 

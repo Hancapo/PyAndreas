@@ -25,10 +25,23 @@ if (-not $msbuild) {
     $msbuild = $msbuild.Source
 }
 
-& $msbuild $project /m /p:"Configuration=Release GTA-SA" /p:Platform=Win32 `
-    /p:PLUGIN_SDK_DIR="$PluginSdkDir" /p:PYTHON_X86_DIR="$PythonX86Dir"
-if ($LASTEXITCODE -ne 0) {
-    throw "Native build failed with exit code $LASTEXITCODE"
+$previousGameDir = $env:GTA_SA_DIR
+try {
+    # A release build must not silently deploy a second ASI through the
+    # project's development-only post-build hook. Use -GameDir below when an
+    # assembled installation is explicitly requested.
+    Remove-Item Env:GTA_SA_DIR -ErrorAction SilentlyContinue
+    & $msbuild $project /m /p:"Configuration=Release GTA-SA" /p:Platform=Win32 `
+        /p:PLUGIN_SDK_DIR="$PluginSdkDir" /p:PYTHON_X86_DIR="$PythonX86Dir"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Native build failed with exit code $LASTEXITCODE"
+    }
+} finally {
+    if ($null -eq $previousGameDir) {
+        Remove-Item Env:GTA_SA_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:GTA_SA_DIR = $previousGameDir
+    }
 }
 
 if (-not $RuntimeDir) {
