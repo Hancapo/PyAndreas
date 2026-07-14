@@ -20,6 +20,7 @@ bool g_installed = false;
 int g_settingsPage = -1;
 SafetyHookInline g_textHook;
 SafetyHookInline g_actionHook;
+SafetyHookInline g_switchMenuHook;
 
 void SetName(char (&destination)[8], const char *name) {
     memset(destination, 0, sizeof(destination));
@@ -50,6 +51,12 @@ char __fastcall ActionHook(CMenuManager *self, void *, char input, char enter) {
         return 1;
     }
     return g_actionHook.thiscall<char>(self, input, enter);
+}
+
+void __fastcall SwitchMenuHook(CMenuManager *self, void *) {
+    if (pysa::ConsoleBlocksFrontendToggle())
+        return;
+    g_switchMenuHook.thiscall<void>(self);
 }
 
 CMenuScreen *ActiveScreens() {
@@ -151,7 +158,10 @@ void Install(const std::string &baseDir) {
         reinterpret_cast<void *>(0x6A0050), reinterpret_cast<void *>(&TextHook));
     g_actionHook = safetyhook::create_inline(
         reinterpret_cast<void *>(0x57CD50), reinterpret_cast<void *>(&ActionHook));
-    if (!g_textHook || !g_actionHook) {
+    g_switchMenuHook = safetyhook::create_inline(
+        reinterpret_cast<void *>(0x576B70),
+        reinterpret_cast<void *>(&SwitchMenuHook));
+    if (!g_textHook || !g_actionHook || !g_switchMenuHook) {
         pysa::Log("PyAndreas Options submenu hooks failed");
         return;
     }

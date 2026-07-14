@@ -46,6 +46,7 @@ void ResetEventGates();
 bool SetEventEnabled(const char *name, bool enabled);
 bool EventEnabled(const char *name);
 void CaptureConsoleInputFrame(); // suppress GTA controls while preserving console input
+bool ConsoleBlocksFrontendToggle(); // console owns the current menu-toggle input
 
 // Method tables contributed by the render and hook translation units,
 // concatenated into the _pysa module at init.

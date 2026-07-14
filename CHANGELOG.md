@@ -15,6 +15,8 @@ The changelog is release-oriented and uses a small fixed set of categories:
   instead of accepting an identical suggestion and requiring a second Enter.
 - Autocomplete now opens and refreshes consistently while typing or repairing
   the first Python name, not only after entering a dotted member expression.
+- ESC actions inside the developer console no longer leak into GTA and open
+  the pause menu while returning from settings or closing console UI.
 
 ### Changed
 - Console settings now use a compact, grouped preferences panel with aligned

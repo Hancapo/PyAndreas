@@ -45,11 +45,17 @@ std::vector<DrawItem> g_drawQueue;
 
 static std::string s_baseDir;
 static bool s_consoleInputCaptured = false;
+static bool s_consoleEscapeOwned = false;
 static CMouseControllerState s_consoleMouseState{};
 
 void CaptureConsoleInputFrame() {
+    const bool escapeDown = (GetKeyState(VK_ESCAPE) & 0x8000) != 0;
+    if (!escapeDown)
+        s_consoleEscapeOwned = false;
     if (!s_consoleInputCaptured)
         return;
+    if (escapeDown)
+        s_consoleEscapeOwned = true;
 
     // Python reads the preserved raw state. GTA receives cleared pad,
     // keyboard and mouse states, preventing any gameplay binding from
@@ -69,6 +75,10 @@ void CaptureConsoleInputFrame() {
            sizeof(CPad::NewMouseControllerState));
     memset(&CPad::OldMouseControllerState, 0,
            sizeof(CPad::OldMouseControllerState));
+}
+
+bool ConsoleBlocksFrontendToggle() {
+    return s_consoleInputCaptured || s_consoleEscapeOwned;
 }
 
 void SetBaseDir(const std::string &dir) { s_baseDir = dir; }

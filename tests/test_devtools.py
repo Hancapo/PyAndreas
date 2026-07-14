@@ -568,6 +568,19 @@ class DeveloperToolsTests(unittest.TestCase):
         self.assertEqual(capture.call_args_list,
                          [mock.call(True), mock.call(False)])
 
+    def test_escape_returns_from_settings_without_releasing_console_input(self):
+        console = DeveloperConsole()
+        console.visible = True
+        console.settings_visible = True
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               side_effect=lambda key: key == KEY.ESCAPE), \
+                mock.patch.object(dev_console._pysa, "capture_input") as capture:
+            console.update()
+
+        self.assertTrue(console.visible)
+        self.assertFalse(console.settings_visible)
+        capture.assert_not_called()
+
     def test_console_wraps_output_and_scrolls_long_input(self):
         console = DeveloperConsole()
         console.output = ["short", "x" * 25, "two words fit naturally"]
