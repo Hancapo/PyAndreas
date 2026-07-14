@@ -880,6 +880,25 @@ class DeveloperToolsTests(unittest.TestCase):
         console._apply_setting_action("opacity_up")
         self.assertEqual(console.background_opacity, 1.0)
 
+    def test_console_settings_use_compact_aligned_controls(self):
+        console = DeveloperConsole()
+        with mock.patch("pysa.dev_console.draw.rect"), \
+                mock.patch("pysa.dev_console.draw.bar"), \
+                mock.patch("pysa.dev_console.hud.draw_mono"), \
+                mock.patch("pysa.dev_console.hud.mono_text_width",
+                           side_effect=lambda text, pixels:
+                           len(text) * pixels * 0.6):
+            console._draw_settings_panel(0.0, 0.0, 1000.0, 600.0, 1.0)
+
+        sliders = console._settings_slider_hitboxes
+        self.assertEqual(set(sliders), {"scale", "opacity", "history"})
+        self.assertEqual(len({bounds.x for bounds in sliders.values()}), 1)
+        self.assertEqual(len({bounds.width for bounds in sliders.values()}), 1)
+        self.assertGreater(sliders["scale"].x, 400.0)
+        self.assertLess(sliders["scale"].width, 300.0)
+        actions = {hitbox[-1] for hitbox in console._settings_hitboxes}
+        self.assertEqual(actions, {"autocomplete", "reset"})
+
     def test_clickable_settings_and_close_header_buttons(self):
         console = DeveloperConsole()
         console.visible = True

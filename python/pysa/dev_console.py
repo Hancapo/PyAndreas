@@ -1133,79 +1133,135 @@ class DeveloperConsole:
                              height: float, ui_scale: float) -> None:
         self._settings_hitboxes = []
         self._settings_slider_hitboxes = {}
-        # Keep the settings controls usable even while previewing a very
-        # large console scale on a low-resolution game window.
-        ui_scale = min(ui_scale, max(0.8, height / 330.0))
-        title_pixels = 17.0 * ui_scale
-        text_pixels = 13.0 * ui_scale
-        hud.draw_mono("CONSOLE SETTINGS", x + 8.0 * ui_scale, y,
-                      title_pixels, (112, 225, 165))
-        hud.draw_mono("Changes are saved immediately to PyAndreas.ini",
-                      x + 8.0 * ui_scale, y + 24.0 * ui_scale,
-                      text_pixels * 0.82, (145, 155, 162))
+        # Settings are a compact dialog inside the console instead of a form
+        # stretched across the complete code surface.
+        ui_scale = min(ui_scale, max(0.78, height / 350.0))
+        panel_width = min(width, 620.0 * ui_scale)
+        panel_height = min(height, 344.0 * ui_scale)
+        panel_x = x + (width - panel_width) * 0.5
+        panel_y = y + max(0.0, min(24.0 * ui_scale,
+                                  (height - panel_height) * 0.28))
+        border = max(1.0, ui_scale)
+        padding = 18.0 * ui_scale
+        title_pixels = 16.0 * ui_scale
+        text_pixels = 12.0 * ui_scale
+        hint_pixels = 9.0 * ui_scale
 
-        row_y = y + 54.0 * ui_scale
-        row_height = 42.0 * ui_scale
-        control_right = x + width - 10.0 * ui_scale
+        draw.rect(panel_x - border, panel_y - border,
+                  panel_width + border * 2.0,
+                  panel_height + border * 2.0, ui.DARK_THEME.border)
+        draw.rect(panel_x, panel_y, panel_width, panel_height,
+                  (10, 14, 17, 248))
+        draw.rect(panel_x, panel_y, 3.0 * ui_scale, panel_height,
+                  ui.DARK_THEME.accent)
+        hud.draw_mono("CONSOLE PREFERENCES", panel_x + padding,
+                      panel_y + 15.0 * ui_scale, title_pixels,
+                      ui.DARK_THEME.text)
+        hud.draw_mono("Appearance, editor behavior, and retained output",
+                      panel_x + padding, panel_y + 38.0 * ui_scale,
+                      hint_pixels, ui.DARK_THEME.muted)
+        saved = "SAVED LIVE"
+        saved_width = hud.mono_text_width(saved, hint_pixels)
+        hud.draw_mono(saved, panel_x + panel_width - padding - saved_width,
+                      panel_y + 18.0 * ui_scale, hint_pixels,
+                      ui.DARK_THEME.accent[:3])
+
+        content_x = panel_x + 12.0 * ui_scale
+        content_width = panel_width - 24.0 * ui_scale
+        row_height = 44.0 * ui_scale
+        row_y = panel_y + 81.0 * ui_scale
+        control_right = panel_x + panel_width - padding
+        control_left = panel_x + panel_width * 0.50
 
         def button(bx: float, by: float, bw: float, label: str,
                    action: str, active: bool = False) -> None:
-            bounds = ui.Rect(bx, by, bw, 28.0 * ui_scale)
+            bounds = ui.Rect(bx, by, bw, 26.0 * ui_scale)
             hover = bounds.contains(self.mouse_x, self.mouse_y)
             ui.draw_button(bounds, label, hovered=hover, active=active,
                            pixels=text_pixels)
             self._settings_hitboxes.append(
-                (bx, by, bw, 28.0 * ui_scale, action))
+                (bx, by, bw, bounds.height, action))
 
-        def slider_row(label: str, key: str, value: str) -> None:
-            nonlocal row_y
-            draw.rect(x + 5.0 * ui_scale, row_y - 5.0 * ui_scale,
-                      width - 10.0 * ui_scale, row_height,
+        def section(label: str) -> None:
+            hud.draw_mono(label, content_x + 6.0 * ui_scale,
+                          row_y - 16.0 * ui_scale, hint_pixels,
+                          ui.DARK_THEME.accent[:3])
+
+        def row_surface() -> None:
+            draw.rect(content_x, row_y, content_width, row_height,
                       ui.DARK_THEME.surface)
-            hud.draw_mono(label, x + 14.0 * ui_scale, row_y + 4.0 * ui_scale,
+            draw.rect(content_x, row_y + row_height - border,
+                      content_width, border, (31, 42, 48, 235))
+
+        def slider_row(label: str, hint: str, key: str, value: str) -> None:
+            nonlocal row_y
+            row_surface()
+            hud.draw_mono(label, content_x + 12.0 * ui_scale,
+                          row_y + 7.0 * ui_scale,
                           text_pixels, ui.DARK_THEME.text)
-            value_width = 72.0 * ui_scale
-            slider_width = min(310.0 * ui_scale, width * 0.42)
+            hud.draw_mono(hint, content_x + 12.0 * ui_scale,
+                          row_y + 26.0 * ui_scale,
+                          hint_pixels, ui.DARK_THEME.muted)
+            value_width = 52.0 * ui_scale
             value_x = control_right - value_width
-            slider_x = value_x - slider_width - 14.0 * ui_scale
-            bounds = ui.Rect(slider_x, row_y, slider_width,
-                             28.0 * ui_scale)
+            slider_x = control_left
+            slider_width = max(80.0 * ui_scale,
+                               value_x - slider_x - 12.0 * ui_scale)
+            bounds = ui.Rect(slider_x, row_y + 8.0 * ui_scale,
+                             slider_width, 28.0 * ui_scale)
             slider = self._settings_sliders[key]
             hovered = (bounds.contains(self.mouse_x, self.mouse_y) or
                        self._settings_dragging == key)
             ui.draw_slider(bounds, slider.fraction, hovered=hovered)
             value_text_width = hud.mono_text_width(value, text_pixels)
-            hud.draw_mono(value, value_x + (value_width - value_text_width) * 0.5,
-                          row_y + 5.0 * ui_scale, text_pixels,
+            hud.draw_mono(value,
+                          value_x + (value_width - value_text_width) * 0.5,
+                          row_y + 13.0 * ui_scale, text_pixels,
                           ui.DARK_THEME.accent[:3])
             self._settings_slider_hitboxes[key] = bounds
-            row_y += row_height + 7.0 * ui_scale
+            row_y += row_height + 3.0 * ui_scale
 
-        slider_row("UI scale", "scale", f"{self.scale:.2f}")
-        slider_row("Background opacity", "opacity",
-                   f"{self.background_opacity:.2f}")
-        slider_row("History capacity", "history", str(self.output_limit))
+        section("APPEARANCE")
+        slider_row("Interface scale", "Size of console text and controls",
+                   "scale", f"{self.scale:.2f}")
+        slider_row("Surface opacity", "Transparency of the code workspace",
+                   "opacity", f"{self.background_opacity:.2f}")
 
-        draw.rect(x + 5.0 * ui_scale, row_y - 5.0 * ui_scale,
-                  width - 10.0 * ui_scale, row_height,
-                  ui.DARK_THEME.surface)
-        hud.draw_mono("Automatic IntelliSense", x + 14.0 * ui_scale,
-                      row_y + 4.0 * ui_scale, text_pixels,
+        row_y += 18.0 * ui_scale
+        section("EDITOR")
+        slider_row("Retained output", "Console history capacity in lines",
+                   "history", str(self.output_limit))
+
+        row_surface()
+        hud.draw_mono("Automatic IntelliSense", content_x + 12.0 * ui_scale,
+                      row_y + 7.0 * ui_scale, text_pixels,
                       ui.DARK_THEME.text)
-        toggle_width = 112.0 * ui_scale
-        toggle_bounds = ui.Rect(control_right - toggle_width, row_y,
-                                toggle_width, 28.0 * ui_scale)
+        hud.draw_mono("Show suggestions while typing",
+                      content_x + 12.0 * ui_scale,
+                      row_y + 26.0 * ui_scale, hint_pixels,
+                      ui.DARK_THEME.muted)
+        toggle_width = 74.0 * ui_scale
+        toggle_bounds = ui.Rect(control_right - toggle_width,
+                                row_y + 9.0 * ui_scale,
+                                toggle_width, 26.0 * ui_scale)
         ui.draw_toggle(toggle_bounds, self.auto_complete,
-                       hovered=toggle_bounds.contains(self.mouse_x, self.mouse_y),
+                       hovered=toggle_bounds.contains(self.mouse_x,
+                                                      self.mouse_y),
                        pixels=text_pixels)
         self._settings_hitboxes.append((
             toggle_bounds.x, toggle_bounds.y, toggle_bounds.width,
             toggle_bounds.height, "autocomplete"))
-        row_y += row_height + 13.0 * ui_scale
 
-        reset_width = 150.0 * ui_scale
-        button(x + 8.0 * ui_scale, min(row_y, y + height - 34.0 * ui_scale),
-               reset_width, "RESET DEFAULTS", "reset")
+        footer_y = panel_y + panel_height - 39.0 * ui_scale
+        reset_width = 132.0 * ui_scale
+        button(panel_x + padding, footer_y, reset_width,
+               "RESET DEFAULTS", "reset")
+        return_text = "ESC TO RETURN"
+        return_width = hud.mono_text_width(return_text, hint_pixels)
+        hud.draw_mono(return_text,
+                      panel_x + panel_width - padding - return_width,
+                      footer_y + 8.0 * ui_scale, hint_pixels,
+                      ui.DARK_THEME.muted)
 
     def _set_setting_value(self, key: str, value: float) -> None:
         if key == "scale":

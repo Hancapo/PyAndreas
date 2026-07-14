@@ -12,6 +12,10 @@ The changelog is release-oriented and uses a small fixed set of categories:
   keyboard selection or repositions the suggestion list; clicking still
   selects and accepts the hovered result.
 
+### Changed
+- Console settings now use a compact, grouped preferences panel with aligned
+  controls instead of stretching every option across the full console.
+
 ## [0.3.0] - 2026-07-13
 
 ### Added
