@@ -395,6 +395,34 @@ class DeveloperToolsTests(unittest.TestCase):
         self.assertIn("property pos: Vector3",
                       console._completion.details[pos_index])
 
+    def test_first_word_autocomplete_is_consistent_while_typing_and_repairing(self):
+        console = DeveloperConsole(namespace={
+            "player": object(), "playback": object(),
+            "__builtins__": __builtins__,
+        })
+        console.visible = True
+
+        console._insert("p")
+        self.assertIsNotNone(console._completion)
+        assert console._completion is not None
+        self.assertIn("player", console._completion.labels)
+        console._insert("l")
+        self.assertEqual(console.input, "pl")
+        self.assertIsNotNone(console._completion)
+
+        console._insert("x")
+        self.assertIsNone(console._completion)
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               side_effect=lambda key: key == KEY.BACKSPACE):
+            console.update()
+        self.assertEqual(console.input, "pl")
+        self.assertIsNotNone(console._completion)
+
+        disabled = DeveloperConsole(namespace=console.namespace,
+                                    auto_complete=False)
+        disabled._insert("p")
+        self.assertIsNone(disabled._completion)
+
     def test_completion_colors_describe_semantic_kinds(self):
         console = DeveloperConsole()
         console.input = "player."

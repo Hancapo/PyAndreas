@@ -13,6 +13,8 @@ The changelog is release-oriented and uses a small fixed set of categories:
   selects and accepts the hovered result.
 - Pressing Enter on an already complete expression now executes it immediately
   instead of accepting an identical suggestion and requiring a second Enter.
+- Autocomplete now opens and refreshes consistently while typing or repairing
+  the first Python name, not only after entering a dotted member expression.
 
 ### Changed
 - Console settings now use a compact, grouped preferences panel with aligned

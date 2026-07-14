@@ -978,7 +978,7 @@ class DeveloperConsole:
             self._complete()
 
     def _should_auto_complete(self) -> bool:
-        """Whether the caret is editing a dotted member expression."""
+        """Whether the caret is editing a completable Python name."""
         if not self.auto_complete:
             return False
         if self.input.startswith("/"):
@@ -987,7 +987,9 @@ class DeveloperConsole:
         if target is None:
             return False
         _, fragment = target
-        return self._last_top_level_dot(fragment) >= 0
+        if self._last_top_level_dot(fragment) >= 0:
+            return True
+        return re.fullmatch(r"[A-Za-z_]\w*", fragment) is not None
 
     def _word_left(self) -> int:
         before = self.input[:self.cursor]
