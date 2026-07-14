@@ -367,7 +367,8 @@ class DeveloperConsole:
                 self._completion = None
                 return
             if self._pressed(KEY.ENTER):
-                if console_commands.can_execute_without_arguments(self.input):
+                if (console_commands.can_execute_without_arguments(self.input)
+                        or self._exact_completion_can_submit()):
                     self._completion = None
                     self._submit()
                 else:
@@ -1995,6 +1996,25 @@ class DeveloperConsole:
             count = len(self._completion.candidates)
             self._completion.selected = (
                 self._completion.selected + amount) % count
+
+    def _exact_completion_can_submit(self) -> bool:
+        """Whether Enter can execute without accepting an identical result."""
+        menu = self._completion
+        if menu is None:
+            return False
+        current = self.input[menu.start:menu.end]
+        if current not in menu.candidates:
+            return False
+        if self.input.startswith("/"):
+            return True
+        try:
+            compile(self.input, "<console>", "eval")
+        except SyntaxError:
+            try:
+                compile(self.input, "<console>", "exec")
+            except SyntaxError:
+                return False
+        return True
 
     def _accept_completion(self) -> None:
         menu = self._completion

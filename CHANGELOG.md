@@ -11,6 +11,8 @@ The changelog is release-oriented and uses a small fixed set of categories:
 - Moving the mouse over autocomplete results no longer changes the active
   keyboard selection or repositions the suggestion list; clicking still
   selects and accepts the hovered result.
+- Pressing Enter on an already complete expression now executes it immediately
+  instead of accepting an identical suggestion and requiring a second Enter.
 
 ### Changed
 - Console settings now use a compact, grouped preferences panel with aligned

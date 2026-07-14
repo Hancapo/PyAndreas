@@ -217,6 +217,37 @@ class DeveloperToolsTests(unittest.TestCase):
         console._accept_completion()
         self.assertEqual(console.input, "thing.alpine")
 
+    def test_enter_submits_an_already_complete_suggestion_once(self):
+        console = DeveloperConsole(namespace={
+            "thing": SimpleNamespace(alpha=1, alpine=2),
+            "__builtins__": __builtins__,
+        })
+        console.visible = True
+        console.input = "thing.alpha"
+        console.cursor = len(console.input)
+        console._complete()
+        self.assertTrue(console._exact_completion_can_submit())
+
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               side_effect=lambda key: key == KEY.ENTER):
+            console.update()
+
+        self.assertEqual(console.input, "")
+        self.assertEqual(console.output[-1], "1")
+
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               return_value=False):
+            console.update()
+
+        console.input = "thing.al"
+        console.cursor = len(console.input)
+        console._complete()
+        self.assertFalse(console._exact_completion_can_submit())
+        with mock.patch.object(dev_console._pysa, "key_down",
+                               side_effect=lambda key: key == KEY.ENTER):
+            console.update()
+        self.assertEqual(console.input, "thing.alpha")
+
     def test_completion_popup_updates_while_typing(self):
         console = DeveloperConsole(namespace={
             "thing": SimpleNamespace(alpha=1, beta=2),
