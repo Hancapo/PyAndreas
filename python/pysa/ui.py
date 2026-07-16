@@ -317,3 +317,21 @@ class Menu:
 
     def _button_pressed(self, button: BUTTON) -> bool:
         return self._edge(("button", int(button)), pad.pressed(button))
+
+
+# The retained document engine is kept separate so this compact legacy menu
+# remains easy to maintain.  Re-export its public surface through ``pysa.ui``
+# for a single, friendly scripting namespace.
+from .ui_document import (Anchor, Binding, Button, Choice, Column, Element,
+                          ElementStyle, Image, MarkupError, Page, Row, Scroll,
+                          Separator, SliderItem, Spacer, Text, Toggle, UIError,
+                          View, bind, load, read)
+
+
+__all__ = [
+    "Anchor", "Binding", "Button", "Choice", "Column", "DARK_THEME",
+    "Element", "ElementStyle", "Image", "MarkupError", "Menu", "MenuItem",
+    "Page", "Rect", "Row", "Scroll", "Separator", "Slider", "SliderItem",
+    "Spacer", "Text", "Theme", "Toggle", "UIError", "View", "bind",
+    "draw_button", "draw_slider", "draw_toggle", "load", "read",
+]

@@ -7,7 +7,20 @@ The changelog is release-oriented and uses a small fixed set of categories:
 
 ## [Unreleased]
 
+### Added
+- Custom interfaces can now be described in safe `.pui` documents with
+  automatic layout, pages, buttons, toggles, sliders, choices, state bindings,
+  named Python actions, themes, mouse support, scrolling, and controller or
+  keyboard navigation. The same controls are also available directly from
+  Python, while existing `ui.Menu` scripts continue to work unchanged.
+
 ### Fixed
+- Custom interfaces no longer highlight their first option before the user
+  navigates, and their buttons, sliders, and scrollbars now respond reliably
+  to the mouse.
+- Opening a custom interface no longer freezes CJ. Movement and unrelated
+  gameplay controls remain available, while all player and camera controls are
+  reserved when the pointer is over or interacting with the interface.
 - Moving the mouse over autocomplete results no longer changes the active
   keyboard selection or repositions the suggestion list; clicking still
   selects and accepts the hovered result.

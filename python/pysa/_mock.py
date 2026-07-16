@@ -254,6 +254,19 @@ def capture_input(enabled):
     _input_captured = bool(enabled)
 
 
+def capture_menu_input(enabled):
+    global _input_captured
+    _input_captured = bool(enabled)
+
+
+def set_menu_pointer_consumed(consumed):
+    pass
+
+
+def captured_button_down(button):
+    return False
+
+
 _clipboard = ""
 
 

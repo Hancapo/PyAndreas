@@ -606,6 +606,66 @@ menu.toggle_item("Never tired", lambda: player.perks.never_tired,
                  lambda value: setattr(player.perks, "never_tired", value))
 ```
 
+For larger or more customized interfaces, `.pui` documents provide a small
+declarative format inspired by XAML and HTML. They contain layout and controls;
+Python continues to own behavior and game state:
+
+```xml
+<Menu title="Vehicle Tools" toggle-key="F6" anchor="top-right">
+    <Text value="{settings.vehicle_name}" style="heading" />
+    <Button text="Repair" on-click="repair_vehicle" />
+    <Toggle text="Invincible" value="{settings.invincible}" />
+    <Slider text="Engine power" value="{settings.engine_power}"
+            min="0.5" max="3.0" step="0.1" />
+    <Page text="Advanced">
+        <Choice text="Weather" value="{settings.weather}"
+                options="{weather_options}" />
+    </Page>
+</Menu>
+```
+
+Load the document with only the callbacks and state it is allowed to access:
+
+```python
+menu = ui.load(
+    "vehicle_tools.pui",
+    actions={"repair_vehicle": repair_vehicle},
+    state={
+        "settings": settings,
+        "weather_options": ("SUNNY", "CLOUDY", "RAINY"),
+    },
+    styles={"heading": ui.ElementStyle(pixels=18)},
+)
+```
+
+`.pui` supports `Text`, `Button`, `Toggle`, `Slider`, `Choice`, `Page`,
+`Column`, `Row`, `Scroll`, `Separator`, `Spacer`, and `Image`. Values such as
+`{settings.engine_power}` are simple attribute paths, not Python expressions.
+Callbacks must be explicitly listed in `actions`; markup is never evaluated.
+The view handles layout, clipping, held navigation, pages, mouse interaction,
+slider and scrollbar dragging, controller input, input capture, and cleanup on
+script reload automatically. CJ remains controllable while a view is open;
+mouse look and firing continue to work whenever the pointer is outside its
+panel.
+
+The same retained interface can be built directly in Python when generated
+content or editor autocomplete is preferable:
+
+```python
+menu = ui.View(
+    "Vehicle Tools",
+    ui.Button("Repair", repair_vehicle),
+    ui.Toggle("Invincible", ui.bind(settings, "invincible")),
+    ui.SliderItem("Engine power", 0.5, 3.0, 0.1,
+                  ui.bind(settings, "engine_power")),
+    toggle_key=KEY.F6,
+)
+```
+
+Existing `ui.Menu` scripts remain supported unchanged. See
+`examples/example_declarative_ui.py` and `examples/vehicle_tools.pui` for a
+complete opt-in example.
+
 State-transition decorators are subscription-gated and carry typed payloads:
 `on_ped_damage`, `on_ped_death`, `on_vehicle_enter`, `on_vehicle_exit`,
 `on_weapon_changed`, `on_zone_enter`, and `on_zone_exit`.

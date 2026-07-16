@@ -37,6 +37,19 @@ pysa.player.location.teleport((0, 0, 5), area=AREA.OUTSIDE,
 world_area: AREA = world.current_area()
 world.set_area(AREA.OUTSIDE)
 
+menu_state = {"enabled": False, "power": 1.0}
+declarative_menu = pysa.ui.View(
+    "Typed UI",
+    pysa.ui.Button("Run", lambda: None),
+    pysa.ui.Toggle("Enabled", pysa.ui.bind(menu_state, "enabled")),
+    pysa.ui.SliderItem("Power", 0.0, 2.0, 0.1,
+                       pysa.ui.bind(menu_state, "power")),
+    toggle_key=pysa.KEY.F6,
+)
+loaded_menu: pysa.ui.View = pysa.ui.load(
+    "typed.pui", actions={"run": lambda: None}, state=menu_state,
+    auto=False)
+
 
 @pysa.dev_test
 def typed_smoke_test() -> None:
