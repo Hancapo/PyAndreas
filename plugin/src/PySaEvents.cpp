@@ -53,7 +53,6 @@ void ResetEventGates() { g_gates = EventGates{}; }
 namespace host {
 
 void RegisterEvents() {
-    Events::gameProcessEvent.before += [] { CaptureConsoleInputFrame(); };
     Events::gameProcessEvent += [] { ProcessTick(); };
 
     Events::drawingEvent += [] {

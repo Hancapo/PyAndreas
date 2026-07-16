@@ -30,6 +30,7 @@
 #include "CRadar.h"
 #include "CCheat.h"
 #include "common.h"
+#include <safetyhook.hpp>
 
 #include <cstdarg>
 #include <cstdint>
@@ -56,6 +57,9 @@ static bool s_menuPointerConsumed = false;
 static CMouseControllerState s_capturedMouseState{};
 static CControllerState s_capturedControllerState{};
 static bool s_capturedControllerAvailable = false;
+static SafetyHookInline s_updatePadsHook;
+
+constexpr std::uintptr_t updatePadsAddress = 0x541DD0;
 
 static bool InputCaptured() noexcept {
     return s_inputCaptureMode != InputCaptureMode::none;
@@ -79,6 +83,27 @@ static void ClearMenuKeyboardState(CKeyboardState &state) noexcept {
     state.right = 0;
     state.enter = 0;
     state.extenter = 0;
+}
+
+static void ClearCameraKeyboardState(CKeyboardState &state) noexcept {
+    // GTA also exposes change-camera as a raw keyboard binding. Reserve it
+    // while a custom menu is open, independently of pointer hover.
+    state.standardKeys['V'] = 0;
+}
+
+static void ClearCameraControllerState(CControllerState &state) noexcept {
+    state.RightStickX = 0;
+    state.RightStickY = 0;
+    state.Select = 0;
+    state.ShockButtonR = 0;
+    state.m_bVehicleMouseLook = 0;
+}
+
+static void ClearCameraMouseState(CMouseControllerState &state) noexcept {
+    state.x = 0.0F;
+    state.y = 0.0F;
+    // Right click belongs to menu Back while a declarative view is open.
+    state.rmb = 0;
 }
 
 static void ClearKeyboardNavigationAxes(CPad &pad,
@@ -106,6 +131,8 @@ static void ClearAllPadInput(CPad &pad) noexcept {
 static void ClearAllKeyboardAndMouseInput() noexcept {
     memset(&CPad::NewKeyState, 0, sizeof(CPad::NewKeyState));
     memset(&CPad::OldKeyState, 0, sizeof(CPad::OldKeyState));
+    memset(&CPad::PCTempMouseControllerState, 0,
+           sizeof(CPad::PCTempMouseControllerState));
     memset(&CPad::NewMouseControllerState, 0,
            sizeof(CPad::NewMouseControllerState));
     memset(&CPad::OldMouseControllerState, 0,
@@ -171,9 +198,33 @@ void CaptureConsoleInputFrame() {
         ClearMenuControllerState(pad->OldState);
         ClearMenuControllerState(pad->PCTempKeyState);
         ClearMenuControllerState(pad->PCTempJoyState);
+        ClearCameraControllerState(pad->NewState);
+        ClearCameraControllerState(pad->OldState);
+        ClearCameraControllerState(pad->PCTempKeyState);
+        ClearCameraControllerState(pad->PCTempJoyState);
+        ClearCameraControllerState(pad->PCTempMouseState);
     }
     ClearMenuKeyboardState(CPad::NewKeyState);
     ClearMenuKeyboardState(CPad::OldKeyState);
+    ClearCameraKeyboardState(CPad::NewKeyState);
+    ClearCameraKeyboardState(CPad::OldKeyState);
+    ClearCameraMouseState(CPad::PCTempMouseControllerState);
+    ClearCameraMouseState(CPad::NewMouseControllerState);
+    ClearCameraMouseState(CPad::OldMouseControllerState);
+}
+
+static void __cdecl UpdatePadsHook() {
+    s_updatePadsHook.call<void>();
+    CaptureConsoleInputFrame();
+}
+
+bool InstallInputCaptureHook() {
+    if (s_updatePadsHook)
+        return true;
+    s_updatePadsHook = safetyhook::create_inline(
+        reinterpret_cast<void *>(updatePadsAddress),
+        reinterpret_cast<void *>(&UpdatePadsHook));
+    return static_cast<bool>(s_updatePadsHook);
 }
 
 bool ConsoleBlocksFrontendToggle() {

@@ -8,19 +8,21 @@ The changelog is release-oriented and uses a small fixed set of categories:
 ## [Unreleased]
 
 ### Added
-- Custom interfaces can now be described in safe `.pui` documents with
+- **Experimental:** Custom interfaces can now be described in safe `.pui`
+  documents with
   automatic layout, pages, buttons, toggles, sliders, choices, state bindings,
   named Python actions, themes, mouse support, scrolling, and controller or
   keyboard navigation. The same controls are also available directly from
   Python, while existing `ui.Menu` scripts continue to work unchanged.
 
 ### Fixed
-- Custom interfaces no longer highlight their first option before the user
-  navigates, and their buttons, sliders, and scrollbars now respond reliably
-  to the mouse.
+- Custom interfaces now show focus only on the selected or hovered option;
+  their buttons, sliders, and scrollbars also respond reliably to the mouse.
 - Opening a custom interface no longer freezes CJ. Movement and unrelated
-  gameplay controls remain available, while all player and camera controls are
-  reserved when the pointer is over or interacting with the interface.
+  gameplay controls remain available, camera controls stay reserved while the
+  interface is open, and other player controls are reserved only while the
+  pointer is over or interacting with it.
+- Right-click now returns through custom-interface pages, one page per click.
 - Moving the mouse over autocomplete results no longer changes the active
   keyboard selection or repositions the suggestion list; clicking still
   selects and accepts the hovered result.
@@ -32,6 +34,8 @@ The changelog is release-oriented and uses a small fixed set of categories:
   the pause menu while returning from settings or closing console UI.
 
 ### Changed
+- Experimental custom interfaces now use calmer dark surfaces, subtle borders,
+  compact switches and sliders, and more consistent spacing and focus states.
 - Console settings now use a compact, grouped preferences panel with aligned
   controls instead of stretching every option across the full console.
 

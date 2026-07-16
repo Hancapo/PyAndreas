@@ -45,6 +45,7 @@ void ShutdownHooks();            // remove all function hooks (call before Py_Fi
 void ResetEventGates();
 bool SetEventEnabled(const char *name, bool enabled);
 bool EventEnabled(const char *name);
+bool InstallInputCaptureHook(); // filter immediately after CPad::UpdatePads
 void CaptureConsoleInputFrame(); // filter input for the active console or custom UI
 bool ConsoleBlocksFrontendToggle(); // active UI owns the current menu-toggle input
 

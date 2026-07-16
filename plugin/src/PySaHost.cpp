@@ -122,6 +122,8 @@ void Fail(const char *why) {
 void Initialize() {
     std::string base = ResolveBaseDir();
     pysa::SetBaseDir(base);
+    if (!pysa::InstallInputCaptureHook())
+        pysa::Log("PyAndreas input capture hook failed");
     pysa::menu::Install(base);
     pysa::Log("PyAndreas starting (base: %s)", base.c_str());
 
