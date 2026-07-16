@@ -55,6 +55,5 @@ menu = ui.load(
     },
     styles={
         "heading": ui.ElementStyle(pixels=18),
-        "primary": ui.ElementStyle(background=(28, 96, 70, 245)),
     },
 )

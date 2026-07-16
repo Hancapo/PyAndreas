@@ -31,14 +31,14 @@ Enabled = Union[bool, Callable[[], bool]]
 class Theme:
     """Shared colors for PyAndreas' built-in UI controls."""
 
-    surface: tuple[int, int, int, int] = (12, 17, 20, 230)
-    control: tuple[int, int, int, int] = (28, 36, 41, 235)
-    hover: tuple[int, int, int, int] = (38, 104, 76, 245)
-    accent: tuple[int, int, int, int] = (58, 211, 146, 255)
-    track: tuple[int, int, int, int] = (35, 47, 53, 245)
-    text: tuple[int, int, int] = (225, 232, 236)
-    muted: tuple[int, int, int] = (145, 155, 162)
-    border: tuple[int, int, int, int] = (51, 67, 76, 255)
+    surface: tuple[int, int, int, int] = (15, 18, 23, 244)
+    control: tuple[int, int, int, int] = (24, 29, 35, 244)
+    hover: tuple[int, int, int, int] = (29, 39, 40, 248)
+    accent: tuple[int, int, int, int] = (52, 211, 153, 255)
+    track: tuple[int, int, int, int] = (42, 49, 57, 245)
+    text: tuple[int, int, int] = (235, 239, 243)
+    muted: tuple[int, int, int] = (148, 163, 174)
+    border: tuple[int, int, int, int] = (57, 66, 78, 255)
 
 
 DARK_THEME = Theme()

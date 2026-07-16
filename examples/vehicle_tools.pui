@@ -2,8 +2,7 @@
 <Menu title="Vehicle Tools" toggle-key="F6" anchor="top-right"
       width="390" max-height="500" theme="dark">
     <Text value="{settings.vehicle_name}" style="heading" />
-    <Button text="Repair current vehicle" on-click="repair_vehicle"
-            style="primary" />
+    <Button text="Repair current vehicle" on-click="repair_vehicle" />
     <Toggle text="Invincible player" value="{settings.invincible}" />
     <Slider text="Wanted level" value="{wanted.level}"
             min="0" max="6" step="1" format=".0f" />

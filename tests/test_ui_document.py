@@ -9,6 +9,23 @@ from pysa import ui_document
 
 
 class DeclarativeUiTests(unittest.TestCase):
+    def test_rounded_fill_uses_curved_scanline_bands(self):
+        calls = []
+
+        with mock.patch.object(ui_document.draw, "rect",
+                               side_effect=lambda x, y, w, h, color:
+                               calls.append((x, y, w, h))):
+            ui_document._rounded_fill(
+                ui.Rect(0, 0, 24, 16), (20, 30, 40, 255),
+                ui.Rect(0, 0, 24, 16), 6)
+
+        top_bands = sorted((call for call in calls if call[1] < 6),
+                           key=lambda call: call[1])
+        self.assertGreaterEqual(len(top_bands), 3)
+        self.assertLess(top_bands[0][2], top_bands[-1][2])
+        self.assertTrue(any(x == 0 and width == 24
+                            for x, _, width, _ in calls))
+
     def test_binding_reads_and_writes_nested_objects_and_mappings(self):
         state = SimpleNamespace(options={"volume": 0.5})
         value = ui.bind(state, "options.volume")
@@ -218,6 +235,51 @@ class DeclarativeUiTests(unittest.TestCase):
 
         self.assertTrue(view.visible)
         self.assertEqual(view.current_title, "Advanced")
+
+    def test_right_click_navigates_back_one_page_per_press(self):
+        page = ui.Page("Advanced", ui.Button("Done", lambda: None))
+        view = ui.View("Root", page, capture_input=True, auto=False)
+        view.open()
+        view.draw()
+        view.activate()
+        self.assertEqual(view.current_title, "Advanced")
+
+        with mock.patch.object(ui_document._pysa, "mouse_state",
+                               return_value=(0, 0, False, True, 0)), \
+                mock.patch.object(ui_document._pysa, "key_down",
+                                  return_value=False), \
+                mock.patch.object(ui_document._pysa,
+                                  "captured_button_down",
+                                  return_value=False):
+            view.update()
+            self.assertEqual(view.current_title, "Root")
+            self.assertTrue(view.visible)
+            # Holding right click must not immediately close the root view.
+            view.update()
+
+        self.assertTrue(view.visible)
+
+    def test_keyboard_focus_moves_visual_selection_off_first_control(self):
+        view = ui.View(
+            "Focus",
+            ui.Button("First", lambda: None),
+            ui.Button("Second", lambda: None),
+            capture_input=False,
+            auto=False,
+        )
+        view.open()
+        view.draw()
+        view._focus_source = "keyboard"
+        view.move(1)
+
+        states = []
+        with mock.patch.object(view, "draw_control_surface",
+                               wraps=view.draw_control_surface) as surface:
+            view.draw()
+            states = [(call.args[1], call.args[2])
+                      for call in surface.call_args_list]
+
+        self.assertEqual(states, [(False, False), (True, False)])
 
     def test_hover_capture_restores_the_previous_player_control_state(self):
         controls = SimpleNamespace(enabled=True)

@@ -7,6 +7,7 @@ behavior stays in named Python callbacks and explicit state bindings.
 from __future__ import annotations
 
 import inspect
+import math
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -263,7 +264,7 @@ class Scroll(Column):
 
 
 class Text(Element):
-    default_height = 26.0
+    default_height = 28.0
 
     def __init__(self, value: Dynamic[Any], **kwargs):
         super().__init__(**kwargs)
@@ -280,7 +281,7 @@ class Text(Element):
 
 class Button(Element):
     focusable = True
-    default_height = 34.0
+    default_height = 40.0
 
     def __init__(self, text: Dynamic[Any], on_click: Callable[[], Any],
                  **kwargs):
@@ -302,7 +303,7 @@ class Button(Element):
 
 class Toggle(Element):
     focusable = True
-    default_height = 34.0
+    default_height = 40.0
 
     def __init__(self, text: Dynamic[Any], value: Binding[Any], *,
                  on_text: str = "ON", off_text: str = "OFF", **kwargs):
@@ -326,14 +327,45 @@ class Toggle(Element):
 
     def draw(self, view: "View", bounds: Rect, selected: bool,
              hovered: bool, clip: Rect) -> None:
-        current = self.on_text if bool(self.value.get()) else self.off_text
-        view.draw_control(bounds, str(_value(self.text)), current,
-                          self.is_enabled(), selected, hovered, clip, self)
+        enabled = self.is_enabled()
+        active = bool(self.value.get())
+        label = str(_value(self.text))
+        view.draw_control(bounds, label, "", enabled,
+                          selected, hovered, clip, self)
+        style = view.style_for(self)
+        pixels = (style.pixels or view.text_pixels) * view.scale
+        padding = (style.padding or 12.0) * view.scale
+        switch_width = 38.0 * view.scale
+        switch_height = 20.0 * view.scale
+        switch = Rect(bounds.x + bounds.width - padding - switch_width,
+                      bounds.y + (bounds.height - switch_height) * 0.5,
+                      switch_width, switch_height)
+        switch_color = view.theme.accent if active else view.theme.track
+        _surface(switch, switch_color, view.theme.border, clip,
+                 7.0 * view.scale)
+        thumb = 14.0 * view.scale
+        thumb_x = (switch.x + switch.width - thumb - 3.0 * view.scale
+                   if active else switch.x + 3.0 * view.scale)
+        thumb_bounds = Rect(thumb_x, switch.y + (switch.height - thumb) * 0.5,
+                            thumb, thumb)
+        _rounded_fill(thumb_bounds,
+                      view.theme.text if enabled else view.theme.muted,
+                      clip, 5.0 * view.scale)
+        state_text = self.on_text if active else self.off_text
+        state_width = hud.mono_text_width(state_text, pixels * 0.82)
+        state_x = switch.x - 8.0 * view.scale - state_width
+        label_width = hud.mono_text_width(label, pixels)
+        if state_x > bounds.x + padding + label_width + 10.0 * view.scale:
+            hud.draw_mono(state_text, state_x,
+                          bounds.y + (bounds.height - pixels * 0.82) * 0.42,
+                          pixels * 0.82,
+                          view.theme.accent if active else view.theme.muted,
+                          clip=_clip_tuple(clip))
 
 
 class Choice(Element):
     focusable = True
-    default_height = 34.0
+    default_height = 40.0
 
     def __init__(self, text: Dynamic[Any], values: Dynamic[Iterable[Any]],
                  value: Binding[Any], *,
@@ -382,7 +414,7 @@ class SliderItem(Element):
     """A labelled slider control for Python views and ``<Slider>`` markup."""
 
     focusable = True
-    default_height = 48.0
+    default_height = 54.0
 
     def __init__(self, text: Dynamic[Any], minimum: float, maximum: float,
                  step: float, value: Binding[Any], *, value_format: str = "g",
@@ -412,15 +444,12 @@ class SliderItem(Element):
     def draw(self, view: "View", bounds: Rect, selected: bool,
              hovered: bool, clip: Rect) -> None:
         style = view.style_for(self)
-        background = style.background or view.theme.control
-        if selected or hovered:
-            background = view.theme.hover
-        _fill(bounds, background, clip)
+        view.draw_control_surface(bounds, selected, hovered, clip, self)
         pixels = (style.pixels or view.text_pixels) * view.scale
         color = ((style.text or view.theme.text) if self.is_enabled()
                  else (style.muted or view.theme.muted))
-        padding = (style.padding or 10.0) * view.scale
-        label_y = bounds.y + 4.0 * view.scale
+        padding = (style.padding or 12.0) * view.scale
+        label_y = bounds.y + 6.0 * view.scale
         hud.draw_mono(str(_value(self.text)), bounds.x + padding, label_y,
                       pixels, color, clip=_clip_tuple(clip))
         value_text = format(self.slider.value, self.value_format)
@@ -428,16 +457,16 @@ class SliderItem(Element):
         hud.draw_mono(value_text, bounds.x + bounds.width - padding - value_width,
                       label_y, pixels, color, clip=_clip_tuple(clip))
         self.track_bounds = Rect(bounds.x + padding,
-                                 bounds.y + bounds.height - 15.0 * view.scale,
+                                 bounds.y + bounds.height - 17.0 * view.scale,
                                  max(1.0, bounds.width - padding * 2),
-                                 10.0 * view.scale)
+                                 12.0 * view.scale)
         _draw_slider_clipped(self.track_bounds, self.slider.fraction,
                              selected or hovered, view.theme, clip)
 
 
 class Page(Element):
     focusable = True
-    default_height = 34.0
+    default_height = 40.0
 
     def __init__(self, text: Dynamic[Any], *children: Element, **kwargs):
         super().__init__(**kwargs)
@@ -504,6 +533,53 @@ def _fill(bounds: Rect, color, clip: Rect) -> None:
         draw.rect(clipped.x, clipped.y, clipped.width, clipped.height, color)
 
 
+def _rounded_fill(bounds: Rect, color, clip: Rect, radius: float = 4.0) -> None:
+    """Draw rounded corners as grouped horizontal scanline bands."""
+    radius = max(0.0, min(float(radius), bounds.width * 0.25,
+                          bounds.height * 0.25))
+    if radius < 1.0:
+        _fill(bounds, color, clip)
+        return
+    rows = max(1, int(math.ceil(radius)))
+    offsets = []
+    for row in range(rows):
+        distance = radius - min(radius, row + 0.5)
+        inset = radius - math.sqrt(max(0.0, radius * radius -
+                                       distance * distance))
+        offsets.append(max(0, int(round(inset))))
+
+    band_start = 0
+    while band_start < rows:
+        inset = offsets[band_start]
+        band_end = band_start + 1
+        while band_end < rows and offsets[band_end] == inset:
+            band_end += 1
+        band_height = float(band_end - band_start)
+        width = max(0.0, bounds.width - inset * 2.0)
+        _fill(Rect(bounds.x + inset, bounds.y + band_start,
+                   width, band_height), color, clip)
+        _fill(Rect(bounds.x + inset,
+                   bounds.y + bounds.height - band_end,
+                   width, band_height), color, clip)
+        band_start = band_end
+
+    middle_height = max(0.0, bounds.height - rows * 2.0)
+    if middle_height > 0.0:
+        _fill(Rect(bounds.x, bounds.y + rows,
+                   bounds.width, middle_height), color, clip)
+
+
+def _surface(bounds: Rect, background, border, clip: Rect,
+             radius: float = 4.0, border_width: float = 1.0) -> None:
+    """Draw a bordered surface with one consistent corner treatment."""
+    _rounded_fill(bounds, border, clip, radius)
+    inset = max(1.0, float(border_width))
+    inner = Rect(bounds.x + inset, bounds.y + inset,
+                 max(0.0, bounds.width - inset * 2),
+                 max(0.0, bounds.height - inset * 2))
+    _rounded_fill(inner, background, clip, max(0.0, radius - inset))
+
+
 def _clip_tuple(bounds: Rect) -> tuple[float, float, float, float]:
     return (bounds.x, bounds.y, bounds.x + bounds.width,
             bounds.y + bounds.height)
@@ -512,15 +588,22 @@ def _clip_tuple(bounds: Rect) -> tuple[float, float, float, float]:
 def _draw_slider_clipped(bounds: Rect, fraction: float, hovered: bool,
                          theme: Theme, clip: Rect) -> None:
     fraction = max(0.0, min(1.0, float(fraction)))
-    track = Rect(bounds.x, bounds.y + bounds.height * 0.3,
-                 bounds.width, max(3.0, bounds.height * 0.35))
-    _fill(track, theme.track, clip)
-    _fill(Rect(track.x, track.y, track.width * fraction, track.height),
-          theme.accent, clip)
-    thumb = max(8.0, bounds.height)
+    track_height = max(3.0, bounds.height * 0.28)
+    track = Rect(bounds.x, bounds.y + (bounds.height - track_height) * 0.5,
+                 bounds.width, track_height)
+    _rounded_fill(track, theme.track, clip, track.height * 0.5)
+    if fraction > 0.0:
+        _rounded_fill(Rect(track.x, track.y,
+                           max(track.height, track.width * fraction),
+                           track.height), theme.accent, clip,
+                      track.height * 0.5)
+    thumb = max(10.0, bounds.height)
     thumb_x = bounds.x + bounds.width * fraction
-    _fill(Rect(thumb_x - thumb * 0.5, bounds.y, thumb, thumb),
-          theme.text if hovered else theme.accent, clip)
+    thumb_bounds = Rect(thumb_x - thumb * 0.5,
+                        bounds.y + (bounds.height - thumb) * 0.5,
+                        thumb, thumb)
+    _surface(thumb_bounds, theme.text if hovered else theme.accent,
+             theme.surface, clip, thumb * 0.35)
 
 
 @dataclass
@@ -535,11 +618,11 @@ class View:
     def __init__(self, title: str, *children: Element,
                  toggle_key: Optional[int] = None,
                  toggle_button: Optional[BUTTON] = None,
-                 x: float = 32.0, y: float = 48.0, width: float = 360.0,
+                 x: float = 32.0, y: float = 48.0, width: float = 380.0,
                  max_height: float = 520.0, anchor: Anchor = Anchor.TOP_LEFT,
                  scale: float = 1.0, theme: Theme = DARK_THEME,
                  styles: Optional[Mapping[str, ElementStyle]] = None,
-                 padding: float = 12.0, gap: float = 6.0,
+                 padding: float = 14.0, gap: float = 8.0,
                  text_pixels: float = 15.0, capture_input: bool = True,
                  auto: bool = True):
         self.title = str(title)
@@ -567,6 +650,8 @@ class View:
         self._mouse_x = 0.0
         self._mouse_y = 0.0
         self._mouse_was_down = False
+        self._mouse_right_was_down = False
+        self._mouse_right_pressed = False
         self._mouse_click_consumed = False
         self._controls_were_enabled: Optional[bool] = None
         self._hovered: Optional[int] = None
@@ -609,6 +694,8 @@ class View:
         screen_w, screen_h = hud.screen_size()
         self._mouse_x, self._mouse_y = screen_w * 0.5, screen_h * 0.5
         self._mouse_was_down = False
+        self._mouse_right_was_down = False
+        self._mouse_right_pressed = False
         self._focus_source = None
         if self.capture_input:
             _set_menu_pointer_consumed(False)
@@ -621,6 +708,8 @@ class View:
         self.visible = False
         self._dragging = None
         self._scrollbar_dragging = False
+        self._mouse_right_was_down = False
+        self._mouse_right_pressed = False
         self._restore_gameplay_controls()
         if self.capture_input:
             _set_menu_pointer_consumed(False)
@@ -662,7 +751,8 @@ class View:
         back_pressed = self._edge(
             ("button", int(BUTTON.CIRCLE)),
             self._button_down(BUTTON.CIRCLE))
-        if escape_pressed or (back_pressed and not self._mouse_click_consumed):
+        if (escape_pressed or self._mouse_right_pressed or
+                (back_pressed and not self._mouse_click_consumed)):
             self.back()
             return
         if self._repeat(("key", KEY.UP), _pysa.key_down(KEY.UP)) or \
@@ -717,7 +807,7 @@ class View:
             return
         screen_w, screen_h = hud.screen_size()
         panel_width = min(self.width * self.scale, float(screen_w) - 16.0)
-        header_height = 42.0 * self.scale
+        header_height = 46.0 * self.scale
         padding = self.padding * self.scale
         content_width = panel_width - padding * 2
         total = self._measure_vertical(self.current_children, content_width)
@@ -728,26 +818,37 @@ class View:
                                     float(screen_w), float(screen_h))
         self._panel_bounds = panel
         self._update_pointer_capture()
-        _fill(panel, self.theme.surface, panel)
+        screen = Rect(0.0, 0.0, float(screen_w), float(screen_h))
+        shadow = Rect(panel.x + 5.0 * self.scale,
+                      panel.y + 7.0 * self.scale,
+                      panel.width, panel.height)
+        _rounded_fill(shadow, (0, 0, 0, 105), screen, 8.0 * self.scale)
+        _surface(panel, self.theme.surface, self.theme.border, screen,
+                 8.0 * self.scale)
         header = Rect(panel.x, panel.y, panel.width, header_height)
-        _fill(header, self.theme.control, panel)
-        _fill(Rect(panel.x, panel.y + header.height - 2 * self.scale,
-                   panel.width, 2 * self.scale), self.theme.accent, panel)
-        title_pixels = 17.0 * self.scale
+        _fill(Rect(panel.x + self.scale,
+                   panel.y + header.height - self.scale,
+                   panel.width - self.scale * 2, self.scale),
+              self.theme.border, panel)
+        title_pixels = 16.0 * self.scale
         hud.draw_mono(self.current_title, panel.x + padding,
-                      panel.y + 10.0 * self.scale, title_pixels,
+                      panel.y + 12.0 * self.scale, title_pixels,
                       self.theme.text, clip=_clip_tuple(header))
-        close_size = 25.0 * self.scale
+        close_size = 28.0 * self.scale
         self._close_bounds = Rect(panel.x + panel.width - padding - close_size,
-                                  panel.y + 8.0 * self.scale,
+                                  panel.y + 9.0 * self.scale,
                                   close_size, close_size)
-        _fill(self._close_bounds, self.theme.control, header)
-        close_color = (self.theme.text if self._close_bounds.contains(
-            self._mouse_x, self._mouse_y) else self.theme.muted)
+        close_hovered = self._close_bounds.contains(
+            self._mouse_x, self._mouse_y)
+        _surface(self._close_bounds,
+                 self.theme.hover if close_hovered else self.theme.control,
+                 self.theme.accent if close_hovered else self.theme.border,
+                 header, 6.0 * self.scale)
+        close_color = self.theme.text if close_hovered else self.theme.muted
         close_width = hud.mono_text_width("X", 14.0 * self.scale)
         hud.draw_mono("X", self._close_bounds.x +
                       (close_size - close_width) * 0.5,
-                      self._close_bounds.y + 4.0 * self.scale,
+                      self._close_bounds.y + 5.0 * self.scale,
                       14.0 * self.scale, close_color,
                       clip=_clip_tuple(header))
 
@@ -766,7 +867,8 @@ class View:
             track = Rect(panel.x + panel.width - 5.0 * self.scale,
                          viewport.y, 2.0 * self.scale, viewport.height)
             self._scrollbar_bounds = track
-            _fill(track, self.theme.track, panel)
+            _rounded_fill(track, self.theme.track, panel,
+                          track.width * 0.5)
             thumb_height = max(18.0 * self.scale,
                                track.height * viewport.height / total)
             travel = max(0.0, track.height - thumb_height)
@@ -774,8 +876,8 @@ class View:
             self._scrollbar_thumb = Rect(track.x - 3.0 * self.scale, thumb_y,
                                          track.width + 6.0 * self.scale,
                                          thumb_height)
-            _fill(Rect(track.x, thumb_y, track.width, thumb_height),
-                  self.theme.accent, panel)
+            _rounded_fill(Rect(track.x, thumb_y, track.width, thumb_height),
+                          self.theme.accent, panel, track.width * 0.5)
         else:
             self._scrollbar_bounds = None
             self._scrollbar_thumb = None
@@ -787,15 +889,12 @@ class View:
     def draw_control(self, bounds: Rect, label: str, value: str,
                      enabled: bool, selected: bool, hovered: bool, clip: Rect,
                      element: Element) -> None:
-        style = self.style_for(element)
-        background = style.background or self.theme.control
-        if selected or hovered:
-            background = self.theme.hover
-        _fill(bounds, background, clip)
+        style = self.draw_control_surface(bounds, selected, hovered, clip,
+                                          element)
         pixels = (style.pixels or self.text_pixels) * self.scale
         color = ((style.text or self.theme.text) if enabled
                  else (style.muted or self.theme.muted))
-        padding = (style.padding or 10.0) * self.scale
+        padding = (style.padding or 12.0) * self.scale
         y = bounds.y + (bounds.height - pixels) * 0.42
         hud.draw_mono(label, bounds.x + padding, y, pixels, color,
                       clip=_clip_tuple(clip))
@@ -803,6 +902,17 @@ class View:
             value_width = hud.mono_text_width(value, pixels)
             hud.draw_mono(value, bounds.x + bounds.width - padding - value_width,
                           y, pixels, color, clip=_clip_tuple(clip))
+
+    def draw_control_surface(self, bounds: Rect, selected: bool,
+                             hovered: bool, clip: Rect,
+                             element: Element) -> ElementStyle:
+        style = self.style_for(element)
+        active = selected or hovered
+        background = style.background or (
+            self.theme.hover if active else self.theme.control)
+        border = self.theme.accent if active else self.theme.border
+        _surface(bounds, background, border, clip, 6.0 * self.scale)
+        return style
 
     def _measure_vertical(self, elements: Sequence[Element], width: float,
                           gap: Optional[float] = None) -> float:
@@ -936,6 +1046,7 @@ class View:
         self._mouse_click_consumed = False
         state = tuple(_pysa.mouse_state())
         dx, dy, down = state[:3]
+        right_down = bool(state[3]) if len(state) > 3 else False
         wheel = int(state[4]) if len(state) > 4 else 0
         screen_w, screen_h = hud.screen_size()
         self._mouse_x = max(0.0, min(float(screen_w),
@@ -943,6 +1054,9 @@ class View:
         self._mouse_y = max(0.0, min(float(screen_h),
                                      self._mouse_y + float(dy)))
         down = bool(down)
+        self._mouse_right_pressed = (right_down and
+                                     not self._mouse_right_was_down)
+        self._mouse_right_was_down = right_down
         if dx or dy:
             self._focus_source = "mouse"
         self._hovered = next((index for index, hit in enumerate(self._hits)
