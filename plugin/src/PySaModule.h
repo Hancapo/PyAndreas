@@ -45,8 +45,8 @@ void ShutdownHooks();            // remove all function hooks (call before Py_Fi
 void ResetEventGates();
 bool SetEventEnabled(const char *name, bool enabled);
 bool EventEnabled(const char *name);
-void CaptureConsoleInputFrame(); // suppress GTA controls while preserving console input
-bool ConsoleBlocksFrontendToggle(); // console owns the current menu-toggle input
+void CaptureConsoleInputFrame(); // filter input for the active console or custom UI
+bool ConsoleBlocksFrontendToggle(); // active UI owns the current menu-toggle input
 
 // Method tables contributed by the render and hook translation units,
 // concatenated into the _pysa module at init.

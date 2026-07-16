@@ -44,31 +44,66 @@ namespace pysa {
 std::vector<DrawItem> g_drawQueue;
 
 static std::string s_baseDir;
-static bool s_consoleInputCaptured = false;
+enum class InputCaptureMode : unsigned char {
+    none,
+    full,
+    menu,
+};
+
+static InputCaptureMode s_inputCaptureMode = InputCaptureMode::none;
 static bool s_consoleEscapeOwned = false;
-static CMouseControllerState s_consoleMouseState{};
+static bool s_menuPointerConsumed = false;
+static CMouseControllerState s_capturedMouseState{};
+static CControllerState s_capturedControllerState{};
+static bool s_capturedControllerAvailable = false;
 
-void CaptureConsoleInputFrame() {
-    const bool escapeDown = (GetKeyState(VK_ESCAPE) & 0x8000) != 0;
-    if (!escapeDown)
-        s_consoleEscapeOwned = false;
-    if (!s_consoleInputCaptured)
-        return;
-    if (escapeDown)
-        s_consoleEscapeOwned = true;
+static bool InputCaptured() noexcept {
+    return s_inputCaptureMode != InputCaptureMode::none;
+}
 
-    // Python reads the preserved raw state. GTA receives cleared pad,
-    // keyboard and mouse states, preventing any gameplay binding from
-    // leaking through while the developer console owns input.
-    s_consoleMouseState = CPad::NewMouseControllerState;
-    CPad *pad = CPad::GetPad(0);
-    if (pad) {
-        memset(&pad->NewState, 0, sizeof(pad->NewState));
-        memset(&pad->OldState, 0, sizeof(pad->OldState));
-        memset(&pad->PCTempKeyState, 0, sizeof(pad->PCTempKeyState));
-        memset(&pad->PCTempJoyState, 0, sizeof(pad->PCTempJoyState));
-        memset(&pad->PCTempMouseState, 0, sizeof(pad->PCTempMouseState));
+static void ClearMenuControllerState(CControllerState &state) noexcept {
+    state.DPadUp = 0;
+    state.DPadDown = 0;
+    state.DPadLeft = 0;
+    state.DPadRight = 0;
+    state.Start = 0;
+    state.ButtonCross = 0;
+    state.ButtonCircle = 0;
+}
+
+static void ClearMenuKeyboardState(CKeyboardState &state) noexcept {
+    state.esc = 0;
+    state.up = 0;
+    state.down = 0;
+    state.left = 0;
+    state.right = 0;
+    state.enter = 0;
+    state.extenter = 0;
+}
+
+static void ClearKeyboardNavigationAxes(CPad &pad,
+                                        const CKeyboardState &keyboard) noexcept {
+    if (keyboard.left || keyboard.right) {
+        pad.NewState.LeftStickX = 0;
+        pad.OldState.LeftStickX = 0;
+        pad.PCTempKeyState.LeftStickX = 0;
     }
+    if (keyboard.up || keyboard.down) {
+        pad.NewState.LeftStickY = 0;
+        pad.OldState.LeftStickY = 0;
+        pad.PCTempKeyState.LeftStickY = 0;
+    }
+}
+
+static void ClearAllPadInput(CPad &pad) noexcept {
+    memset(&pad.NewState, 0, sizeof(pad.NewState));
+    memset(&pad.OldState, 0, sizeof(pad.OldState));
+    memset(&pad.PCTempKeyState, 0, sizeof(pad.PCTempKeyState));
+    memset(&pad.PCTempJoyState, 0, sizeof(pad.PCTempJoyState));
+    memset(&pad.PCTempMouseState, 0, sizeof(pad.PCTempMouseState));
+}
+
+static void ClearAllKeyboardAndMouseInput() noexcept {
     memset(&CPad::NewKeyState, 0, sizeof(CPad::NewKeyState));
     memset(&CPad::OldKeyState, 0, sizeof(CPad::OldKeyState));
     memset(&CPad::NewMouseControllerState, 0,
@@ -77,8 +112,72 @@ void CaptureConsoleInputFrame() {
            sizeof(CPad::OldMouseControllerState));
 }
 
+static short CapturedButtonState(int button) noexcept {
+    switch (button) {
+    case 0: return s_capturedControllerState.LeftStickX;
+    case 1: return s_capturedControllerState.LeftStickY;
+    case 2: return s_capturedControllerState.RightStickX;
+    case 3: return s_capturedControllerState.RightStickY;
+    case 4: return s_capturedControllerState.LeftShoulder1;
+    case 5: return s_capturedControllerState.LeftShoulder2;
+    case 6: return s_capturedControllerState.RightShoulder1;
+    case 7: return s_capturedControllerState.RightShoulder2;
+    case 8: return s_capturedControllerState.DPadUp;
+    case 9: return s_capturedControllerState.DPadDown;
+    case 10: return s_capturedControllerState.DPadLeft;
+    case 11: return s_capturedControllerState.DPadRight;
+    case 12: return s_capturedControllerState.Start;
+    case 13: return s_capturedControllerState.Select;
+    case 14: return s_capturedControllerState.ButtonSquare;
+    case 15: return s_capturedControllerState.ButtonTriangle;
+    case 16: return s_capturedControllerState.ButtonCross;
+    case 17: return s_capturedControllerState.ButtonCircle;
+    case 18: return s_capturedControllerState.ShockButtonL;
+    case 19: return s_capturedControllerState.ShockButtonR;
+    default: return 0;
+    }
+}
+
+void CaptureConsoleInputFrame() {
+    const bool escapeDown = (GetKeyState(VK_ESCAPE) & 0x8000) != 0;
+    if (!escapeDown)
+        s_consoleEscapeOwned = false;
+    if (!InputCaptured())
+        return;
+    if (escapeDown)
+        s_consoleEscapeOwned = true;
+
+    // Python reads the preserved raw state even after GTA's copy is filtered.
+    s_capturedMouseState = CPad::NewMouseControllerState;
+    CPad *pad = CPad::GetPad(0);
+    s_capturedControllerAvailable = pad != nullptr;
+    if (pad)
+        // NewState also contains keyboard and mouse mappings. Keeping the raw
+        // joystick state prevents a mouse-fire click from becoming UI Back.
+        s_capturedControllerState = pad->PCTempJoyState;
+    if (s_inputCaptureMode == InputCaptureMode::full ||
+            s_menuPointerConsumed) {
+        if (pad)
+            ClearAllPadInput(*pad);
+        ClearAllKeyboardAndMouseInput();
+        return;
+    }
+
+    // Outside a custom panel, reserve only its navigation bindings. GTA keeps
+    // unrelated gameplay input, while arrows cannot leak into ped movement.
+    if (pad) {
+        ClearKeyboardNavigationAxes(*pad, CPad::NewKeyState);
+        ClearMenuControllerState(pad->NewState);
+        ClearMenuControllerState(pad->OldState);
+        ClearMenuControllerState(pad->PCTempKeyState);
+        ClearMenuControllerState(pad->PCTempJoyState);
+    }
+    ClearMenuKeyboardState(CPad::NewKeyState);
+    ClearMenuKeyboardState(CPad::OldKeyState);
+}
+
 bool ConsoleBlocksFrontendToggle() {
-    return s_consoleInputCaptured || s_consoleEscapeOwned;
+    return InputCaptured() || s_consoleEscapeOwned;
 }
 
 void SetBaseDir(const std::string &dir) { s_baseDir = dir; }
@@ -909,8 +1008,8 @@ static PyObject *py_waypoint(PyObject *, PyObject *) {
 }
 
 static PyObject *py_mouse_state(PyObject *, PyObject *) {
-    const CMouseControllerState &mouse = s_consoleInputCaptured
-        ? s_consoleMouseState : CPad::NewMouseControllerState;
+    const CMouseControllerState &mouse = InputCaptured()
+        ? s_capturedMouseState : CPad::NewMouseControllerState;
     int wheel = mouse.wheelUp ? 1 : (mouse.wheelDown ? -1 : 0);
     return Py_BuildValue("(ffiii)", mouse.x, mouse.y,
                          mouse.lmb ? 1 : 0, mouse.rmb ? 1 : 0, wheel);
@@ -920,10 +1019,49 @@ static PyObject *py_capture_input(PyObject *, PyObject *args) {
     int captured;
     if (!PyArg_ParseTuple(args, "p", &captured))
         return nullptr;
-    s_consoleInputCaptured = captured != 0;
-    if (!s_consoleInputCaptured)
-        memset(&s_consoleMouseState, 0, sizeof(s_consoleMouseState));
+    if (captured)
+        s_inputCaptureMode = InputCaptureMode::full;
+    else if (s_inputCaptureMode == InputCaptureMode::full)
+        s_inputCaptureMode = InputCaptureMode::none;
+    if (!InputCaptured()) {
+        memset(&s_capturedMouseState, 0, sizeof(s_capturedMouseState));
+        s_capturedControllerAvailable = false;
+    }
     return Py_BuildValue("");
+}
+
+static PyObject *py_capture_menu_input(PyObject *, PyObject *args) {
+    int captured;
+    if (!PyArg_ParseTuple(args, "p", &captured))
+        return nullptr;
+    if (captured)
+        s_inputCaptureMode = InputCaptureMode::menu;
+    else if (s_inputCaptureMode == InputCaptureMode::menu)
+        s_inputCaptureMode = InputCaptureMode::none;
+    if (!InputCaptured()) {
+        memset(&s_capturedMouseState, 0, sizeof(s_capturedMouseState));
+        s_capturedControllerAvailable = false;
+        s_menuPointerConsumed = false;
+    }
+    return Py_BuildValue("");
+}
+
+static PyObject *py_set_menu_pointer_consumed(PyObject *, PyObject *args) {
+    int consumed;
+    if (!PyArg_ParseTuple(args, "p", &consumed))
+        return nullptr;
+    s_menuPointerConsumed = consumed != 0;
+    return Py_BuildValue("");
+}
+
+static PyObject *py_captured_button_down(PyObject *, PyObject *args) {
+    int button;
+    if (!PyArg_ParseTuple(args, "i", &button))
+        return nullptr;
+    if (button < 0 || button > 19)
+        return PyBool_FromLong(0);
+    return PyBool_FromLong(s_capturedControllerAvailable &&
+                           CapturedButtonState(button) != 0);
 }
 
 static PyObject *py_clipboard_get(PyObject *, PyObject *) {
@@ -1080,6 +1218,12 @@ static PyMethodDef s_methods[] = {
      "mouse_state() -> relative x, relative y, left, right, wheel"},
     {"capture_input", py_capture_input, METH_VARARGS,
      "capture_input(enabled) -> reserve keyboard/mouse/controller for console"},
+    {"capture_menu_input", py_capture_menu_input, METH_VARARGS,
+     "capture_menu_input(enabled) -> reserve custom UI navigation"},
+    {"set_menu_pointer_consumed", py_set_menu_pointer_consumed, METH_VARARGS,
+     "set_menu_pointer_consumed(consumed) -> block gameplay over custom UI"},
+    {"captured_button_down", py_captured_button_down, METH_VARARGS,
+     "captured_button_down(button) -> raw controller button during UI capture"},
     {"clipboard_get", py_clipboard_get, METH_NOARGS,
      "clipboard_get() -> Unicode clipboard text"},
     {"clipboard_set", py_clipboard_set, METH_VARARGS,
