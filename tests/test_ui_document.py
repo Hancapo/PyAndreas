@@ -1,3 +1,4 @@
+import importlib
 import tempfile
 import unittest
 from unittest import mock
@@ -286,7 +287,8 @@ class DeclarativeUiTests(unittest.TestCase):
         fake_player = SimpleNamespace(controls=controls)
         view = ui.View("Controls", capture_input=True, auto=False)
 
-        with mock.patch("pysa.player.player", fake_player):
+        player_module = importlib.import_module("pysa.player")
+        with mock.patch.object(player_module, "player", fake_player):
             view._set_gameplay_controls_blocked(True)
             self.assertFalse(controls.enabled)
 
