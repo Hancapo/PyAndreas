@@ -7,6 +7,8 @@ The changelog is release-oriented and uses a small fixed set of categories:
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-24
+
 ### Added
 - **Experimental:** Custom interfaces can now be described in safe `.pui`
   documents with

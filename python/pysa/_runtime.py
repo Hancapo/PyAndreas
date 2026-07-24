@@ -22,7 +22,7 @@ try:
 except ImportError:
     from . import _mock as _pysa
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 RELOAD_KEY = 0x7A  # F11 - set to None (from a script) to disable hot reload
 
 
